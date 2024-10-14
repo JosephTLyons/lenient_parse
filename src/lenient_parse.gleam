@@ -1,9 +1,18 @@
 import gleam/bool
 import gleam/float
 import gleam/int
+import gleam/list
+import gleam/option.{type Option, None, Some}
 import gleam/regex
 import gleam/result
+import gleam/set
 import gleam/string
+
+pub const digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+pub const valid_characters = [
+  "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "_", "+", "-",
+]
 
 /// Converts a string to a float using a more lenient parsing method than gleam's `float.parse()`. It behaves similarly to Python's `float()` built-in function.
 ///
@@ -60,6 +69,97 @@ pub fn to_float(text: String) -> Result(Float, Nil) {
 /// ```
 pub fn to_int(text: String) -> Result(Int, Nil) {
   text |> common_sanitize |> result.try(int.parse)
+}
+
+pub type ParseError {
+  InvalidCharacter(String)
+  WhitespaceOnlyOrEmptyString
+  LeadingUnderscore
+  TrailingUnderscore
+  UnderscoreNextToDecimal
+  AdjacentUnderscores
+}
+
+@internal
+pub fn coerce_into_valid_number_string(
+  text: String,
+) -> Result(String, ParseError) {
+  let text = text |> string.trim
+  use <- bool.guard(text |> string.is_empty, Error(WhitespaceOnlyOrEmptyString))
+  use _ <- result.try(text |> has_valid_characters)
+  use _ <- result.try(text |> check_for_valid_underscore_position)
+  Ok(text)
+}
+
+@internal
+pub fn check_for_valid_underscore_position(
+  text: String,
+) -> Result(Nil, ParseError) {
+  text
+  |> string.to_graphemes
+  |> do_check_for_valid_underscore_position(previous: None)
+}
+
+// fn do_check_for_valid_underscore_position(
+//   characters: List(String),
+//   previous previous: Option(String),
+// ) -> Result(Nil, ParseError) {
+//   case characters {
+//     [] ->
+//       case previous {
+//         Some("_") -> Error(TrailingUnderscore)
+//         _ -> Ok(Nil)
+//       }
+//     [first, ..rest] -> {
+//       case first, previous {
+//         "_", None -> Error(LeadingUnderscore)
+//         "_", Some("_") -> Error(AdjacentUnderscores)
+//         ".", Some("_") | "_", Some(".") -> Error(UnderscoreNextToDecimal)
+//         _, _ ->
+//           do_check_for_valid_underscore_position(rest, previous: Some(first))
+//       }
+//     }
+//   }
+// }
+
+fn do_check_for_valid_underscore_position(
+  characters: List(String),
+  previous previous: Option(String),
+) -> Result(Nil, ParseError) {
+  case characters {
+    [] ->
+      case previous {
+        Some("_") -> Error(TrailingUnderscore)
+        _ -> Ok(Nil)
+      }
+    [first, ..rest] -> {
+      case first, previous {
+        "_", None -> Error(LeadingUnderscore)
+        "_", Some("_") -> Error(AdjacentUnderscores)
+        ".", Some("_") | "_", Some(".") -> Error(UnderscoreNextToDecimal)
+        _, _ ->
+          do_check_for_valid_underscore_position(rest, previous: Some(first))
+      }
+    }
+  }
+}
+
+pub fn is_digit(text: String) -> Bool {
+  let digits = digits |> set.from_list
+  digits |> set.contains(text)
+}
+
+@internal
+pub fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
+  let graphemes = text |> string.to_graphemes
+  let valid_characters = valid_characters |> set.from_list
+  list.try_map(graphemes, fn(grapheme) {
+    case valid_characters |> set.contains(grapheme) {
+      True -> Ok(Nil)
+      False -> Error(InvalidCharacter(grapheme))
+    }
+  })
+  |> result.map(fn(_) { Nil })
 }
 
 fn common_sanitize(text: String) -> Result(String, Nil) {
