@@ -3,9 +3,8 @@ import gleam/float
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/regex
 import gleam/result
-import gleam/set
+import gleam/set.{type Set}
 import gleam/string
 
 pub const digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
@@ -34,7 +33,8 @@ pub const valid_characters = [
 /// lenient_parse.to_float("abc")      // -> Error(Nil)
 /// ```
 pub fn to_float(text: String) -> Result(Float, Nil) {
-  use text <- result.try(text |> common_sanitize)
+  let text = text |> coerce_into_valid_number_string |> result.nil_error
+  use text <- result.try(text)
   use _ <- result.try_recover(text |> float.parse)
   use _ <- result.try_recover(text |> int.parse |> result.map(int.to_float))
 
@@ -68,16 +68,17 @@ pub fn to_float(text: String) -> Result(Float, Nil) {
 /// lenient_parse.to_int("abc")   // -> Error(Nil)
 /// ```
 pub fn to_int(text: String) -> Result(Int, Nil) {
-  text |> common_sanitize |> result.try(int.parse)
+  text
+  |> coerce_into_valid_number_string
+  |> result.nil_error
+  |> result.try(int.parse)
 }
 
 pub type ParseError {
   InvalidCharacter(String)
   WhitespaceOnlyOrEmptyString
-  LeadingUnderscore
-  TrailingUnderscore
-  UnderscoreNextToDecimal
-  AdjacentUnderscores
+  InvalidUnderscorePosition
+  InvalidDecimalPosition
 }
 
 @internal
@@ -86,73 +87,65 @@ pub fn coerce_into_valid_number_string(
 ) -> Result(String, ParseError) {
   let text = text |> string.trim
   use <- bool.guard(text |> string.is_empty, Error(WhitespaceOnlyOrEmptyString))
-  use _ <- result.try(text |> has_valid_characters)
-  use _ <- result.try(text |> check_for_valid_underscore_position)
+  use _ <- result.try(
+    text |> has_valid_characters(valid_characters |> set.from_list),
+  )
+  use _ <- result.try(text |> check_for_valid_underscore_positions)
   Ok(text)
 }
 
 @internal
-pub fn check_for_valid_underscore_position(
+pub fn check_for_valid_underscore_positions(
   text: String,
 ) -> Result(Nil, ParseError) {
   text
   |> string.to_graphemes
-  |> do_check_for_valid_underscore_position(previous: None)
+  |> do_check_for_valid_underscore_positions(
+    previous: None,
+    digits: digits |> set.from_list,
+  )
 }
 
-// fn do_check_for_valid_underscore_position(
-//   characters: List(String),
-//   previous previous: Option(String),
-// ) -> Result(Nil, ParseError) {
-//   case characters {
-//     [] ->
-//       case previous {
-//         Some("_") -> Error(TrailingUnderscore)
-//         _ -> Ok(Nil)
-//       }
-//     [first, ..rest] -> {
-//       case first, previous {
-//         "_", None -> Error(LeadingUnderscore)
-//         "_", Some("_") -> Error(AdjacentUnderscores)
-//         ".", Some("_") | "_", Some(".") -> Error(UnderscoreNextToDecimal)
-//         _, _ ->
-//           do_check_for_valid_underscore_position(rest, previous: Some(first))
-//       }
-//     }
-//   }
-// }
-
-fn do_check_for_valid_underscore_position(
+fn do_check_for_valid_underscore_positions(
   characters: List(String),
   previous previous: Option(String),
+  digits digits: Set(String),
 ) -> Result(Nil, ParseError) {
   case characters {
-    [] ->
-      case previous {
-        Some("_") -> Error(TrailingUnderscore)
-        _ -> Ok(Nil)
-      }
+    [] -> {
+      use <- bool.guard(previous == Some("_"), Error(InvalidUnderscorePosition))
+      Ok(Nil)
+    }
     [first, ..rest] -> {
       case first, previous {
-        "_", None -> Error(LeadingUnderscore)
-        "_", Some("_") -> Error(AdjacentUnderscores)
-        ".", Some("_") | "_", Some(".") -> Error(UnderscoreNextToDecimal)
+        "_", None -> Error(InvalidUnderscorePosition)
+        a, Some("_") | "_", Some(a) ->
+          case digits |> set.contains(a) {
+            True ->
+              do_check_for_valid_underscore_positions(
+                rest,
+                previous: Some(first),
+                digits: digits,
+              )
+            False -> Error(InvalidUnderscorePosition)
+          }
         _, _ ->
-          do_check_for_valid_underscore_position(rest, previous: Some(first))
+          do_check_for_valid_underscore_positions(
+            rest,
+            previous: Some(first),
+            digits: digits,
+          )
       }
     }
   }
 }
 
-pub fn is_digit(text: String) -> Bool {
-  let digits = digits |> set.from_list
-  digits |> set.contains(text)
-}
-
 @internal
-pub fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
+pub fn has_valid_characters(
+  text: String,
+  valid_characters: Set(String),
+) -> Result(Nil, ParseError) {
   let graphemes = text |> string.to_graphemes
-  let valid_characters = valid_characters |> set.from_list
   list.try_map(graphemes, fn(grapheme) {
     case valid_characters |> set.contains(grapheme) {
       True -> Ok(Nil)
@@ -162,34 +155,72 @@ pub fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
   |> result.map(fn(_) { Nil })
 }
 
-fn common_sanitize(text: String) -> Result(String, Nil) {
-  use <- bool.guard(!is_valid_number_string(text), Error(Nil))
-  let text = text |> string.trim |> string.replace("_", "")
-  use <- bool.guard(text |> string.is_empty, Error(Nil))
-  text |> Ok
+@internal
+pub fn check_for_valid_decimal_positions(
+  text: String,
+) -> Result(Nil, ParseError) {
+  text
+  |> string.to_graphemes
+  |> do_check_for_valid_decimal_positions(previous: None, seen_decimal: False)
 }
 
-@internal
-pub fn is_valid_number_string(text: String) -> Bool {
-  // ^        - Start of string
-  // \s*      - Optional whitespace at the beginning
-  // [+-]?    - Optional plus or minus sign
-  // (?!.*__) - Negative lookahead to prevent double underscores
-  // (?!_)    - Negative lookahead to prevent leading underscore
-  // (?!^\s*[+-]?_\s*$) - Negative lookahead to prevent just an underscore
-  // [0-9_]*  - Zero or more digits or underscores
-  // (?<!_)   - Negative lookbehind to prevent trailing underscore before decimal point
-  // \.?      - Optional decimal point
-  // (?!_)    - Negative lookahead to prevent underscore immediately after decimal point
-  // [0-9_]*  - Zero or more digits or underscores after decimal point
-  // (?<!_)   - Negative lookbehind to prevent trailing underscore
-  // \s*      - Optional whitespace at the end
-  // $        - End of string
-  let pattern =
-    "^\\s*[+-]?(?!_)(?!.*__)(?!^\\s*[+-]?_\\s*$)[0-9_]*(?<!_)\\.?(?!_)[0-9_]*(?<!_)\\s*$"
+fn do_check_for_valid_decimal_positions(
+  characters: List(String),
+  previous previous: Option(String),
+  seen_decimal seen_decimal: Bool,
+) -> Result(Nil, ParseError) {
+  case characters {
+    [] -> Ok(Nil)
+    [first, ..rest] -> {
+      case first, previous {
+        ".", None -> Error(InvalidDecimalPosition)
+        a, _ -> {
+          case a {
+            "." -> {
+              use <- bool.guard(seen_decimal, Error(InvalidDecimalPosition))
 
-  case regex.from_string(pattern) {
-    Ok(re) -> regex.check(with: re, content: text)
-    Error(_) -> False
+              rest
+              |> do_check_for_valid_decimal_positions(Some(first), True)
+            }
+            _ ->
+              rest
+              |> do_check_for_valid_decimal_positions(Some(first), seen_decimal)
+          }
+        }
+      }
+    }
   }
 }
+// @internal
+// pub fn pad_with_leading_or_trailing_zeros(
+//   characters: List(String),
+//   previous previous: Option(String),
+// ) -> String {
+//   case characters {
+//     [] -> {
+//       use <- bool.guard(previous == Some("_"), Error(InvalidUnderscorePosition))
+//       Ok(Nil)
+//     }
+//     [first, ..rest] -> {
+//       case first, previous {
+//         "_", None -> Error(InvalidUnderscorePosition)
+//         a, Some("_") | "_", Some(a) ->
+//           case digits |> set.contains(a) {
+//             True ->
+//               do_check_for_valid_underscore_positions(
+//                 rest,
+//                 previous: Some(first),
+//                 digits: digits,
+//               )
+//             False -> Error(InvalidUnderscorePosition)
+//           }
+//         _, _ ->
+//           do_check_for_valid_underscore_positions(
+//             rest,
+//             previous: Some(first),
+//             digits: digits,
+//           )
+//       }
+//     }
+//   }
+// }
