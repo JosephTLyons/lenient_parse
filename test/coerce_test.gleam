@@ -1,30 +1,30 @@
 import gleam/list
-import gleeunit/should
 import lenient_parse.{
   InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
   WhitespaceOnlyOrEmptyString,
 }
+import startest/expect
 
 pub fn coerce_into_valid_number_string_test() {
   ""
   |> lenient_parse.coerce_into_valid_number_string
-  |> should.equal(Error(WhitespaceOnlyOrEmptyString))
+  |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
 
   " "
   |> lenient_parse.coerce_into_valid_number_string
-  |> should.equal(Error(WhitespaceOnlyOrEmptyString))
+  |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
 
   "\t\n\r"
   |> lenient_parse.coerce_into_valid_number_string
-  |> should.equal(Error(WhitespaceOnlyOrEmptyString))
+  |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
 
   "a"
   |> lenient_parse.coerce_into_valid_number_string
-  |> should.equal(Error(InvalidCharacter("a")))
+  |> expect.to_equal(Error(InvalidCharacter("a")))
 
   "1a1"
   |> lenient_parse.coerce_into_valid_number_string
-  |> should.equal(Error(InvalidCharacter("a")))
+  |> expect.to_equal(Error(InvalidCharacter("a")))
 }
 
 pub fn check_for_valid_underscore_positions_test() {
@@ -35,7 +35,7 @@ pub fn check_for_valid_underscore_positions_test() {
   |> list.each(fn(text) {
     text
     |> lenient_parse.check_for_valid_underscore_positions
-    |> should.equal(Ok(Nil))
+    |> expect.to_equal(Ok(Nil))
   })
 
   [
@@ -45,7 +45,7 @@ pub fn check_for_valid_underscore_positions_test() {
   |> list.each(fn(text) {
     text
     |> lenient_parse.check_for_valid_underscore_positions
-    |> should.equal(Error(InvalidUnderscorePosition))
+    |> expect.to_equal(Error(InvalidUnderscorePosition))
   })
 }
 
@@ -54,16 +54,16 @@ pub fn check_for_valid_decimal_positions_test() {
   |> list.each(fn(text) {
     text
     |> lenient_parse.check_for_valid_decimal_positions()
-    |> should.equal(Ok(Nil))
+    |> expect.to_equal(Ok(Nil))
   })
 
   [".", "..", "0.0.", ".0.0"]
   |> list.each(fn(text) {
     text
     |> lenient_parse.check_for_valid_decimal_positions()
-    |> should.equal(Error(InvalidDecimalPosition))
+    |> expect.to_equal(Error(InvalidDecimalPosition))
   })
 }
 // pub fn is_valid_number_string_true_test() {
-//   lenient_parse.is_valid_number_string("0.0.") |> should.equal(False)
+//   lenient_parse.is_valid_number_string("0.0.") |> expect.to_equal(False)
 // }
