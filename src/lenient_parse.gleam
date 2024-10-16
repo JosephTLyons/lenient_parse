@@ -27,10 +27,10 @@ pub const valid_characters = [
 /// lenient_parse.to_float("+123.321") // -> Ok(123.321)
 /// lenient_parse.to_float("-123.321") // -> Ok(-123.321)
 /// lenient_parse.to_float(" 1.0 ")    // -> Ok(1.0)
-/// lenient_parse.to_float("1_000.0")  // -> Ok(1000.0)
-/// lenient_parse.to_float(" ")        // -> Error(Nil)
-/// lenient_parse.to_float("")         // -> Error(Nil)
-/// lenient_parse.to_float("abc")      // -> Error(Nil)
+/// lenient_parse.to_float("1_000.0")  // -> Ok(1.0e3)
+/// lenient_parse.to_float(" ")        // -> Error(WhitespaceOnlyOrEmptyString)
+/// lenient_parse.to_float("")         // -> Error(WhitespaceOnlyOrEmptyString)
+/// lenient_parse.to_float("abc")      // -> Error(InvalidCharacter("a"))
 /// ```
 pub fn to_float(text: String) -> Result(Float, ParseError) {
   let text = text |> coerce_into_valid_number_string
@@ -55,9 +55,9 @@ pub fn to_float(text: String) -> Result(Float, ParseError) {
 /// lenient_parse.to_int("0123")  // -> Ok(123)
 /// lenient_parse.to_int(" 123 ") // -> Ok(123)
 /// lenient_parse.to_int("1_000") // -> Ok(1000)
-/// lenient_parse.to_int("")      // -> Error(Nil)
-/// lenient_parse.to_int("1.0")   // -> Error(Nil)
-/// lenient_parse.to_int("abc")   // -> Error(Nil)
+/// lenient_parse.to_int("")      // -> Error(WhitespaceOnlyOrEmptyString)
+/// lenient_parse.to_int("1.0")   // -> Error(GleamIntParseError)
+/// lenient_parse.to_int("abc")   // -> Error(InvalidCharacter("a"))
 /// ```
 pub fn to_int(text: String) -> Result(Int, ParseError) {
   use text <- result.try(text |> coerce_into_valid_number_string)
