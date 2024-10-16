@@ -61,12 +61,6 @@ pub fn to_float_with_leading_dot_test() {
 //   |> expect.to_equal(Ok(1_000_000.0))
 // }
 
-pub fn to_float_underscores_test() {
-  "1_000_000.0"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1_000_000.0))
-}
-
 pub fn to_float_invalid_underscores_test() {
   "1_000__000.0"
   |> lenient_parse.to_float

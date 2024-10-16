@@ -1,6 +1,7 @@
 import gleam/bool
 import gleam/float
 import gleam/int
+import gleam/io
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
@@ -33,22 +34,11 @@ pub const valid_characters = [
 /// lenient_parse.to_float("abc")      // -> Error(Nil)
 /// ```
 pub fn to_float(text: String) -> Result(Float, Nil) {
+  // TODO - return actual error and update tests
   let text = text |> coerce_into_valid_number_string |> result.nil_error
   use text <- result.try(text)
   use _ <- result.try_recover(text |> float.parse)
-  use _ <- result.try_recover(text |> int.parse |> result.map(int.to_float))
-
-  let res = case string.first(text) {
-    Ok(".") -> float.parse("0" <> text)
-    _ -> Error(Nil)
-  }
-
-  use <- result.lazy_or(res)
-
-  case string.last(text) {
-    Ok(".") -> float.parse(text <> "0")
-    _ -> Error(Nil)
-  }
+  text |> int.parse |> result.map(int.to_float)
 }
 
 /// Converts a string to an integer using a more lenient parsing method than gleam's `int.parse()`.
@@ -90,7 +80,7 @@ pub fn coerce_into_valid_number_string(
   use _ <- result.try(
     text |> has_valid_characters(valid_characters |> set.from_list),
   )
-  use _ <- result.try(text |> check_for_valid_underscore_positions)
+  use text <- result.try(text |> coerce_into_valid_decimal_string)
   Ok(text)
 }
 
@@ -156,71 +146,61 @@ pub fn has_valid_characters(
 }
 
 @internal
-pub fn check_for_valid_decimal_positions(
+pub fn coerce_into_valid_decimal_string(
   text: String,
-) -> Result(Nil, ParseError) {
+) -> Result(String, ParseError) {
+  let text_length = text |> string.length
+
   text
   |> string.to_graphemes
-  |> do_check_for_valid_decimal_positions(previous: None, seen_decimal: False)
+  |> do_coerce_into_valid_decimal_string(
+    text_length: text_length,
+    previous: None,
+    seen_decimal: False,
+    acc: "",
+  )
 }
 
-fn do_check_for_valid_decimal_positions(
+fn do_coerce_into_valid_decimal_string(
   characters: List(String),
+  text_length text_length: Int,
   previous previous: Option(String),
   seen_decimal seen_decimal: Bool,
-) -> Result(Nil, ParseError) {
+  acc acc: String,
+) -> Result(String, ParseError) {
   case characters {
-    [] -> Ok(Nil)
+    [] -> {
+      case previous {
+        Some(".") -> Ok("0" <> acc)
+        _ -> Ok(acc)
+      }
+      |> result.map(string.reverse)
+    }
     [first, ..rest] -> {
       case first, previous {
-        ".", None -> Error(InvalidDecimalPosition)
-        a, _ -> {
-          case a {
-            "." -> {
-              use <- bool.guard(seen_decimal, Error(InvalidDecimalPosition))
-
+        ".", None ->
+          case text_length == 1 {
+            True -> Error(InvalidDecimalPosition)
+            False ->
               rest
-              |> do_check_for_valid_decimal_positions(Some(first), True)
-            }
-            _ ->
-              rest
-              |> do_check_for_valid_decimal_positions(Some(first), seen_decimal)
+              |> do_coerce_into_valid_decimal_string(
+                text_length: text_length,
+                previous: Some(first),
+                seen_decimal: True,
+                acc: acc <> ".0",
+              )
           }
+        ".", Some(_) if seen_decimal -> Error(InvalidDecimalPosition)
+        a, _ -> {
+          rest
+          |> do_coerce_into_valid_decimal_string(
+            text_length: text_length,
+            previous: Some(first),
+            seen_decimal: a == "." || seen_decimal,
+            acc: first <> acc,
+          )
         }
       }
     }
   }
 }
-// @internal
-// pub fn pad_with_leading_or_trailing_zeros(
-//   characters: List(String),
-//   previous previous: Option(String),
-// ) -> String {
-//   case characters {
-//     [] -> {
-//       use <- bool.guard(previous == Some("_"), Error(InvalidUnderscorePosition))
-//       Ok(Nil)
-//     }
-//     [first, ..rest] -> {
-//       case first, previous {
-//         "_", None -> Error(InvalidUnderscorePosition)
-//         a, Some("_") | "_", Some(a) ->
-//           case digits |> set.contains(a) {
-//             True ->
-//               do_check_for_valid_underscore_positions(
-//                 rest,
-//                 previous: Some(first),
-//                 digits: digits,
-//               )
-//             False -> Error(InvalidUnderscorePosition)
-//           }
-//         _, _ ->
-//           do_check_for_valid_underscore_positions(
-//             rest,
-//             previous: Some(first),
-//             digits: digits,
-//           )
-//       }
-//     }
-//   }
-// }

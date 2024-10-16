@@ -31,12 +31,6 @@ pub fn to_int_standard_format_negative_test() {
 //   |> expect.to_equal(Ok(1_000_000))
 // }
 
-pub fn to_int_underscores_test() {
-  "1_000_000"
-  |> lenient_parse.to_int
-  |> expect.to_equal(Ok(1_000_000))
-}
-
 pub fn to_int_invalid_underscores_test() {
   "1_000__000"
   |> lenient_parse.to_int

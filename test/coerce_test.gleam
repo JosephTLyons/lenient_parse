@@ -50,20 +50,18 @@ pub fn check_for_valid_underscore_positions_test() {
 }
 
 pub fn check_for_valid_decimal_positions_test() {
-  [".0", "0."]
-  |> list.each(fn(text) {
-    text
-    |> lenient_parse.check_for_valid_decimal_positions()
-    |> expect.to_equal(Ok(Nil))
-  })
+  ".1"
+  |> lenient_parse.coerce_into_valid_number_string()
+  |> expect.to_equal(Ok("0.1"))
+
+  "1."
+  |> lenient_parse.coerce_into_valid_number_string()
+  |> expect.to_equal(Ok("1.0"))
 
   [".", "..", "0.0.", ".0.0"]
   |> list.each(fn(text) {
     text
-    |> lenient_parse.check_for_valid_decimal_positions()
+    |> lenient_parse.coerce_into_valid_number_string()
     |> expect.to_equal(Error(InvalidDecimalPosition))
   })
 }
-// pub fn is_valid_number_string_true_test() {
-//   lenient_parse.is_valid_number_string("0.0.") |> expect.to_equal(False)
-// }
