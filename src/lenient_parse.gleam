@@ -178,7 +178,7 @@ pub fn has_valid_characters(
       False -> Error(InvalidCharacter(grapheme))
     }
   })
-  |> result.map(fn(_) { Nil })
+  |> result.replace(Nil)
 }
 
 @internal
