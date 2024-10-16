@@ -79,50 +79,66 @@ pub fn coerce_into_valid_number_string(
   use _ <- result.try(
     text |> has_valid_characters(valid_characters |> set.from_list),
   )
+  use text <- result.try(text |> coerce_into_valid_underscore_string)
   use text <- result.try(text |> coerce_into_valid_decimal_string)
   Ok(text)
 }
 
 @internal
-pub fn check_for_valid_underscore_positions(
+pub fn coerce_into_valid_underscore_string(
   text: String,
-) -> Result(Nil, ParseError) {
+) -> Result(String, ParseError) {
   text
   |> string.to_graphemes
-  |> do_check_for_valid_underscore_positions(
+  |> do_coerce_into_valid_underscore_string(
     previous: None,
     digits: digits |> set.from_list,
+    acc: "",
   )
 }
 
-fn do_check_for_valid_underscore_positions(
+fn do_coerce_into_valid_underscore_string(
   characters: List(String),
   previous previous: Option(String),
   digits digits: Set(String),
-) -> Result(Nil, ParseError) {
+  acc acc: String,
+) -> Result(String, ParseError) {
   case characters {
     [] -> {
       use <- bool.guard(previous == Some("_"), Error(InvalidUnderscorePosition))
-      Ok(Nil)
+      Ok(acc |> string.reverse)
     }
     [first, ..rest] -> {
       case first, previous {
         "_", None -> Error(InvalidUnderscorePosition)
-        a, Some("_") | "_", Some(a) ->
+        a, Some("_") ->
           case digits |> set.contains(a) {
             True ->
-              do_check_for_valid_underscore_positions(
+              do_coerce_into_valid_underscore_string(
                 rest,
                 previous: Some(first),
                 digits: digits,
+                acc: first <> acc,
+              )
+            False -> Error(InvalidUnderscorePosition)
+          }
+        "_", Some(a) ->
+          case digits |> set.contains(a) {
+            True ->
+              do_coerce_into_valid_underscore_string(
+                rest,
+                previous: Some(first),
+                digits: digits,
+                acc: acc,
               )
             False -> Error(InvalidUnderscorePosition)
           }
         _, _ ->
-          do_check_for_valid_underscore_positions(
+          do_coerce_into_valid_underscore_string(
             rest,
             previous: Some(first),
             digits: digits,
+            acc: first <> acc,
           )
       }
     }

@@ -27,16 +27,50 @@ pub fn coerce_into_valid_number_string_test() {
   |> expect.to_equal(Error(InvalidCharacter("a")))
 }
 
-pub fn check_for_valid_underscore_positions_test() {
-  [
-    "0", "0.0", "+1000", "-1000", " 1000 ", " -1000 ", "1_000", "1_000_000",
-    "1_000_000.0", "1_000_000.000_1", "1000.000_000",
-  ]
-  |> list.each(fn(text) {
-    text
-    |> lenient_parse.check_for_valid_underscore_positions
-    |> expect.to_equal(Ok(Nil))
-  })
+pub fn coerce_into_valid_underscore_string_test() {
+  "0"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("0"))
+
+  "0.0"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("0.0"))
+
+  "+1000"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("+1000"))
+
+  "-1000"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("-1000"))
+
+  " 1000 "
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok(" 1000 "))
+
+  " -1000 "
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok(" -1000 "))
+
+  "1_000"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("1000"))
+
+  "1_000_000"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("1000000"))
+
+  "1_000_000.0"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("1000000.0"))
+
+  "1_000_000.000_1"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("1000000.0001"))
+
+  "1000.000_000"
+  |> lenient_parse.coerce_into_valid_underscore_string
+  |> expect.to_equal(Ok("1000.000000"))
 
   [
     "_", "_1000", "1000_", "+_1000", "-_1000", "1__000", "1_.000", "1._000",
@@ -44,7 +78,7 @@ pub fn check_for_valid_underscore_positions_test() {
   ]
   |> list.each(fn(text) {
     text
-    |> lenient_parse.check_for_valid_underscore_positions
+    |> lenient_parse.coerce_into_valid_underscore_string
     |> expect.to_equal(Error(InvalidUnderscorePosition))
   })
 }
