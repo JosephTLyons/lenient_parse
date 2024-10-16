@@ -5,12 +5,6 @@ import gleam/result
 import gleam/set.{type Set}
 import gleam/string
 
-const digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-
-const valid_characters = [
-  "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "_", "+", "-",
-]
-
 pub type ParseError {
   /// Represents an error when an invalid character is encountered during
   /// parsing. The `String` parameter contains the invalid character.
@@ -45,11 +39,29 @@ pub fn coerce_into_valid_number_string(
 ) -> Result(String, ParseError) {
   let text = text |> string.trim
   use <- bool.guard(text |> string.is_empty, Error(WhitespaceOnlyOrEmptyString))
-  use _ <- result.try(
-    text |> has_valid_characters(valid_characters |> set.from_list),
-  )
+  use _ <- result.try(text |> has_valid_characters())
   use text <- result.try(text |> coerce_into_valid_underscore_string)
   text |> coerce_into_valid_decimal_string
+}
+
+fn digit_set() -> Set(String) {
+  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] |> set.from_list
+}
+
+fn sign_set() -> Set(String) {
+  ["+", "-"] |> set.from_list
+}
+
+fn separator_set() -> Set(String) {
+  [".", "_"] |> set.from_list
+}
+
+fn valid_character_set() -> Set(String) {
+  let digits = digit_set()
+  let signs = sign_set()
+  let separators = separator_set()
+
+  digits |> set.union(signs) |> set.union(separators)
 }
 
 @internal
@@ -60,7 +72,7 @@ pub fn coerce_into_valid_underscore_string(
   |> string.to_graphemes
   |> do_coerce_into_valid_underscore_string(
     previous: None,
-    digits: digits |> set.from_list,
+    digits: digit_set(),
     acc: "",
   )
 }
@@ -114,13 +126,10 @@ fn do_coerce_into_valid_underscore_string(
 }
 
 @internal
-pub fn has_valid_characters(
-  text: String,
-  valid_characters: Set(String),
-) -> Result(Nil, ParseError) {
+pub fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
   let graphemes = text |> string.to_graphemes
   list.try_map(graphemes, fn(grapheme) {
-    case valid_characters |> set.contains(grapheme) {
+    case valid_character_set() |> set.contains(grapheme) {
       True -> Ok(Nil)
       False -> Error(InvalidCharacter(grapheme))
     }
