@@ -1,7 +1,8 @@
-import lenient_parse.{
+import coerce.{
   GleamIntParseError, InvalidCharacter, InvalidUnderscorePosition,
   WhitespaceOnlyOrEmptyString,
 }
+import lenient_parse
 import startest/expect
 
 pub fn to_int_standard_format_positive_test() {

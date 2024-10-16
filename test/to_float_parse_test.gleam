@@ -1,7 +1,8 @@
-import lenient_parse.{
+import coerce.{
   InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
   WhitespaceOnlyOrEmptyString,
 }
+import lenient_parse
 import startest/expect
 
 pub fn to_float_standard_format_positive_test() {
