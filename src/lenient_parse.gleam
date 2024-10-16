@@ -83,8 +83,7 @@ pub fn coerce_into_valid_number_string(
     text |> has_valid_characters(valid_characters |> set.from_list),
   )
   use text <- result.try(text |> coerce_into_valid_underscore_string)
-  use text <- result.try(text |> coerce_into_valid_decimal_string)
-  Ok(text)
+  text |> coerce_into_valid_decimal_string
 }
 
 @internal
