@@ -1,4 +1,7 @@
-import lenient_parse
+import lenient_parse.{
+  InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
+  WhitespaceOnlyOrEmptyString,
+}
 import startest/expect
 
 pub fn to_float_standard_format_positive_test() {
@@ -64,7 +67,7 @@ pub fn to_float_underscores_test() {
 pub fn to_float_invalid_underscores_test() {
   "1_000__000.0"
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(InvalidUnderscorePosition))
 }
 
 pub fn to_float_with_surrounding_whitespace_integer_test() {
@@ -92,41 +95,41 @@ pub fn to_float_with_surrounding_whitespace_float_test() {
 pub fn to_float_with_double_leading_dot_test() {
   "..1"
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(InvalidDecimalPosition))
 }
 
 pub fn to_float_with_double_trailing_dot_test() {
   "1.."
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(InvalidDecimalPosition))
 }
 
 pub fn to_float_with_sandwich_dot_test() {
   ".1."
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(InvalidDecimalPosition))
 }
 
 pub fn to_float_with_single_dot_test() {
   "."
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(InvalidDecimalPosition))
 }
 
 pub fn to_float_with_only_whitespace_test() {
   " "
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
 }
 
 pub fn to_float_with_empty_string_test() {
   ""
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
 }
 
 pub fn to_float_with_non_numeric_string_test() {
   "abc"
   |> lenient_parse.to_float
-  |> expect.to_equal(Error(Nil))
+  |> expect.to_equal(Error(InvalidCharacter("a")))
 }

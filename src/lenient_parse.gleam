@@ -32,12 +32,15 @@ pub const valid_characters = [
 /// lenient_parse.to_float("")         // -> Error(Nil)
 /// lenient_parse.to_float("abc")      // -> Error(Nil)
 /// ```
-pub fn to_float(text: String) -> Result(Float, Nil) {
-  // TODO - return actual error and update tests
-  let text = text |> coerce_into_valid_number_string |> result.nil_error
+pub fn to_float(text: String) -> Result(Float, ParseError) {
+  let text = text |> coerce_into_valid_number_string
   use text <- result.try(text)
-  use _ <- result.try_recover(text |> float.parse)
-  text |> int.parse |> result.map(int.to_float)
+  let res = text |> float.parse |> result.replace_error(GleamFloatParseError)
+  use _ <- result.try_recover(res)
+  text
+  |> int.parse
+  |> result.replace_error(GleamIntParseError)
+  |> result.map(int.to_float)
 }
 
 /// Converts a string to an integer using a more lenient parsing method than gleam's `int.parse()`.
@@ -56,11 +59,9 @@ pub fn to_float(text: String) -> Result(Float, Nil) {
 /// lenient_parse.to_int("1.0")   // -> Error(Nil)
 /// lenient_parse.to_int("abc")   // -> Error(Nil)
 /// ```
-pub fn to_int(text: String) -> Result(Int, Nil) {
-  text
-  |> coerce_into_valid_number_string
-  |> result.nil_error
-  |> result.try(int.parse)
+pub fn to_int(text: String) -> Result(Int, ParseError) {
+  use text <- result.try(text |> coerce_into_valid_number_string)
+  text |> int.parse |> result.replace_error(GleamIntParseError)
 }
 
 pub type ParseError {
@@ -68,6 +69,8 @@ pub type ParseError {
   WhitespaceOnlyOrEmptyString
   InvalidUnderscorePosition
   InvalidDecimalPosition
+  GleamFloatParseError
+  GleamIntParseError
 }
 
 @internal
