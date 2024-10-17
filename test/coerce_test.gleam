@@ -12,7 +12,7 @@ pub fn coerce_into_valid_number_string_tests() {
   describe(
     "Is invalid number string: whitespace only or empty string",
     [
-      ["", " ", " \t\n\r "]
+      ["", " ", " \t\n\r\f "]
       |> list.map(fn(text) {
         let printable_text = text |> into_printable
 
@@ -39,6 +39,7 @@ fn do_into_printable(characters: List(String), acc: String) -> String {
         "\t" -> "\\t"
         "\n" -> "\\n"
         "\r" -> "\\r"
+        "\f" -> "\\f"
         _ -> first
       }
       do_into_printable(rest, acc <> printable)
@@ -51,6 +52,7 @@ pub fn into_printable_test() {
   "\t" |> into_printable |> expect.to_equal("\\t")
   "\n" |> into_printable |> expect.to_equal("\\n")
   "\r" |> into_printable |> expect.to_equal("\\r")
+  "\f" |> into_printable |> expect.to_equal("\\f")
   "\t\nabc123\r" |> into_printable |> expect.to_equal("\\t\\nabc123\\r")
 }
 
