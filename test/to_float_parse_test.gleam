@@ -1,10 +1,10 @@
-import coerce.{
-  InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
-  WhitespaceOnlyOrEmptyString,
-}
 import gleam/float
 import gleam/list
 import lenient_parse
+import parse_error.{
+  InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
+  WhitespaceOnlyOrEmptyString, parse_error_to_string,
+}
 import startest.{describe, it}
 import startest/expect
 
@@ -54,7 +54,7 @@ pub fn coerce_into_valid_number_string_tests() {
         ]
         |> list.map(fn(pair) {
           let #(input, error) = pair
-          let error_text = error |> coerce.parse_error_to_string
+          let error_text = error |> parse_error_to_string
 
           use <- it("\"" <> input <> "\" -> " <> error_text)
 
