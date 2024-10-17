@@ -1,6 +1,5 @@
 import coerce.{
-  GleamFloatParseError, GleamIntParseError, InvalidCharacter,
-  InvalidDecimalPosition, InvalidUnderscorePosition, SignAtInvalidPosition,
+  GleamIntParseError, InvalidCharacter, InvalidUnderscorePosition,
   WhitespaceOnlyOrEmptyString,
 }
 import gleam/int
@@ -47,17 +46,7 @@ pub fn coerce_into_valid_number_string_tests() {
         ]
         |> list.map(fn(pair) {
           let #(input, error) = pair
-
-          let error_text = case error {
-            GleamIntParseError -> "GleamIntParseError"
-            InvalidCharacter(character) -> "InvalidCharacter: " <> character
-            InvalidUnderscorePosition -> "InvalidUnderscorePosition"
-            WhitespaceOnlyOrEmptyString -> "WhitespaceOnlyOrEmptyString"
-            GleamFloatParseError -> "GleamFloatParseError"
-            InvalidDecimalPosition -> "InvalidDecimalPosition"
-            SignAtInvalidPosition(character) ->
-              "SignAtInvalidPosition: " <> character
-          }
+          let error_text = error |> coerce.parse_error_to_string
 
           use <- it("\"" <> input <> "\" -> \"" <> error_text <> "\" ")
 

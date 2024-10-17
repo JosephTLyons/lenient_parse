@@ -5,7 +5,7 @@ import coerce.{
   coerce_into_valid_underscore_string, has_valid_sign_position,
 }
 import gleam/list
-import gleam/string
+import helpers.{into_printable_text}
 import startest.{describe, it}
 import startest/expect
 
@@ -77,48 +77,6 @@ pub fn coerce_into_valid_number_string_tests() {
         |> list.concat,
     ),
   ])
-}
-
-fn into_printable_text(text: String) -> String {
-  do_into_printable_text(text |> string.to_graphemes, "")
-}
-
-fn do_into_printable_text(characters: List(String), acc: String) -> String {
-  case characters {
-    [] -> acc
-    [first, ..rest] -> {
-      let printable = case first {
-        "\t" -> "\\t"
-        "\n" -> "\\n"
-        "\r" -> "\\r"
-        "\f" -> "\\f"
-        _ -> first
-      }
-      do_into_printable_text(rest, acc <> printable)
-    }
-  }
-}
-
-// Literally testing the test helper function
-pub fn into_printable_text_tests() {
-  describe(
-    "into_printable_text_test",
-    [
-      [
-        #("\t", "\\t"),
-        #("\n", "\\n"),
-        #("\r", "\\r"),
-        #("\f", "\\f"),
-        #("\t\nabc123\r", "\\t\\nabc123\\r"),
-      ]
-      |> list.map(fn(pair) {
-        let #(input, output) = pair
-        use <- it("\"" <> output <> "\"")
-        input |> into_printable_text |> expect.to_equal(output)
-      }),
-    ]
-      |> list.concat,
-  )
 }
 
 pub fn coerce_into_valid_underscore_string_tests() {

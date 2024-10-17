@@ -38,6 +38,18 @@ pub type ParseError {
   GleamIntParseError
 }
 
+pub fn parse_error_to_string(error: ParseError) -> String {
+  case error {
+    GleamIntParseError -> "GleamIntParseError"
+    InvalidCharacter(character) -> "InvalidCharacter: " <> character
+    InvalidUnderscorePosition -> "InvalidUnderscorePosition"
+    WhitespaceOnlyOrEmptyString -> "WhitespaceOnlyOrEmptyString"
+    GleamFloatParseError -> "GleamFloatParseError"
+    InvalidDecimalPosition -> "InvalidDecimalPosition"
+    SignAtInvalidPosition(character) -> "SignAtInvalidPosition: " <> character
+  }
+}
+
 @internal
 pub fn coerce_into_valid_number_string(
   text: String,

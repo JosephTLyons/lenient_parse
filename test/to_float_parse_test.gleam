@@ -2,135 +2,68 @@ import coerce.{
   InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
   WhitespaceOnlyOrEmptyString,
 }
+import gleam/float
+import gleam/list
 import lenient_parse
+import startest.{describe, it}
 import startest/expect
 
-pub fn to_float_standard_format_positive_test() {
-  "1.001"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1.001))
-}
+pub fn coerce_into_valid_number_string_tests() {
+  describe("float_tests", [
+    describe(
+      "should_coerce_to_float",
+      [
+        [
+          #("1.001", 1.001),
+          #("1.00", 1.0),
+          #("1.0", 1.0),
+          #("0.1", 0.1),
+          #("+123.321", 123.321),
+          #("-123.321", -123.321),
+          #("1", 1.0),
+          #("1.", 1.0),
+          #(".1", 0.1),
+          #("1_000_000.0", 1_000_000.0),
+          #(" 1 ", 1.0),
+          #(" 1.0 ", 1.0),
+        ]
+        |> list.map(fn(pair) {
+          let #(input, output) = pair
+          let output_string = output |> float.to_string
+          use <- it("\"" <> input <> "\" -> \"" <> output_string <> "\" ")
 
-pub fn to_float_standard_format_positive_with_trailing_zeros_test() {
-  "1.00"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1.0))
-}
+          input
+          |> lenient_parse.to_float
+          |> expect.to_equal(Ok(output))
+        }),
+      ]
+        |> list.concat,
+    ),
+    describe(
+      "should_not_coerce_to_float",
+      [
+        [
+          #("1_000__000.0", InvalidUnderscorePosition),
+          #("..1", InvalidDecimalPosition),
+          #("1..", InvalidDecimalPosition),
+          #(".1.", InvalidDecimalPosition),
+          #(".", InvalidDecimalPosition),
+          #("", WhitespaceOnlyOrEmptyString),
+          #(" ", WhitespaceOnlyOrEmptyString),
+          #("abc", InvalidCharacter("a")),
+        ]
+        |> list.map(fn(pair) {
+          let #(input, error) = pair
+          let error_text = error |> coerce.parse_error_to_string
 
-pub fn to_float_standard_format_positive_with_single_decimal_test() {
-  "1.0"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1.0))
-}
+          use <- it("\"" <> input <> "\" -> \"" <> error_text <> "\" ")
 
-pub fn to_float_standard_format_less_than_one_test() {
-  "0.1"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(0.1))
-}
-
-pub fn to_float_standard_format_positive_with_plus_test() {
-  "+123.321"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(123.321))
-}
-
-pub fn to_float_standard_format_negative_test() {
-  "-123.321"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(-123.321))
-}
-
-pub fn to_float_integer_test() {
-  "1"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1.0))
-}
-
-pub fn to_float_with_trailing_dot_test() {
-  "1."
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1.0))
-}
-
-pub fn to_float_with_leading_dot_test() {
-  ".1"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(0.1))
-}
-
-pub fn to_float_underscores_test() {
-  "1_000_000.0"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1_000_000.0))
-}
-
-pub fn to_float_invalid_underscores_test() {
-  "1_000__000.0"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(InvalidUnderscorePosition))
-}
-
-pub fn to_float_with_surrounding_whitespace_integer_test() {
-  " 1 "
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1.0))
-}
-
-pub fn to_float_with_surrounding_whitespace_float_test() {
-  " 1.0 "
-  |> lenient_parse.to_float
-  |> expect.to_equal(Ok(1.0))
-}
-
-// pub fn to_float_scientific_notation_test() {
-//   // "420e3"
-//   // |> lenient_parse.to_float
-//   // |> expect.to_equal(Ok(1e10))
-
-//   // "420e-3"
-//   // |> lenient_parse.to_float
-//   // |> expect.to_equal(Ok(-2.5e-3))
-// }
-
-pub fn to_float_with_double_leading_dot_test() {
-  "..1"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(InvalidDecimalPosition))
-}
-
-pub fn to_float_with_double_trailing_dot_test() {
-  "1.."
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(InvalidDecimalPosition))
-}
-
-pub fn to_float_with_sandwich_dot_test() {
-  ".1."
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(InvalidDecimalPosition))
-}
-
-pub fn to_float_with_single_dot_test() {
-  "."
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(InvalidDecimalPosition))
-}
-
-pub fn to_float_with_only_whitespace_test() {
-  " "
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
-}
-
-pub fn to_float_with_empty_string_test() {
-  ""
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
-}
-
-pub fn to_float_with_non_numeric_string_test() {
-  "abc"
-  |> lenient_parse.to_float
-  |> expect.to_equal(Error(InvalidCharacter("a")))
+          input
+          |> lenient_parse.to_float
+          |> expect.to_equal(Error(error))
+        }),
+      ]
+        |> list.concat,
+    ),
+  ])
 }
