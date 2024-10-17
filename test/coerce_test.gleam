@@ -29,15 +29,14 @@ pub fn failure_to_coerce_into_valid_number_string_tests() {
     describe(
       "invalid_character",
       [
-        [#("a", "a"), #("1b1", "b")]
-        |> list.map(fn(input_expected_output) {
-          let input = input_expected_output.0
-          let output = input_expected_output.1
-          use <- it("\"" <> output <> "\" in \"" <> input <> "\"")
+        [#("a", "a"), #("1b1", "b"), #("100.00c01", "c")]
+        |> list.map(fn(input_invalid_character_pair) {
+          let #(input, invalid_character) = input_invalid_character_pair
+          use <- it("\"" <> invalid_character <> "\" in \"" <> input <> "\"")
 
           input
           |> coerce_into_valid_number_string
-          |> expect.to_equal(Error(InvalidCharacter(output)))
+          |> expect.to_equal(Error(InvalidCharacter(invalid_character)))
         }),
       ]
         |> list.concat,
