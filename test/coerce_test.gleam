@@ -8,7 +8,7 @@ import gleam/string
 import startest.{describe, it}
 import startest/expect
 
-pub fn coerce_into_valid_number_string_tests() {
+pub fn failure_coerce_into_valid_number_string_tests() {
   describe("is_invalid_number_string", [
     describe(
       "whitespace_only_or_empty_string",
@@ -17,7 +17,7 @@ pub fn coerce_into_valid_number_string_tests() {
         |> list.map(fn(text) {
           let printable_text = text |> into_printable_text
 
-          use <- it("'" <> printable_text <> "'")
+          use <- it("\"" <> printable_text <> "\"")
 
           text
           |> coerce_into_valid_number_string
@@ -29,11 +29,11 @@ pub fn coerce_into_valid_number_string_tests() {
     describe(
       "invalid_character",
       [
-        [#("a", "a"), #("1a1", "a")]
+        [#("a", "a"), #("1b1", "b")]
         |> list.map(fn(input_expected_output) {
           let input = input_expected_output.0
           let output = input_expected_output.1
-          use <- it("'" <> output <> "'")
+          use <- it("\"" <> output <> "\" in \"" <> input <> "\"")
 
           input
           |> coerce_into_valid_number_string
