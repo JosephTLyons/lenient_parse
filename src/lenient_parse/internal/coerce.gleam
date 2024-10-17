@@ -1,188 +1,122 @@
 import gleam/bool
-import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import gleam/set.{type Set}
 import gleam/string
+import lenient_parse/internal/tokenizer.{
+  type Token, DecimalPoint, Digit, Sign, Underscore, Whitespace,
+  get_valid_character,
+}
 import parse_error.{
-  type ParseError, InvalidCharacter, InvalidDecimalPosition,
-  InvalidUnderscorePosition, SignAtInvalidPosition, WhitespaceOnlyOrEmptyString,
+  type ParseError, EmptyString, InvalidCharacter, InvalidDecimalPosition,
+  InvalidSignPosition, InvalidUnderscorePosition, WhitespaceOnlyString,
+}
+
+pub type ParseState {
+  State(
+    tokens: List(Token),
+    index: Int,
+    previous: Option(Token),
+    text_length: Int,
+    seen_decimal: Bool,
+    seen_digit: Bool,
+    acc: String,
+  )
 }
 
 pub fn coerce_into_valid_number_string(
   text: String,
 ) -> Result(String, ParseError) {
-  let text = text |> string.trim
-  use <- bool.guard(text |> string.is_empty, Error(WhitespaceOnlyOrEmptyString))
-  use _ <- result.try(text |> has_valid_sign_position())
-  use _ <- result.try(text |> has_valid_characters())
-  use text <- result.try(text |> coerce_into_valid_underscore_string)
-  text |> coerce_into_valid_decimal_string
-}
-
-fn digit_set() -> Set(String) {
-  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] |> set.from_list
-}
-
-fn sign_set() -> Set(String) {
-  ["+", "-"] |> set.from_list
-}
-
-fn separator_set() -> Set(String) {
-  [".", "_"] |> set.from_list
-}
-
-fn valid_character_set() -> Set(String) {
-  let digits = digit_set()
-  let signs = sign_set()
-  let separators = separator_set()
-
-  digits |> set.union(signs) |> set.union(separators)
-}
-
-fn coerce_into_valid_underscore_string(
-  text: String,
-) -> Result(String, ParseError) {
-  text
-  |> string.to_graphemes
-  |> do_coerce_into_valid_underscore_string(
+  State(
+    tokens: text |> tokenizer.tokenize_number_string,
+    index: 0,
     previous: None,
-    digits: digit_set(),
-    acc: "",
-  )
-}
-
-fn do_coerce_into_valid_underscore_string(
-  characters: List(String),
-  previous previous: Option(String),
-  digits digits: Set(String),
-  acc acc: String,
-) -> Result(String, ParseError) {
-  case characters {
-    [] -> {
-      use <- bool.guard(previous == Some("_"), Error(InvalidUnderscorePosition))
-      Ok(acc |> string.reverse)
-    }
-    [first, ..rest] -> {
-      case first, previous {
-        "_", None -> Error(InvalidUnderscorePosition)
-        a, Some("_") ->
-          case digits |> set.contains(a) {
-            True ->
-              do_coerce_into_valid_underscore_string(
-                rest,
-                previous: Some(first),
-                digits: digits,
-                acc: first <> acc,
-              )
-            False -> Error(InvalidUnderscorePosition)
-          }
-        "_", Some(a) ->
-          case digits |> set.contains(a) {
-            True ->
-              do_coerce_into_valid_underscore_string(
-                rest,
-                previous: Some(first),
-                digits: digits,
-                acc: acc,
-              )
-            False -> Error(InvalidUnderscorePosition)
-          }
-        _, _ ->
-          do_coerce_into_valid_underscore_string(
-            rest,
-            previous: Some(first),
-            digits: digits,
-            acc: first <> acc,
-          )
-      }
-    }
-  }
-}
-
-fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
-  let graphemes = text |> string.to_graphemes
-  list.try_map(graphemes, fn(grapheme) {
-    case valid_character_set() |> set.contains(grapheme) {
-      True -> Ok(Nil)
-      False -> Error(InvalidCharacter(grapheme))
-    }
-  })
-  |> result.replace(Nil)
-}
-
-fn has_valid_sign_position(text: String) -> Result(Nil, ParseError) {
-  do_has_valid_sign_position(text |> string.to_graphemes, 0)
-}
-
-fn do_has_valid_sign_position(
-  characters: List(String),
-  index index: Int,
-) -> Result(Nil, ParseError) {
-  case characters {
-    [] -> Ok(Nil)
-    [first, ..rest] -> {
-      case first {
-        "+" | "-" if index != 0 -> Error(SignAtInvalidPosition(first))
-        _ -> do_has_valid_sign_position(rest, index + 1)
-      }
-    }
-  }
-}
-
-fn coerce_into_valid_decimal_string(text: String) -> Result(String, ParseError) {
-  let text_length = text |> string.length
-
-  text
-  |> string.to_graphemes
-  |> do_coerce_into_valid_decimal_string(
-    text_length: text_length,
-    previous: None,
+    text_length: text |> string.length,
     seen_decimal: False,
+    seen_digit: False,
     acc: "",
   )
+  |> do_coerce_into_valid_number_string
 }
 
-fn do_coerce_into_valid_decimal_string(
-  characters: List(String),
-  text_length text_length: Int,
-  previous previous: Option(String),
-  seen_decimal seen_decimal: Bool,
-  acc acc: String,
+fn do_coerce_into_valid_number_string(
+  state: ParseState,
 ) -> Result(String, ParseError) {
-  case characters {
-    [] -> {
-      case previous {
-        Some(".") -> Ok("0" <> acc)
-        _ -> Ok(acc)
-      }
-      |> result.map(string.reverse)
-    }
+  let at_beginning_of_string = state.index == 0
+  let acc_is_empty = state.acc |> string.is_empty
+
+  case state.tokens {
+    [] if at_beginning_of_string -> Error(EmptyString)
+    [] if acc_is_empty -> Error(WhitespaceOnlyString)
+    [] -> Ok(state.acc)
     [first, ..rest] -> {
-      case first, previous {
-        ".", None ->
-          case text_length == 1 {
-            True -> Error(InvalidDecimalPosition)
-            False ->
-              rest
-              |> do_coerce_into_valid_decimal_string(
-                text_length: text_length,
-                previous: Some(first),
-                seen_decimal: True,
-                acc: acc <> ".0",
-              )
+      let at_end_of_string = state.index == state.text_length - 1
+      let is_digit = first |> tokenizer.is_digit
+      let seen_digit = state.seen_digit || is_digit
+
+      let res = case first {
+        Sign(sign) if seen_digit ->
+          Error(InvalidSignPosition(sign, state.index))
+        first if state.previous == Some(Underscore) -> {
+          case first {
+            Digit(digit) -> Ok(State(..state, acc: state.acc <> digit))
+            Underscore -> Error(InvalidUnderscorePosition(state.index))
+            _ -> Error(InvalidUnderscorePosition(state.index - 1))
           }
-        ".", Some(_) if seen_decimal -> Error(InvalidDecimalPosition)
-        a, _ -> {
-          rest
-          |> do_coerce_into_valid_decimal_string(
-            text_length: text_length,
-            previous: Some(first),
-            seen_decimal: a == "." || seen_decimal,
-            acc: first <> acc,
+        }
+        Underscore -> {
+          use <- bool.guard(
+            at_beginning_of_string || at_end_of_string,
+            Error(InvalidUnderscorePosition(state.index)),
           )
+
+          let next_to_valid_character =
+            state.previous
+            |> option.map(tokenizer.is_digit)
+            |> option.unwrap(False)
+
+          use <- bool.guard(
+            !next_to_valid_character,
+            Error(InvalidUnderscorePosition(state.index)),
+          )
+
+          Ok(state)
+        }
+        DecimalPoint -> {
+          let is_invalid_decimal_position_error =
+            state.text_length == 1 || state.seen_decimal
+
+          use <- bool.guard(
+            is_invalid_decimal_position_error,
+            Error(InvalidDecimalPosition(state.index)),
+          )
+
+          let acc = case at_beginning_of_string, at_end_of_string {
+            True, False -> "0" <> "." <> state.acc
+            False, True -> state.acc <> "." <> "0"
+            _, _ -> state.acc <> "."
+          }
+
+          Ok(State(..state, seen_decimal: True, acc: acc))
+        }
+        Whitespace(_) -> Ok(state)
+        _ -> {
+          case first |> get_valid_character {
+            Ok(a) ->
+              Ok(State(..state, seen_digit: seen_digit, acc: state.acc <> a))
+            Error(a) -> Error(InvalidCharacter(a, state.index))
+          }
         }
       }
+
+      use state <- result.try(res)
+
+      State(
+        ..state,
+        tokens: rest,
+        previous: Some(first),
+        index: state.index + 1,
+      )
+      |> do_coerce_into_valid_number_string
     }
   }
 }
