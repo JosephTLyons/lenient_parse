@@ -1,5 +1,7 @@
 import gleam/string
 
+// TODO: Make this whole file internal
+
 @internal
 pub fn into_printable_text(text: String) -> String {
   do_into_printable_text(text |> string.to_graphemes, "")

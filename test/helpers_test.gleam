@@ -3,8 +3,6 @@ import helpers.{into_printable_text}
 import startest.{describe, it}
 import startest/expect
 
-// TODO: Make this whole file internal
-
 pub fn into_printable_text_tests() {
   describe(
     "should_be_printable_text_test",
