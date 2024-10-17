@@ -11,7 +11,7 @@ import startest/expect
 pub fn coerce_into_valid_number_string_tests() {
   describe("coerce_into_valid_number_string_test", [
     describe(
-      "whitespace_only_or_empty_string",
+      "should_error_as_whitespace_only_or_empty_string",
       [
         ["", " ", "\t", "\n", "\r", "\f", " \t\n\r\f "]
         |> list.map(fn(text) {
