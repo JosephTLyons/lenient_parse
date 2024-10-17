@@ -1,16 +1,16 @@
 import coerce.{
   InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
   SignAtInvalidPosition, WhitespaceOnlyOrEmptyString,
-  coerce_into_valid_number_string, coerce_into_valid_underscore_string,
-  has_valid_sign_position,
+  coerce_into_valid_decimal_string, coerce_into_valid_number_string,
+  coerce_into_valid_underscore_string, has_valid_sign_position,
 }
 import gleam/list
 import gleam/string
 import startest.{describe, it}
 import startest/expect
 
-pub fn failure_to_coerce_into_valid_number_string_tests() {
-  describe("is_invalid_number_string", [
+pub fn coerce_into_valid_number_string_tests() {
+  describe("coerce_into_valid_number_string", [
     describe(
       "whitespace_only_or_empty_string",
       [
@@ -31,13 +31,47 @@ pub fn failure_to_coerce_into_valid_number_string_tests() {
       "invalid_character",
       [
         [#("a", "a"), #("1b1", "b"), #("100.00c01", "c"), #("1 1", " ")]
-        |> list.map(fn(input_invalid_character_pair) {
-          let #(input, invalid_character) = input_invalid_character_pair
+        |> list.map(fn(pair) {
+          let #(input, invalid_character) = pair
           use <- it("\"" <> invalid_character <> "\" in \"" <> input <> "\"")
 
           input
           |> coerce_into_valid_number_string
           |> expect.to_equal(Error(InvalidCharacter(invalid_character)))
+        }),
+      ]
+        |> list.concat,
+    ),
+    describe(
+      "has_valid_sign_position",
+      [
+        [#("1+1", "+"), #("1-1", "-")]
+        |> list.map(fn(pair) {
+          let #(input, sign_at_invalid_position) = pair
+          use <- it(
+            "\"" <> sign_at_invalid_position <> "\" in \"" <> input <> "\"",
+          )
+
+          input
+          |> coerce_into_valid_number_string
+          |> expect.to_equal(
+            Error(SignAtInvalidPosition(sign_at_invalid_position)),
+          )
+        }),
+      ]
+        |> list.concat,
+    ),
+    describe(
+      "coerce_into_valid_number_string",
+      [
+        [#(" +1", "+1")]
+        |> list.map(fn(pair) {
+          let #(input, output) = pair
+          use <- it("\"" <> output <> "\" in \"" <> input <> "\"")
+
+          input
+          |> coerce_into_valid_number_string
+          |> expect.to_equal(Ok(output))
         }),
       ]
         |> list.concat,
@@ -65,20 +99,6 @@ fn do_into_printable_text(characters: List(String), acc: String) -> String {
   }
 }
 
-pub fn x() {
-  "1+1"
-  |> coerce_into_valid_number_string
-  |> expect.to_equal(Error(SignAtInvalidPosition("+")))
-
-  "1-1"
-  |> coerce_into_valid_number_string
-  |> expect.to_equal(Error(SignAtInvalidPosition("-")))
-
-  " +1"
-  |> coerce_into_valid_number_string
-  |> expect.to_equal(Ok("1"))
-}
-
 // Literally testing the test helper function
 pub fn into_printable_text_tests() {
   describe(
@@ -91,8 +111,8 @@ pub fn into_printable_text_tests() {
         #("\f", "\\f"),
         #("\t\nabc123\r", "\\t\\nabc123\\r"),
       ]
-      |> list.map(fn(input_output_pair) {
-        let #(input, output) = input_output_pair
+      |> list.map(fn(pair) {
+        let #(input, output) = pair
         use <- it("\"" <> output <> "\"")
         input |> into_printable_text |> expect.to_equal(output)
       }),
@@ -119,8 +139,8 @@ pub fn coerce_into_valid_underscore_string_tests() {
           #("1_000_000.000_1", "1000000.0001"),
           #("1000.000_000", "1000.000000"),
         ]
-        |> list.map(fn(input_output_pair) {
-          let #(input, output) = input_output_pair
+        |> list.map(fn(pair) {
+          let #(input, output) = pair
           use <- it("\"" <> input <> "\" -> \"" <> output <> "\"")
 
           input
@@ -150,45 +170,68 @@ pub fn coerce_into_valid_underscore_string_tests() {
   ])
 }
 
-pub fn has_valid_sign_position_test() {
-  "+1"
-  |> has_valid_sign_position
-  |> expect.to_equal(Ok(Nil))
-
-  "-1"
-  |> has_valid_sign_position
-  |> expect.to_equal(Ok(Nil))
-
-  "1+"
-  |> has_valid_sign_position
-  |> expect.to_equal(Error(SignAtInvalidPosition("+")))
-
-  "1-"
-  |> has_valid_sign_position
-  |> expect.to_equal(Error(SignAtInvalidPosition("-")))
-
-  "1+1"
-  |> has_valid_sign_position
-  |> expect.to_equal(Error(SignAtInvalidPosition("+")))
-
-  "1-1"
-  |> has_valid_sign_position
-  |> expect.to_equal(Error(SignAtInvalidPosition("-")))
+pub fn has_valid_sign_position_tests() {
+  describe("x", [
+    describe(
+      "has_valid_sign_position",
+      [
+        ["+1", "-1", "+1.0", "-1.0"]
+        |> list.map(fn(text) {
+          use <- it("\"" <> text <> "\"")
+          text
+          |> has_valid_sign_position
+          |> expect.to_equal(Ok(Nil))
+        }),
+      ]
+        |> list.concat,
+    ),
+    describe(
+      "has_invalid_sign_position",
+      [
+        [#("1+", "+"), #("1-", "-"), #("1+1", "+"), #("1-1", "-")]
+        |> list.map(fn(pair) {
+          let #(input, sign_at_invalid_position) = pair
+          use <- it("\"" <> sign_at_invalid_position <> "\"")
+          input
+          |> has_valid_sign_position
+          |> expect.to_equal(
+            Error(SignAtInvalidPosition(sign_at_invalid_position)),
+          )
+        }),
+      ]
+        |> list.concat,
+    ),
+  ])
 }
 
-pub fn check_for_valid_decimal_positions_test() {
-  ".1"
-  |> coerce_into_valid_number_string()
-  |> expect.to_equal(Ok("0.1"))
-
-  "1."
-  |> coerce_into_valid_number_string()
-  |> expect.to_equal(Ok("1.0"))
-
-  [".", "..", "0.0.", ".0.0"]
-  |> list.each(fn(text) {
-    text
-    |> coerce_into_valid_number_string()
-    |> expect.to_equal(Error(InvalidDecimalPosition))
-  })
+pub fn check_for_valid_decimal_positions_tests() {
+  describe("y", [
+    describe(
+      "has_valid_sign_position",
+      [
+        [#(".1", "0.1"), #("1.", "1.0")]
+        |> list.map(fn(pair) {
+          let #(input, output) = pair
+          use <- it("\"" <> input <> "\"")
+          input
+          |> coerce_into_valid_decimal_string
+          |> expect.to_equal(Ok(output))
+        }),
+      ]
+        |> list.concat,
+    ),
+    describe(
+      "has_valid_sign_position",
+      [
+        [".", "..", "0.0.", ".0.0"]
+        |> list.map(fn(text) {
+          use <- it("\"" <> text <> "\"")
+          text
+          |> coerce_into_valid_decimal_string
+          |> expect.to_equal(Error(InvalidDecimalPosition))
+        }),
+      ]
+        |> list.concat,
+    ),
+  ])
 }
