@@ -32,7 +32,7 @@ pub type ParseError {
 }
 
 @internal
-pub fn parse_error_to_string(error: ParseError) -> String {
+pub fn to_string(error: ParseError) -> String {
   case error {
     GleamIntParseError -> "GleamIntParseError"
     InvalidCharacter(character) -> "InvalidCharacter(\"" <> character <> "\")"
