@@ -11,7 +11,7 @@ import startest/expect
 pub fn coerce_into_valid_number_string_tests() {
   describe("int_test", [
     describe(
-      "should_coerce_to_int",
+      "should_coerce",
       [
         #("1", 1),
         #("+123", 123),
@@ -31,7 +31,7 @@ pub fn coerce_into_valid_number_string_tests() {
         }),
     ),
     describe(
-      "should_not_coerce_to_int",
+      "should_not_coerce",
       [
         #("1_000__000", InvalidUnderscorePosition),
         #("1.", GleamIntParseError),

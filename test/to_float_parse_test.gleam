@@ -11,7 +11,7 @@ import startest/expect
 pub fn coerce_into_valid_number_string_tests() {
   describe("float_test", [
     describe(
-      "should_coerce_to_float",
+      "should_coerce",
       [
         #("1.001", 1.001),
         #("1.00", 1.0),
@@ -37,7 +37,7 @@ pub fn coerce_into_valid_number_string_tests() {
         }),
     ),
     describe(
-      "should_not_coerce_to_float",
+      "should_not_coerce",
       [
         #("1_000__000.0", InvalidUnderscorePosition),
         #("..1", InvalidDecimalPosition),

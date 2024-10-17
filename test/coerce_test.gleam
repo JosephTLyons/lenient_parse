@@ -85,7 +85,7 @@ pub fn coerce_into_valid_number_string_tests() {
         }),
     ),
     describe(
-      "has_valid_underscore_position",
+      "should_coerce",
       [
         #("0", "0"),
         #("0.0", "0.0"),
@@ -109,13 +109,16 @@ pub fn coerce_into_valid_number_string_tests() {
         }),
     ),
     describe(
-      "has_invalid_underscore_position",
+      "should_not_coerce",
       [
         "_", "_1000", "1000_", "+_1000", "-_1000", "1__000", "1_.000", "1._000",
         "_1000.0", "1000.0_", "1000._0", "1000_.0", "1000_.",
       ]
         |> list.map(fn(text) {
-          use <- it("\"" <> text <> "\"")
+          let error = InvalidUnderscorePosition
+          let error_text = error |> parse_error.to_string
+
+          use <- it("\"" <> text <> "\" -> " <> error_text)
 
           text
           |> coerce_into_valid_number_string
