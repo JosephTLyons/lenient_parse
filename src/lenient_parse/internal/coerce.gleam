@@ -9,7 +9,6 @@ import parse_error.{
   InvalidUnderscorePosition, SignAtInvalidPosition, WhitespaceOnlyOrEmptyString,
 }
 
-@internal
 pub fn coerce_into_valid_number_string(
   text: String,
 ) -> Result(String, ParseError) {
