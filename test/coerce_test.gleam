@@ -9,22 +9,40 @@ import startest.{describe, it}
 import startest/expect
 
 pub fn coerce_into_valid_number_string_tests() {
-  describe(
-    "Is invalid number string: whitespace only or empty string",
-    [
-      ["", " ", "\t", "\n", "\r", "\f", " \t\n\r\f "]
-      |> list.map(fn(text) {
-        let printable_text = text |> into_printable_text
+  describe("is_invalid_number_string", [
+    describe(
+      "whitespace_only_or_empty_string",
+      [
+        ["", " ", "\t", "\n", "\r", "\f", " \t\n\r\f "]
+        |> list.map(fn(text) {
+          let printable_text = text |> into_printable_text
 
-        use <- it("'" <> printable_text <> "'")
+          use <- it("'" <> printable_text <> "'")
 
-        text
-        |> coerce_into_valid_number_string
-        |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
-      }),
-    ]
-      |> list.concat,
-  )
+          text
+          |> coerce_into_valid_number_string
+          |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
+        }),
+      ]
+        |> list.concat,
+    ),
+    describe(
+      "invalid_character",
+      [
+        [#("a", "a"), #("1a1", "a")]
+        |> list.map(fn(input_expected_output) {
+          let input = input_expected_output.0
+          let output = input_expected_output.1
+          use <- it("'" <> output <> "'")
+
+          input
+          |> coerce_into_valid_number_string
+          |> expect.to_equal(Error(InvalidCharacter(output)))
+        }),
+      ]
+        |> list.concat,
+    ),
+  ])
 }
 
 fn into_printable_text(text: String) -> String {
@@ -54,16 +72,6 @@ pub fn into_printable_text_test() {
   "\r" |> into_printable_text |> expect.to_equal("\\r")
   "\f" |> into_printable_text |> expect.to_equal("\\f")
   "\t\nabc123\r" |> into_printable_text |> expect.to_equal("\\t\\nabc123\\r")
-}
-
-pub fn coerce_into_valid_number_string_test() {
-  "a"
-  |> coerce_into_valid_number_string
-  |> expect.to_equal(Error(InvalidCharacter("a")))
-
-  "1a1"
-  |> coerce_into_valid_number_string
-  |> expect.to_equal(Error(InvalidCharacter("a")))
 }
 
 pub fn coerce_into_valid_underscore_string_test() {
