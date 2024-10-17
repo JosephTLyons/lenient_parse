@@ -8,7 +8,7 @@ import gleam/string
 import startest.{describe, it}
 import startest/expect
 
-pub fn failure_coerce_into_valid_number_string_tests() {
+pub fn failure_to_coerce_into_valid_number_string_tests() {
   describe("is_invalid_number_string", [
     describe(
       "whitespace_only_or_empty_string",
