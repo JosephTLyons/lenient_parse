@@ -84,8 +84,7 @@ fn valid_character_set() -> Set(String) {
   digits |> set.union(signs) |> set.union(separators)
 }
 
-@internal
-pub fn coerce_into_valid_underscore_string(
+fn coerce_into_valid_underscore_string(
   text: String,
 ) -> Result(String, ParseError) {
   text
@@ -145,8 +144,7 @@ fn do_coerce_into_valid_underscore_string(
   }
 }
 
-@internal
-pub fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
+fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
   let graphemes = text |> string.to_graphemes
   list.try_map(graphemes, fn(grapheme) {
     case valid_character_set() |> set.contains(grapheme) {
@@ -157,8 +155,7 @@ pub fn has_valid_characters(text: String) -> Result(Nil, ParseError) {
   |> result.replace(Nil)
 }
 
-@internal
-pub fn has_valid_sign_position(text: String) -> Result(Nil, ParseError) {
+fn has_valid_sign_position(text: String) -> Result(Nil, ParseError) {
   do_has_valid_sign_position(text |> string.to_graphemes, 0)
 }
 
@@ -177,10 +174,7 @@ fn do_has_valid_sign_position(
   }
 }
 
-@internal
-pub fn coerce_into_valid_decimal_string(
-  text: String,
-) -> Result(String, ParseError) {
+fn coerce_into_valid_decimal_string(text: String) -> Result(String, ParseError) {
   let text_length = text |> string.length
 
   text
