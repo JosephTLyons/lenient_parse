@@ -29,7 +29,8 @@ pub fn to_float(text: String) -> Result(Float, ParseError) {
   let text = text |> coerce_into_valid_number_string
   use text <- result.try(text)
   let res = text |> float.parse |> result.replace_error(GleamFloatParseError)
-  use _ <- result.try_recover(res)
+  use <- result.lazy_or(res)
+
   text
   |> int.parse
   |> result.replace_error(GleamIntParseError)
