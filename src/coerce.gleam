@@ -38,6 +38,7 @@ pub type ParseError {
   GleamIntParseError
 }
 
+@internal
 pub fn parse_error_to_string(error: ParseError) -> String {
   case error {
     GleamIntParseError -> "GleamIntParseError"
