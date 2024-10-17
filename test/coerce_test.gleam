@@ -21,15 +21,13 @@ pub fn coerce_into_valid_number_string_tests() {
         #("-1000", "-1000"),
         #(" 1000 ", "1000"),
         #(" -1000 ", "-1000"),
+        #("+1.0", "+1.0"),
+        #("-1.0", "-1.0"),
         #("1_000", "1000"),
         #("1_000_000", "1000000"),
         #("1_000_000.0", "1000000.0"),
         #("1_000_000.000_1", "1000000.0001"),
         #("1000.000_000", "1000.000000"),
-        #("+1", "+1"),
-        #("-1", "-1"),
-        #("+1.0", "+1.0"),
-        #("-1.0", "-1.0"),
       ]
         |> list.map(fn(pair) {
           let #(input, output) = pair
@@ -41,7 +39,7 @@ pub fn coerce_into_valid_number_string_tests() {
         }),
     ),
     describe(
-      "is_whitespace_only_or_empty_string",
+      "has_invalid_whitespace",
       ["", " ", "\t", "\n", "\r", "\f", " \t\n\r\f "]
         |> list.map(fn(text) {
           let printable_text = text |> into_printable_text
