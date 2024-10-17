@@ -1,6 +1,6 @@
-import coerce.{coerce_into_valid_number_string}
 import gleam/list
 import helpers.{into_printable_text}
+import lenient_parse/internal/coerce.{coerce_into_valid_number_string}
 import parse_error.{
   InvalidCharacter, InvalidDecimalPosition, InvalidUnderscorePosition,
   SignAtInvalidPosition, WhitespaceOnlyOrEmptyString,

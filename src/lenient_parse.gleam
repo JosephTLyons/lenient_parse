@@ -1,7 +1,7 @@
-import coerce.{coerce_into_valid_number_string}
 import gleam/float
 import gleam/int
 import gleam/result
+import lenient_parse/internal/coerce.{coerce_into_valid_number_string}
 import parse_error.{type ParseError, GleamFloatParseError, GleamIntParseError}
 
 /// Converts a string to a float using a more lenient parsing method than gleam's `float.parse()`. It behaves similarly to Python's `float()` built-in function.
