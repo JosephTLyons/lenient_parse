@@ -15,6 +15,8 @@ pub fn coerce_into_valid_number_string_tests() {
       [
         #("0", "0"),
         #("0.0", "0.0"),
+        #(".1", "0.1"),
+        #("1.", "1.0"),
         #("+1000", "+1000"),
         #("-1000", "-1000"),
         #(" 1000 ", "1000"),
@@ -24,6 +26,10 @@ pub fn coerce_into_valid_number_string_tests() {
         #("1_000_000.0", "1000000.0"),
         #("1_000_000.000_1", "1000000.0001"),
         #("1000.000_000", "1000.000000"),
+        #("+1", "+1"),
+        #("-1", "-1"),
+        #("+1.0", "+1.0"),
+        #("-1.0", "-1.0"),
       ]
         |> list.map(fn(pair) {
           let #(input, output) = pair
@@ -35,7 +41,7 @@ pub fn coerce_into_valid_number_string_tests() {
         }),
     ),
     describe(
-      "should_error_as_whitespace_only_or_empty_string",
+      "is_whitespace_only_or_empty_string",
       ["", " ", "\t", "\n", "\r", "\f", " \t\n\r\f "]
         |> list.map(fn(text) {
           let printable_text = text |> into_printable_text
@@ -60,18 +66,6 @@ pub fn coerce_into_valid_number_string_tests() {
         }),
     ),
     describe(
-      "has_valid_sign_position",
-      [#("+1", "+1"), #("-1", "-1"), #("+1.0", "+1.0"), #("-1.0", "-1.0")]
-        |> list.map(fn(pair) {
-          let #(input, output) = pair
-          use <- it("\"" <> output <> "\" in \"" <> input <> "\"")
-
-          input
-          |> coerce_into_valid_number_string
-          |> expect.to_equal(Ok(output))
-        }),
-    ),
-    describe(
       "has_invalid_sign_position",
       [#("1+", "+"), #("1-", "-"), #("1+1", "+"), #("1-1", "-")]
         |> list.map(fn(pair) {
@@ -85,17 +79,6 @@ pub fn coerce_into_valid_number_string_tests() {
           |> expect.to_equal(
             Error(SignAtInvalidPosition(sign_at_invalid_position)),
           )
-        }),
-    ),
-    describe(
-      "has_valid_decimal_position",
-      [#(".1", "0.1"), #("1.", "1.0")]
-        |> list.map(fn(pair) {
-          let #(input, output) = pair
-          use <- it("\"" <> input <> "\"")
-          input
-          |> coerce_into_valid_number_string
-          |> expect.to_equal(Ok(output))
         }),
     ),
     describe(
