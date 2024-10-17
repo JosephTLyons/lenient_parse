@@ -8,15 +8,16 @@ import gleam/string
 import startest.{describe, it}
 import startest/expect
 
-pub fn coerce_into_valid_number_string_invalid_tests() {
+pub fn coerce_into_valid_number_string_tests() {
   describe(
-    "Is invalid number string (is whitespace only or empty)",
+    "Is invalid number string: whitespace only or empty string",
     [
       ["", " ", " \t\n\r "]
       |> list.map(fn(text) {
         let printable_text = text |> into_printable
 
-        use <- it("'" <> printable_text <> "' is invalid number string.")
+        use <- it("'" <> printable_text <> "'")
+
         text
         |> coerce_into_valid_number_string
         |> expect.to_equal(Error(WhitespaceOnlyOrEmptyString))
@@ -26,13 +27,13 @@ pub fn coerce_into_valid_number_string_invalid_tests() {
   )
 }
 
-fn into_printable(character: String) {
-  do_into_printable(character |> string.to_graphemes, "")
+fn into_printable(text: String) -> String {
+  do_into_printable(text |> string.to_graphemes, "")
 }
 
-fn do_into_printable(character: List(String), acc: String) {
-  case character {
-    [] -> acc |> string.reverse
+fn do_into_printable(characters: List(String), acc: String) -> String {
+  case characters {
+    [] -> acc
     [first, ..rest] -> {
       let printable = case first {
         "\t" -> "\\t"
@@ -40,9 +41,17 @@ fn do_into_printable(character: List(String), acc: String) {
         "\r" -> "\\r"
         _ -> first
       }
-      do_into_printable(rest, printable <> acc)
+      do_into_printable(rest, acc <> printable)
     }
   }
+}
+
+// Literally testing the test helper function
+pub fn into_printable_test() {
+  "\t" |> into_printable |> expect.to_equal("\\t")
+  "\n" |> into_printable |> expect.to_equal("\\n")
+  "\r" |> into_printable |> expect.to_equal("\\r")
+  "\t\nabc123\r" |> into_printable |> expect.to_equal("\\t\\nabc123\\r")
 }
 
 pub fn coerce_into_valid_number_string_test() {
