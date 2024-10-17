@@ -9,7 +9,7 @@ import startest.{describe, it}
 import startest/expect
 
 pub fn coerce_into_valid_number_string_tests() {
-  describe("int_tests", [
+  describe("int_test", [
     describe(
       "should_coerce_to_int",
       [
@@ -24,7 +24,7 @@ pub fn coerce_into_valid_number_string_tests() {
         |> list.map(fn(pair) {
           let #(input, output) = pair
           let output_string = output |> int.to_string
-          use <- it("\"" <> input <> "\" -> \"" <> output_string <> "\" ")
+          use <- it("\"" <> input <> "\" -> " <> output_string)
 
           input
           |> lenient_parse.to_int
@@ -48,7 +48,7 @@ pub fn coerce_into_valid_number_string_tests() {
           let #(input, error) = pair
           let error_text = error |> coerce.parse_error_to_string
 
-          use <- it("\"" <> input <> "\" -> \"" <> error_text <> "\" ")
+          use <- it("\"" <> input <> "\" -> " <> error_text)
 
           input
           |> lenient_parse.to_int

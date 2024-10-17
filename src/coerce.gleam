@@ -41,12 +41,13 @@ pub type ParseError {
 pub fn parse_error_to_string(error: ParseError) -> String {
   case error {
     GleamIntParseError -> "GleamIntParseError"
-    InvalidCharacter(character) -> "InvalidCharacter: " <> character
+    InvalidCharacter(character) -> "InvalidCharacter(\"" <> character <> "\")"
     InvalidUnderscorePosition -> "InvalidUnderscorePosition"
     WhitespaceOnlyOrEmptyString -> "WhitespaceOnlyOrEmptyString"
     GleamFloatParseError -> "GleamFloatParseError"
     InvalidDecimalPosition -> "InvalidDecimalPosition"
-    SignAtInvalidPosition(character) -> "SignAtInvalidPosition: " <> character
+    SignAtInvalidPosition(character) ->
+      "SignAtInvalidPosition(\"" <> character <> "\")"
   }
 }
 
