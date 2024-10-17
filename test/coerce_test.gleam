@@ -10,7 +10,7 @@ import startest.{describe, it}
 import startest/expect
 
 pub fn coerce_into_valid_number_string_tests() {
-  describe("coerce_into_valid_number_string", [
+  describe("coerce_into_valid_number_string_test", [
     describe(
       "whitespace_only_or_empty_string",
       [
@@ -129,7 +129,7 @@ pub fn coerce_into_valid_underscore_string_tests() {
 }
 
 pub fn has_valid_sign_position_tests() {
-  describe("x", [
+  describe("has_valid_sign_position_test", [
     describe(
       "has_valid_sign_position",
       [
@@ -163,7 +163,7 @@ pub fn has_valid_sign_position_tests() {
 }
 
 pub fn check_for_valid_decimal_positions_tests() {
-  describe("y", [
+  describe("check_for_valid_decimal_positions_test", [
     describe(
       "has_valid_sign_position",
       [

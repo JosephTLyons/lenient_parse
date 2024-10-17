@@ -7,7 +7,7 @@ import startest/expect
 
 pub fn into_printable_text_tests() {
   describe(
-    "should_be_printable_text",
+    "should_be_printable_text_test",
     [
       [
         #("\t", "\\t"),
