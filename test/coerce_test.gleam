@@ -14,7 +14,7 @@ pub fn coerce_into_valid_number_string_tests() {
     [
       ["", " ", "\t", "\n", "\r", "\f", " \t\n\r\f "]
       |> list.map(fn(text) {
-        let printable_text = text |> into_printable
+        let printable_text = text |> into_printable_text
 
         use <- it("'" <> printable_text <> "'")
 
@@ -27,11 +27,11 @@ pub fn coerce_into_valid_number_string_tests() {
   )
 }
 
-fn into_printable(text: String) -> String {
-  do_into_printable(text |> string.to_graphemes, "")
+fn into_printable_text(text: String) -> String {
+  do_into_printable_text(text |> string.to_graphemes, "")
 }
 
-fn do_into_printable(characters: List(String), acc: String) -> String {
+fn do_into_printable_text(characters: List(String), acc: String) -> String {
   case characters {
     [] -> acc
     [first, ..rest] -> {
@@ -42,18 +42,18 @@ fn do_into_printable(characters: List(String), acc: String) -> String {
         "\f" -> "\\f"
         _ -> first
       }
-      do_into_printable(rest, acc <> printable)
+      do_into_printable_text(rest, acc <> printable)
     }
   }
 }
 
 // Literally testing the test helper function
-pub fn into_printable_test() {
-  "\t" |> into_printable |> expect.to_equal("\\t")
-  "\n" |> into_printable |> expect.to_equal("\\n")
-  "\r" |> into_printable |> expect.to_equal("\\r")
-  "\f" |> into_printable |> expect.to_equal("\\f")
-  "\t\nabc123\r" |> into_printable |> expect.to_equal("\\t\\nabc123\\r")
+pub fn into_printable_text_test() {
+  "\t" |> into_printable_text |> expect.to_equal("\\t")
+  "\n" |> into_printable_text |> expect.to_equal("\\n")
+  "\r" |> into_printable_text |> expect.to_equal("\\r")
+  "\f" |> into_printable_text |> expect.to_equal("\\f")
+  "\t\nabc123\r" |> into_printable_text |> expect.to_equal("\\t\\nabc123\\r")
 }
 
 pub fn coerce_into_valid_number_string_test() {
