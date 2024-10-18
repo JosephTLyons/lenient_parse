@@ -43,8 +43,7 @@ pub fn is_digit(token: Token) -> Bool {
   }
 }
 
-// TODO: Better name
-pub fn get_valid_character(token: Token) -> Result(String, String) {
+pub fn to_result(token: Token) -> Result(String, String) {
   case token {
     DecimalPoint -> Ok(".")
     Underscore -> Ok("_")

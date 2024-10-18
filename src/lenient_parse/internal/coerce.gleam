@@ -4,7 +4,6 @@ import gleam/result
 import gleam/string
 import lenient_parse/internal/tokenizer.{
   type Token, DecimalPoint, Digit, Sign, Underscore, Whitespace,
-  get_valid_character,
 }
 import parse_error.{
   type ParseError, EmptyString, InvalidCharacter, InvalidDecimalPosition,
@@ -100,11 +99,12 @@ fn do_coerce_into_valid_number_string(
         }
         Whitespace(_) -> Ok(state)
         _ -> {
-          case first |> get_valid_character {
-            Ok(a) ->
-              Ok(State(..state, seen_digit: seen_digit, acc: state.acc <> a))
-            Error(a) -> Error(InvalidCharacter(a, state.index))
-          }
+          first
+          |> tokenizer.to_result
+          |> result.map(fn(a) {
+            State(..state, seen_digit: seen_digit, acc: state.acc <> a)
+          })
+          |> result.map_error(fn(a) { InvalidCharacter(a, state.index) })
         }
       }
 
