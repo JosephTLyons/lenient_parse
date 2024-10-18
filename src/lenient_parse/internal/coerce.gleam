@@ -1,4 +1,3 @@
-import gleam/bool
 import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
@@ -40,63 +39,40 @@ pub fn coerce_into_valid_number_string(
 fn do_coerce_into_valid_number_string(
   state: ParseState,
 ) -> Result(String, ParseError) {
-  let at_beginning_of_string = state.index == 0
+  let at_beginning = state.index == 0
   let acc_is_empty = state.acc |> string.is_empty
 
   case state.tokens {
-    [] if at_beginning_of_string -> Error(EmptyString)
+    [] if at_beginning -> Error(EmptyString)
     [] if acc_is_empty -> Error(WhitespaceOnlyString)
     [] -> Ok(state.acc)
     [first, ..rest] -> {
-      let at_end_of_string = state.index == state.text_length - 1
-      let is_digit = first |> tokenizer.is_digit
-      let seen_digit = state.seen_digit || is_digit
+      let at_end = state.index == state.text_length - 1
+      let seen_digit = state.seen_digit || { first |> tokenizer.is_digit }
+      let previous_is_underscore = state.previous == Some(Underscore)
+      let previous_is_digit =
+        state.previous
+        |> option.map(tokenizer.is_digit)
+        |> option.unwrap(False)
 
-      let res = case first {
+      let parse_result = case first {
         Sign(sign) if seen_digit ->
           Error(InvalidSignPosition(sign, state.index))
-        first if state.previous == Some(Underscore) -> {
-          case first {
-            Digit(digit) -> Ok(State(..state, acc: state.acc <> digit))
-            Underscore -> Error(InvalidUnderscorePosition(state.index))
-            _ -> Error(InvalidUnderscorePosition(state.index - 1))
-          }
-        }
-        Underscore -> {
-          use <- bool.guard(
-            at_beginning_of_string || at_end_of_string,
-            Error(InvalidUnderscorePosition(state.index)),
-          )
-
-          let next_to_valid_character =
-            state.previous
-            |> option.map(tokenizer.is_digit)
-            |> option.unwrap(False)
-
-          use <- bool.guard(
-            !next_to_valid_character,
-            Error(InvalidUnderscorePosition(state.index)),
-          )
-
-          Ok(state)
-        }
-        DecimalPoint -> {
-          let is_invalid_decimal_position_error =
-            state.text_length == 1 || state.seen_decimal
-
-          use <- bool.guard(
-            is_invalid_decimal_position_error,
-            Error(InvalidDecimalPosition(state.index)),
-          )
-
-          let acc = case at_beginning_of_string, at_end_of_string {
-            True, False -> "0" <> "." <> state.acc
-            False, True -> state.acc <> "." <> "0"
-            _, _ -> state.acc <> "."
-          }
-
-          Ok(State(..state, seen_decimal: True, acc: acc))
-        }
+        Digit(digit) if previous_is_underscore ->
+          Ok(State(..state, acc: state.acc <> digit))
+        Underscore if at_beginning || at_end || !previous_is_digit ->
+          Error(InvalidUnderscorePosition(state.index))
+        _ if previous_is_underscore ->
+          Error(InvalidUnderscorePosition(state.index - 1))
+        Underscore -> Ok(state)
+        DecimalPoint if state.text_length == 1 || state.seen_decimal ->
+          Error(InvalidDecimalPosition(state.index))
+        DecimalPoint if at_beginning ->
+          Ok(State(..state, seen_decimal: True, acc: "0" <> "." <> state.acc))
+        DecimalPoint if at_end ->
+          Ok(State(..state, seen_decimal: True, acc: state.acc <> "." <> "0"))
+        DecimalPoint ->
+          Ok(State(..state, seen_decimal: True, acc: state.acc <> "."))
         Whitespace(_) -> Ok(state)
         _ -> {
           first
@@ -104,11 +80,11 @@ fn do_coerce_into_valid_number_string(
           |> result.map(fn(a) {
             State(..state, seen_digit: seen_digit, acc: state.acc <> a)
           })
-          |> result.map_error(fn(a) { InvalidCharacter(a, state.index) })
+          |> result.map_error(InvalidCharacter(_, state.index))
         }
       }
 
-      use state <- result.try(res)
+      use state <- result.try(parse_result)
 
       State(
         ..state,
