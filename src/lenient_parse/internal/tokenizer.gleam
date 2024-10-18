@@ -27,7 +27,7 @@ fn do_tokenize_number_string(
           Digit(first)
         "." -> DecimalPoint
         "_" -> Underscore
-        " " | "\n" | "\t" | "\r" | "\f" -> Whitespace(first)
+        " " | "\n" | "\t" | "\r" | "\f" | "\r\n" -> Whitespace(first)
         _ -> Unknown(first)
       }
 
@@ -47,7 +47,7 @@ pub fn to_result(token: Token) -> Result(String, String) {
   case token {
     DecimalPoint -> Ok(".")
     Underscore -> Ok("_")
-    Digit(a) | Sign(a) -> Ok(a)
-    Unknown(a) | Whitespace(a) -> Error(a)
+    Digit(a) | Sign(a) | Whitespace(a) -> Ok(a)
+    Unknown(a) -> Error(a)
   }
 }

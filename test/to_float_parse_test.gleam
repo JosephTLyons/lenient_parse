@@ -1,5 +1,6 @@
 import gleam/float
 import gleam/list
+import helpers
 import lenient_parse
 import parse_error.{
   EmptyString, InvalidCharacter, InvalidDecimalPosition,
@@ -83,8 +84,9 @@ pub fn coerce_into_valid_number_string_tests() {
         |> list.flatten
         |> list.map(fn(tuple) {
           let #(input, error) = tuple
+          let printable_text = input |> helpers.to_printable_text
           let error_text = error |> parse_error.to_string
-          use <- it("\"" <> input <> "\" -> " <> error_text)
+          use <- it("\"" <> printable_text <> "\" -> " <> error_text)
 
           input
           |> lenient_parse.to_float
