@@ -23,7 +23,7 @@ import parse_error.{type ParseError}
 /// ```
 pub fn to_float(text: String) -> Result(Float, ParseError) {
   text
-  |> parse.to_float(fn(a) { coerce_into_valid_number_string(a, True) })
+  |> parse.to_float(coerce_into_valid_number_string(_, True))
 }
 
 /// Converts a string to an integer using a more lenient parsing method than gleam's `int.parse()`.
@@ -44,5 +44,5 @@ pub fn to_float(text: String) -> Result(Float, ParseError) {
 /// ```
 pub fn to_int(text: String) -> Result(Int, ParseError) {
   text
-  |> parse.to_int(fn(a) { coerce_into_valid_number_string(a, False) })
+  |> parse.to_int(coerce_into_valid_number_string(_, False))
 }
