@@ -73,6 +73,7 @@ pub fn to_string(error: ParseError) -> String {
       "invalid decimal at position: " <> index |> int.to_string
     InvalidSignPosition(sign, index) ->
       "invalid sign \"" <> sign <> "\" at position: " <> index |> int.to_string
+
     Nil -> "nil"
   }
 }

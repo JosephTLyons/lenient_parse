@@ -43,6 +43,13 @@ pub fn is_digit(token: Token) -> Bool {
   }
 }
 
+pub fn is_whitespace(token: Token) -> Bool {
+  case token {
+    Whitespace(_) -> True
+    _ -> False
+  }
+}
+
 pub fn to_result(token: Token) -> Result(String, String) {
   case token {
     DecimalPoint -> Ok(".")
