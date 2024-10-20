@@ -27,25 +27,37 @@ pub type ParseState {
   )
 }
 
-pub fn coerce_into_valid_number_string(
-  text: String,
-  allow_float: Bool,
-) -> Result(String, ParseError) {
+pub fn coerce_into_float_string(text: String) -> Result(String, ParseError) {
   State(
     tokens: text |> tokenizer.tokenize_number_string,
     index: 0,
     previous: None,
     text_length: text |> string.length,
     tracker: whitespace_block_tracker.new(),
-    allow_float: allow_float,
+    allow_float: True,
     seen_decimal: False,
     seen_digit: False,
     acc: "",
   )
-  |> do_coerce_into_valid_number_string
+  |> coerce_into_valid_number_string
 }
 
-fn do_coerce_into_valid_number_string(
+pub fn coerce_into_int_string(text: String) -> Result(String, ParseError) {
+  State(
+    tokens: text |> tokenizer.tokenize_number_string,
+    index: 0,
+    previous: None,
+    text_length: text |> string.length,
+    tracker: whitespace_block_tracker.new(),
+    allow_float: False,
+    seen_decimal: False,
+    seen_digit: False,
+    acc: "",
+  )
+  |> coerce_into_valid_number_string
+}
+
+fn coerce_into_valid_number_string(
   state: ParseState,
 ) -> Result(String, ParseError) {
   let at_beginning = state.index == 0
@@ -113,7 +125,7 @@ fn do_coerce_into_valid_number_string(
             index: state.index + 1,
             tracker: tracker,
           )
-          |> do_coerce_into_valid_number_string
+          |> coerce_into_valid_number_string
         }
       }
     }
