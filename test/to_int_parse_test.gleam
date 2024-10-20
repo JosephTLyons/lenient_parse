@@ -14,7 +14,7 @@ pub fn coerce_into_valid_number_string_tests() {
   describe("int_test", [
     describe(
       "should_coerce",
-      test_data.int_should_coerce
+      test_data.valid_ints
         |> list.map(fn(tuple) {
           let #(input, output) = tuple
           let output_string = output |> int.to_string
@@ -28,23 +28,23 @@ pub fn coerce_into_valid_number_string_tests() {
     describe(
       "should_not_coerce",
       [
-        test_data.int_should_not_coerce_assortment,
-        test_data.int_should_not_coerce_invalid_underscore
+        test_data.invalid_int_assortment,
+        test_data.invalid_underscore_position_ints
           |> list.map(fn(tuple) {
             let #(input, index) = tuple
             #(input, InvalidUnderscorePosition(index))
           }),
-        test_data.int_should_not_coerce_invalid_character
+        test_data.invalid_character_ints
           |> list.map(fn(tuple) {
             let #(input, invalid_character, index) = tuple
             #(input, InvalidCharacter(invalid_character, index))
           }),
-        test_data.int_should_not_coerce_invalid_sign
+        test_data.invalid_sign_position_ints
           |> list.map(fn(tuple) {
             let #(input, invalid_sign, index) = tuple
             #(input, InvalidSignPosition(invalid_sign, index))
           }),
-        test_data.int_should_not_coerce_decimal_position
+        test_data.invalid_decimal_position_ints
           |> list.map(fn(tuple) {
             let #(input, index) = tuple
             #(input, InvalidDecimalPosition(index))

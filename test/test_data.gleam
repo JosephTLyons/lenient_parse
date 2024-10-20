@@ -4,11 +4,9 @@ import parse_error.{
   InvalidUnderscorePosition, WhitespaceOnlyString,
 }
 
-// TODO - better list and function names
-
 // ---- float should coerce
 
-pub const float_should_coerce = [
+pub const valid_floats = [
   #("1.001", 1.001), #("1.00", 1.0), #("1.0", 1.0), #("0.1", 0.1),
   #("+1.0", 1.0), #("-1.0", -1.0), #("+123.321", 123.321),
   #("-123.321", -123.321), #("1", 1.0), #("1.", 1.0), #(".1", 0.1),
@@ -16,13 +14,13 @@ pub const float_should_coerce = [
   #("1000.000_000", 1000.0), #(" 1 ", 1.0), #(" 1.0 ", 1.0), #(" 1000 ", 1000.0),
 ]
 
-pub fn float_should_coerce_strings() -> List(String) {
-  float_should_coerce |> list.map(fn(a) { a.0 })
+pub fn valid_float_strings() -> List(String) {
+  valid_floats |> list.map(fn(a) { a.0 })
 }
 
 // ---- float should not coerce
 
-pub const float_should_not_coerce_assortment = [
+pub const invalid_float_assortment = [
   #("", EmptyString), #(" ", WhitespaceOnlyString),
   #("\t", WhitespaceOnlyString), #("\n", WhitespaceOnlyString),
   #("\r", WhitespaceOnlyString), #("\f", WhitespaceOnlyString),
@@ -34,35 +32,35 @@ pub const float_should_not_coerce_assortment = [
   #("abc", InvalidCharacter("a", 0)),
 ]
 
-pub const float_should_not_coerce_invalid_underscore = [
+pub const invalid_underscore_floats = [
   #("1_.000", 1), #("1._000", 2), #("_1000.0", 0), #("1000.0_", 6),
   #("1000._0", 5), #("1000_.0", 4), #("1000_.", 4),
 ]
 
-pub const float_should_not_coerce_invalid_character = [#("100.00c01", "c", 6)]
+pub const invalid_character_floats = [#("100.00c01", "c", 6)]
 
-pub fn float_should_not_coerce_strings() -> List(String) {
-  let a = float_should_not_coerce_assortment |> list.map(fn(a) { a.0 })
-  let b = float_should_not_coerce_invalid_underscore |> list.map(fn(a) { a.0 })
-  let c = float_should_not_coerce_invalid_character |> list.map(fn(a) { a.0 })
+pub fn invalid_float_strings() -> List(String) {
+  let a = invalid_float_assortment |> list.map(fn(a) { a.0 })
+  let b = invalid_underscore_floats |> list.map(fn(a) { a.0 })
+  let c = invalid_character_floats |> list.map(fn(a) { a.0 })
   [a, b, c] |> list.flatten
 }
 
 // ---- int should coerce
 
-pub const int_should_coerce = [
+pub const valid_ints = [
   #("1", 1), #("+123", 123), #(" +123 ", 123), #(" -123 ", -123), #("0123", 123),
   #(" 0123", 123), #("-123", -123), #("1_000", 1000), #("1_000_000", 1_000_000),
   #(" 1 ", 1),
 ]
 
-pub fn int_should_coerce_strings() -> List(String) {
-  int_should_coerce |> list.map(fn(a) { a.0 })
+pub fn valid_int_strings() -> List(String) {
+  valid_ints |> list.map(fn(a) { a.0 })
 }
 
 // ---- int should not coerce
 
-pub const int_should_not_coerce_assortment = [
+pub const invalid_int_assortment = [
   #("", EmptyString), #(" ", WhitespaceOnlyString),
   #("\t", WhitespaceOnlyString), #("\n", WhitespaceOnlyString),
   #("\r", WhitespaceOnlyString), #("\f", WhitespaceOnlyString),
@@ -72,29 +70,29 @@ pub const int_should_not_coerce_assortment = [
   #("abc", InvalidCharacter("a", 0)),
 ]
 
-pub const int_should_not_coerce_invalid_underscore = [
+pub const invalid_underscore_position_ints = [
   #("_", 0), #("_1000", 0), #("1000_", 4), #(" _1000", 1), #("1000_ ", 4),
   #("+_1000", 1), #("-_1000", 1), #("1__000", 2),
 ]
 
-pub const int_should_not_coerce_invalid_character = [
+pub const invalid_character_ints = [
   #("a", "a", 0), #("1b1", "b", 1), #("+ 1", " ", 1), #("1 1", " ", 1),
   #(" 12 34 ", " ", 3),
 ]
 
-pub const int_should_not_coerce_invalid_sign = [
+pub const invalid_sign_position_ints = [
   #("1+", "+", 1), #("1-", "-", 1), #("1+1", "+", 1), #("1-1", "-", 1),
 ]
 
-pub const int_should_not_coerce_decimal_position = [
+pub const invalid_decimal_position_ints = [
   #(".", 0), #("..", 1), #("0.0.", 3), #(".0.0", 2),
 ]
 
 pub fn int_should_not_coerce_strings() -> List(String) {
-  let a = int_should_not_coerce_assortment |> list.map(fn(a) { a.0 })
-  let b = int_should_not_coerce_invalid_underscore |> list.map(fn(a) { a.0 })
-  let c = int_should_not_coerce_invalid_character |> list.map(fn(a) { a.0 })
-  let d = int_should_not_coerce_invalid_sign |> list.map(fn(a) { a.0 })
-  let e = int_should_not_coerce_decimal_position |> list.map(fn(a) { a.0 })
+  let a = invalid_int_assortment |> list.map(fn(a) { a.0 })
+  let b = invalid_underscore_position_ints |> list.map(fn(a) { a.0 })
+  let c = invalid_character_ints |> list.map(fn(a) { a.0 })
+  let d = invalid_sign_position_ints |> list.map(fn(a) { a.0 })
+  let e = invalid_decimal_position_ints |> list.map(fn(a) { a.0 })
   [a, b, c, d, e] |> list.flatten
 }
