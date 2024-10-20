@@ -91,9 +91,10 @@ fn do_coerce_into_valid_number_string(
       }
 
       let tracker = state.tracker |> whitespace_block_tracker.mark(first)
+      let tracker_state = tracker |> whitespace_block_tracker.state()
 
       case state.previous {
-        Some(previous) if tracker == 0b101 -> {
+        Some(previous) if tracker_state == 0b101 -> {
           let previous = previous |> tokenizer.to_result |> result.unwrap_both
           Error(InvalidCharacter(previous, state.index - 1))
         }
