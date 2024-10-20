@@ -44,3 +44,7 @@ pub fn main() {
   // Ok(1000000)
 }
 ```
+
+## Developer Setup
+
+To run the tests for this package, you'll need to [install `uv`](https://docs.astral.sh/uv/getting-started/installation/).
