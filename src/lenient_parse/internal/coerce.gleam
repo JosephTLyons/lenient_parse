@@ -4,6 +4,9 @@ import gleam/string
 import lenient_parse/internal/tokenizer.{
   type Token, DecimalPoint, Digit, Sign, Underscore, Whitespace,
 }
+import lenient_parse/internal/whitespace_block_tracker.{
+  type WhitespaceBlockTracker,
+}
 import parse_error.{
   type ParseError, EmptyString, InvalidCharacter, InvalidDecimalPosition,
   InvalidSignPosition, InvalidUnderscorePosition, WhitespaceOnlyString,
@@ -15,6 +18,7 @@ pub type ParseState {
     index: Int,
     previous: Option(Token),
     text_length: Int,
+    tracker: WhitespaceBlockTracker,
     seen_decimal: Bool,
     seen_digit: Bool,
     acc: String,
@@ -29,6 +33,7 @@ pub fn coerce_into_valid_number_string(
     index: 0,
     previous: None,
     text_length: text |> string.length,
+    tracker: whitespace_block_tracker.new(),
     seen_decimal: False,
     seen_digit: False,
     acc: "",
@@ -84,15 +89,26 @@ fn do_coerce_into_valid_number_string(
         }
       }
 
-      use state <- result.try(parse_result)
+      let tracker = state.tracker |> whitespace_block_tracker.mark(first)
 
-      State(
-        ..state,
-        tokens: rest,
-        previous: Some(first),
-        index: state.index + 1,
-      )
-      |> do_coerce_into_valid_number_string
+      case state.previous {
+        Some(previous) if tracker == 0b101 -> {
+          let previous = previous |> tokenizer.to_result |> result.unwrap_both
+          Error(InvalidCharacter(previous, state.index - 1))
+        }
+        _ -> {
+          use state <- result.try(parse_result)
+
+          State(
+            ..state,
+            tokens: rest,
+            previous: Some(first),
+            index: state.index + 1,
+            tracker: tracker,
+          )
+          |> do_coerce_into_valid_number_string
+        }
+      }
     }
   }
 }
