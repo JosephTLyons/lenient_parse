@@ -68,7 +68,13 @@ pub fn coerce_into_valid_number_string_tests() {
             let #(input, index) = tuple
             #(input, InvalidUnderscorePosition(index))
           }),
-        [#("a", "a", 0), #("1b1", "b", 1), #("+ 1", " ", 1), #("1 1", " ", 1)]
+        [
+          #("a", "a", 0),
+          #("1b1", "b", 1),
+          #("+ 1", " ", 1),
+          #("1 1", " ", 1),
+          #(" 12 34 ", " ", 3),
+        ]
           |> list.map(fn(tuple) {
             let #(input, invalid_character, index) = tuple
             #(input, InvalidCharacter(invalid_character, index))
