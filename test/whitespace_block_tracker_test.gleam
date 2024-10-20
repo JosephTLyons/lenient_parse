@@ -5,8 +5,6 @@ import lenient_parse/internal/whitespace_block_tracker.{
 }
 import startest/expect
 
-// TODO: Convert to describe-style data-driven tests
-
 pub fn whitespace_block_tracker_test() {
   "        "
   |> build_tracker

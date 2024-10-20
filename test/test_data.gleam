@@ -4,10 +4,9 @@ import parse_error.{
   InvalidUnderscorePosition, WhitespaceOnlyString,
 }
 
-// ---- float should coerce
+// TODO - better list and function names
 
-// TODO - better names
-// TODO -
+// ---- float should coerce
 
 pub const float_should_coerce = [
   #("1.001", 1.001), #("1.00", 1.0), #("1.0", 1.0), #("0.1", 0.1),

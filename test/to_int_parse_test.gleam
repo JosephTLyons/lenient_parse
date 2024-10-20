@@ -6,10 +6,9 @@ import parse_error.{
   InvalidCharacter, InvalidDecimalPosition, InvalidSignPosition,
   InvalidUnderscorePosition,
 }
-import test_data
-
 import startest.{describe, it}
 import startest/expect
+import test_data
 
 pub fn coerce_into_valid_number_string_tests() {
   describe("int_test", [

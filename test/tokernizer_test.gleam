@@ -6,8 +6,6 @@ import lenient_parse/internal/tokenizer.{
 }
 import startest/expect
 
-// TODO: Convert to describe-style data-driven tests
-
 pub fn tokenize_number_string_test() {
   " \t\n\r\f+-0123456789._abc"
   |> tokenize_number_string
