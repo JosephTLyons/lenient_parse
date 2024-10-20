@@ -20,6 +20,7 @@ pub type ParseState {
     previous: Option(Token),
     text_length: Int,
     tracker: WhitespaceBlockTracker,
+    allow_float: Bool,
     seen_decimal: Bool,
     seen_digit: Bool,
     acc: String,
@@ -28,6 +29,7 @@ pub type ParseState {
 
 pub fn coerce_into_valid_number_string(
   text: String,
+  allow_float: Bool,
 ) -> Result(String, ParseError) {
   State(
     tokens: text |> tokenizer.tokenize_number_string,
@@ -35,6 +37,7 @@ pub fn coerce_into_valid_number_string(
     previous: None,
     text_length: text |> string.length,
     tracker: whitespace_block_tracker.new(),
+    allow_float: allow_float,
     seen_decimal: False,
     seen_digit: False,
     acc: "",
@@ -72,6 +75,8 @@ fn do_coerce_into_valid_number_string(
           Error(InvalidUnderscorePosition(state.index - 1))
         Underscore -> Ok(state)
         DecimalPoint if state.text_length == 1 || state.seen_decimal ->
+          Error(InvalidDecimalPosition(state.index))
+        DecimalPoint if !state.allow_float ->
           Error(InvalidDecimalPosition(state.index))
         DecimalPoint if at_beginning ->
           Ok(State(..state, seen_decimal: True, acc: "0" <> "." <> state.acc))

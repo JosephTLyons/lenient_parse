@@ -1,6 +1,6 @@
 import gleam/list
 import parse_error.{
-  EmptyString, GleamIntParseError, InvalidCharacter, InvalidDecimalPosition,
+  EmptyString, InvalidCharacter, InvalidDecimalPosition,
   InvalidUnderscorePosition, WhitespaceOnlyString,
 }
 
@@ -65,8 +65,9 @@ pub const invalid_int_assortment = [
   #("\t", WhitespaceOnlyString), #("\n", WhitespaceOnlyString),
   #("\r", WhitespaceOnlyString), #("\f", WhitespaceOnlyString),
   #(" \t\n\r\f ", WhitespaceOnlyString),
-  #("1_000__000", InvalidUnderscorePosition(6)), #("1.", GleamIntParseError),
-  #("1.0", GleamIntParseError), #("", EmptyString), #(" ", WhitespaceOnlyString),
+  #("1_000__000", InvalidUnderscorePosition(6)),
+  #("1.", InvalidDecimalPosition(1)), #("1.0", InvalidDecimalPosition(1)),
+  #("", EmptyString), #(" ", WhitespaceOnlyString),
   #("abc", InvalidCharacter("a", 0)),
 ]
 
@@ -85,7 +86,7 @@ pub const invalid_sign_position_ints = [
 ]
 
 pub const invalid_decimal_position_ints = [
-  #(".", 0), #("..", 1), #("0.0.", 3), #(".0.0", 2),
+  #(".", 0), #("..", 0), #("0.0.", 1), #(".0.0", 0),
 ]
 
 pub fn int_should_not_coerce_strings() -> List(String) {
