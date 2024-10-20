@@ -47,12 +47,6 @@ pub type ParseError {
   /// This indicates that the string couldn't be converted to an integer even
   /// with more permissive rules.
   GleamIntParseError
-
-  /// Represents a Nil value used exclusively for testing purposes.
-  ///
-  /// This variant is never returned by the parser and should be ignored in
-  /// normal operation.
-  Nil
 }
 
 @internal
@@ -73,7 +67,5 @@ pub fn to_string(error: ParseError) -> String {
       "invalid decimal at position: " <> index |> int.to_string
     InvalidSignPosition(sign, index) ->
       "invalid sign \"" <> sign <> "\" at position: " <> index |> int.to_string
-
-    Nil -> "nil"
   }
 }

@@ -1,29 +1,34 @@
+import gleam/list
 import gleam/result
-import lenient_parse/internal/parse
-import parse_error.{type ParseError}
 import shellout
+import startest/expect
+import test_data
 
-pub fn to_float(text: String) -> Result(Float, ParseError) {
-  text
-  |> parse.to_float(do_to_float)
+pub fn to_float_python_test() {
+  test_data.float_should_coerce_strings()
+  |> list.each(fn(text) { text |> to_float |> expect.to_be_ok })
+
+  test_data.float_should_not_coerce_strings()
+  |> list.each(fn(text) { text |> to_float |> expect.to_be_error })
 }
 
-pub fn to_int(text: String) -> Result(Int, ParseError) {
-  text
-  |> parse.to_int(do_to_int)
+pub fn to_int_python_test() {
+  test_data.int_should_coerce_strings()
+  |> list.each(fn(text) { text |> to_float |> expect.to_be_ok })
+
+  test_data.int_should_not_coerce_strings()
+  |> list.each(fn(text) { text |> to_float |> expect.to_be_error })
 }
 
-fn do_to_float(text: String) -> Result(String, ParseError) {
-  text
-  |> coerce("./test/python/parse_float.py")
+pub fn to_float(text: String) -> Result(Nil, Nil) {
+  text |> coerce("./test/python/parse_float.py")
 }
 
-fn do_to_int(text: String) -> Result(String, ParseError) {
-  text
-  |> coerce("./test/python/parse_int.py")
+pub fn to_int(text: String) -> Result(Nil, Nil) {
+  text |> coerce("./test/python/parse_int.py")
 }
 
-fn coerce(text: String, program_path: String) -> Result(String, ParseError) {
+fn coerce(text: String, program_path: String) -> Result(Nil, Nil) {
   shellout.command(
     run: "uv",
     with: [
@@ -38,5 +43,6 @@ fn coerce(text: String, program_path: String) -> Result(String, ParseError) {
     in: ".",
     opt: [],
   )
-  |> result.replace_error(parse_error.Nil)
+  |> result.replace(Nil)
+  |> result.replace_error(Nil)
 }
