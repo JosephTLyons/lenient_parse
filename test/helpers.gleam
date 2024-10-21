@@ -14,6 +14,7 @@ fn do_to_printable_text(characters: List(String), acc: String) -> String {
         "\n" -> "\\n"
         "\r" -> "\\r"
         "\f" -> "\\f"
+        "\r\n" -> "\\f"
         _ -> first
       }
       do_to_printable_text(rest, acc <> printable)

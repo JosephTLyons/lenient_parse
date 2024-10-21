@@ -1,5 +1,6 @@
 import gleam/int
 import gleam/list
+import helpers
 import lenient_parse/internal/tokenizer
 import lenient_parse/internal/whitespace_block_tracker
 import startest.{describe, it}
@@ -16,8 +17,9 @@ pub fn whitespace_block_tracker_tests() {
     ]
       |> list.map(fn(tuple) {
         let #(input, output) = tuple
+        let printable_text = input |> helpers.to_printable_text
         let output_string = output |> int.to_base2
-        use <- it("\"" <> input <> "\" -> 0b" <> output_string)
+        use <- it("\"" <> printable_text <> "\" -> 0b" <> output_string)
 
         input
         |> tokenizer.tokenize_number_string
