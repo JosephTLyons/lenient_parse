@@ -4,8 +4,6 @@ import parse_error.{
   InvalidSignPosition, InvalidUnderscorePosition, WhitespaceOnlyString,
 }
 
-// ---- float should coerce
-
 pub type FloatTestData {
   FloatTestData(
     input: String,
@@ -68,8 +66,6 @@ const valid_float_data = [
     python_output: Ok("1000.0"),
   ),
 ]
-
-// ---- float should not coerce
 
 // TODO - sort these out into invalid catogories and remove this one
 const invalid_float_assortment_data = [
@@ -201,8 +197,6 @@ pub fn float_data() -> List(FloatTestData) {
   |> list.flatten
 }
 
-// ---- int should coerce
-
 const valid_int_data = [
   IntegerTestData(input: "1", output: Ok(1), python_output: Ok("1")),
   IntegerTestData(input: "+123", output: Ok(123), python_output: Ok("123")),
@@ -218,8 +212,6 @@ const valid_int_data = [
     python_output: Ok("1000000"),
   ), IntegerTestData(input: " 1 ", output: Ok(1), python_output: Ok("1")),
 ]
-
-// ---- int should not coerce
 
 // TODO - sort these out into invalid catogories and remove this one
 const invalid_int_assortment_data = [
