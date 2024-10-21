@@ -1,7 +1,7 @@
 import gleam/float
 import gleam/int
 import gleam/result
-import parse_error.{type ParseError, GleamFloatParseError, GleamIntParseError}
+import parse_error.{type ParseError, FailureToParseFloat, FailureToParseInt}
 
 pub fn to_float(
   text: String,
@@ -9,13 +9,13 @@ pub fn to_float(
 ) -> Result(Float, ParseError) {
   let text = text |> coerce_strategy
   use text <- result.try(text)
-  let res = text |> float.parse |> result.replace_error(GleamFloatParseError)
+  let res = text |> float.parse |> result.replace_error(FailureToParseFloat)
   use <- result.lazy_or(res)
 
   text
   |> int.parse
   |> result.map(int.to_float)
-  |> result.replace_error(GleamIntParseError)
+  |> result.replace_error(FailureToParseInt)
 }
 
 pub fn to_int(
@@ -23,5 +23,5 @@ pub fn to_int(
   coerce_strategy: fn(String) -> Result(String, ParseError),
 ) -> Result(Int, ParseError) {
   use text <- result.try(text |> coerce_strategy)
-  text |> int.parse |> result.replace_error(GleamIntParseError)
+  text |> int.parse |> result.replace_error(FailureToParseInt)
 }
