@@ -34,38 +34,34 @@ pub type ParseError {
   /// - `index`: The position of the invalid character in the input string.
   InvalidCharacter(character: String, index: Int)
 
-  /// Represents an error when Gleam's `float.parse` fails after custom parsing
-  /// and coercion.
-  ///
-  /// This indicates that the string couldn't be converted to a float even with
-  /// more permissive rules.
-  GleamFloatParseError
+  /// This is a fallback error that occurs when `lenient_parse` fails to coerce
+  /// the input string into a form that Gleam's `float.parse` can handle. This
+  /// should be seen as a bug.
+  FailureToParseFloat
 
-  /// Represents an error when Gleam's `int.parse` fails after custom parsing
-  /// and coercion.
-  ///
-  /// This indicates that the string couldn't be converted to an integer even
-  /// with more permissive rules.
-  GleamIntParseError
+  /// This is a fallback error that occurs when `lenient_parse` fails to coerce
+  /// the input string into a form that Gleam's `int.parse` can handle. This
+  /// should be seen as a bug.
+  FailureToParseInt
 }
 
 @internal
 pub fn to_string(error: ParseError) -> String {
   case error {
-    GleamIntParseError -> "gleam integer parse error"
+    EmptyString -> "empty string"
+    WhitespaceOnlyString -> "whitespace only string"
+    InvalidUnderscorePosition(index) ->
+      "invalid underscore at position: " <> index |> int.to_string
+    InvalidDecimalPosition(index) ->
+      "invalid decimal at position: " <> index |> int.to_string
+    InvalidSignPosition(sign, index) ->
+      "invalid sign \"" <> sign <> "\" at position: " <> index |> int.to_string
     InvalidCharacter(character, index) ->
       "invalid character \""
       <> character
       <> "\" at index: "
       <> index |> int.to_string
-    InvalidUnderscorePosition(index) ->
-      "invalid underscore at position: " <> index |> int.to_string
-    EmptyString -> "empty string"
-    WhitespaceOnlyString -> "whitespace only string"
-    GleamFloatParseError -> "gleam float parse error"
-    InvalidDecimalPosition(index) ->
-      "invalid decimal at position: " <> index |> int.to_string
-    InvalidSignPosition(sign, index) ->
-      "invalid sign \"" <> sign <> "\" at position: " <> index |> int.to_string
+    FailureToParseFloat -> "failure to parse float"
+    FailureToParseInt -> "failure to parse int"
   }
 }
