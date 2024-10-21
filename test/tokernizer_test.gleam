@@ -42,7 +42,7 @@ pub fn is_digit_test() {
 
   "abc"
   |> tokenize_number_string
-  |> list.each(fn(token) { token |> tokenizer.to_result |> expect.to_be_error })
+  |> list.each(fn(token) { token |> tokenizer.is_digit |> expect.to_be_false })
 }
 
 pub fn to_result_test() {
