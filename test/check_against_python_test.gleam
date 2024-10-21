@@ -5,46 +5,76 @@ import shared_test_data
 import startest.{describe, it}
 import startest/expect
 
+// TODO: Refactor body and panic message
+// TODO: Panic message should explain the issue
 pub fn check_against_python_tests() {
   describe("check_against_python_tests", [
     describe(
-      "expect_float_to_parse",
-      shared_test_data.valid_float_strings()
-        |> list.map(fn(input) {
-          let printable_text = input |> helpers.to_printable_text
-          use <- it("\"" <> printable_text <> "\"")
+      "python_float_test",
+      shared_test_data.float_data()
+        |> list.map(fn(test_data) {
+          let input = test_data.input
+          let input_printable_text = input |> helpers.to_printable_text
+          let output = test_data.output
+          let python_output = test_data.python_output
 
-          input |> python_parse.to_float |> expect.to_be_ok
+          let message = case output, python_output {
+            Ok(_), Ok(python_output) -> {
+              "should_coerce: \""
+              <> input_printable_text
+              <> "\" -> \""
+              <> python_output
+              <> "\""
+            }
+            Error(_), Error(_) -> {
+              "should_not_coerce: \""
+              <> input_printable_text
+              <> "\" -> \"Error\""
+            }
+            _, _ -> {
+              panic as "Invalid test data configuration - our coerce method and python's coerces method should both succeed or both fail for the same input."
+            }
+          }
+
+          use <- it(message)
+
+          input
+          |> python_parse.to_float
+          |> expect.to_equal(python_output)
         }),
     ),
     describe(
-      "expect_float_to_not_parse",
-      shared_test_data.invalid_float_strings()
-        |> list.map(fn(input) {
-          let printable_text = input |> helpers.to_printable_text
-          use <- it("\"" <> printable_text <> "\"")
+      "python_int_test",
+      shared_test_data.int_data()
+        |> list.map(fn(test_data) {
+          let input = test_data.input
+          let input_printable_text = input |> helpers.to_printable_text
+          let output = test_data.output
+          let python_output = test_data.python_output
 
-          input |> python_parse.to_float |> expect.to_be_error
-        }),
-    ),
-    describe(
-      "expect_int_to_parse",
-      shared_test_data.valid_int_strings()
-        |> list.map(fn(input) {
-          let printable_text = input |> helpers.to_printable_text
-          use <- it("\"" <> printable_text <> "\"")
+          let message = case output, python_output {
+            Ok(_), Ok(python_output) -> {
+              "should_coerce: \""
+              <> input_printable_text
+              <> "\" -> \""
+              <> python_output
+              <> "\""
+            }
+            Error(_), Error(_) -> {
+              "should_not_coerce: \""
+              <> input_printable_text
+              <> "\" -> \"Error\""
+            }
+            _, _ -> {
+              panic as "Invalid test data configuration - our coerce method and python's coerces method should both succeed or both fail for the same input."
+            }
+          }
 
-          input |> python_parse.to_int |> expect.to_be_ok
-        }),
-    ),
-    describe(
-      "expect_int_to_not_parse",
-      shared_test_data.invalid_int_strings()
-        |> list.map(fn(input) {
-          let printable_text = input |> helpers.to_printable_text
-          use <- it("\"" <> printable_text <> "\"")
+          use <- it(message)
 
-          input |> python_parse.to_int |> expect.to_be_error
+          input
+          |> python_parse.to_int
+          |> expect.to_equal(python_output)
         }),
     ),
   ])

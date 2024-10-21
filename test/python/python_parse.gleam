@@ -1,15 +1,15 @@
 import gleam/result
 import shellout
 
-pub fn to_float(text: String) -> Result(Nil, Nil) {
+pub fn to_float(text: String) -> Result(String, Nil) {
   text |> coerce("./test/python/parse_float.py")
 }
 
-pub fn to_int(text: String) -> Result(Nil, Nil) {
+pub fn to_int(text: String) -> Result(String, Nil) {
   text |> coerce("./test/python/parse_int.py")
 }
 
-fn coerce(text: String, program_path: String) -> Result(Nil, Nil) {
+fn coerce(text: String, program_path: String) -> Result(String, Nil) {
   shellout.command(
     run: "uv",
     with: [
@@ -24,6 +24,5 @@ fn coerce(text: String, program_path: String) -> Result(Nil, Nil) {
     in: ".",
     opt: [],
   )
-  |> result.replace(Nil)
   |> result.replace_error(Nil)
 }

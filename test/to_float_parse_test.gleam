@@ -2,52 +2,45 @@ import gleam/float
 import gleam/list
 import helpers
 import lenient_parse
-import parse_error.{InvalidCharacter, InvalidUnderscorePosition}
+import parse_error
 import shared_test_data
 import startest.{describe, it}
 import startest/expect
 
+// TODO: Refactor body and panic message
+// TODO: Panic message should explain the issue
 pub fn coerce_into_valid_number_string_tests() {
-  describe("float_test", [
-    describe(
-      "should_coerce",
-      shared_test_data.valid_floats
-        |> list.map(fn(tuple) {
-          let #(input, output) = tuple
-          let output_string = output |> float.to_string
-          use <- it("\"" <> input <> "\" -> " <> output_string)
+  describe(
+    "float_test",
+    shared_test_data.float_data()
+      |> list.map(fn(test_data) {
+        let input = test_data.input
+        let input_printable_text = input |> helpers.to_printable_text
+        let output = test_data.output
 
-          input
-          |> lenient_parse.to_float
-          |> expect.to_equal(Ok(output))
-        }),
-    ),
-    describe(
-      "should_not_coerce",
-      [
-        shared_test_data.invalid_float_assortment,
-        shared_test_data.invalid_underscore_position_floats
-          |> list.map(fn(tuple) {
-            let #(input, index) = tuple
-            #(input, InvalidUnderscorePosition(index))
-          }),
-        shared_test_data.invalid_character_position_floats
-          |> list.map(fn(tuple) {
-            let #(input, invalid_character, index) = tuple
-            #(input, InvalidCharacter(invalid_character, index))
-          }),
-      ]
-        |> list.flatten
-        |> list.map(fn(tuple) {
-          let #(input, error) = tuple
-          let printable_text = input |> helpers.to_printable_text
-          let error_text = error |> parse_error.to_string
-          use <- it("\"" <> printable_text <> "\" -> " <> error_text)
+        let message = case output {
+          Ok(output) -> {
+            "should_coerce: \""
+            <> input_printable_text
+            <> "\" -> \""
+            <> output |> float.to_string
+            <> "\""
+          }
+          Error(error) -> {
+            let error_string = error |> parse_error.to_string
+            "should_not_coerce: \""
+            <> input_printable_text
+            <> "\" -> \""
+            <> error_string
+            <> "\""
+          }
+        }
 
-          input
-          |> lenient_parse.to_float
-          |> expect.to_equal(Error(error))
-        }),
-    ),
-  ])
+        use <- it(message)
+
+        input
+        |> lenient_parse.to_float
+        |> expect.to_equal(output)
+      }),
+  )
 }
