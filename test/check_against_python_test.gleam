@@ -1,12 +1,14 @@
+import gleam/float
+import gleam/int
 import gleam/list
 import helpers
+import parse_error
 import python/python_parse
 import shared_test_data
 import startest.{describe, it}
 import startest/expect
 
-// TODO: Refactor body and panic message
-// TODO: Panic message should explain the issue
+// TODO: Refactor body
 pub fn check_against_python_tests() {
   describe("check_against_python_tests", [
     describe(
@@ -31,8 +33,19 @@ pub fn check_against_python_tests() {
               <> input_printable_text
               <> "\" -> \"Error\""
             }
-            _, _ -> {
-              panic as "Invalid test data configuration - our coerce method and python's coerces method should both succeed or both fail for the same input."
+            Ok(output), Error(_) -> {
+              panic as form_panic_message(
+                input_printable_text,
+                output |> float.to_string,
+                "Error",
+              )
+            }
+            Error(output), Ok(python_output) -> {
+              panic as form_panic_message(
+                input_printable_text,
+                output |> parse_error.to_string,
+                python_output,
+              )
             }
           }
 
@@ -65,8 +78,19 @@ pub fn check_against_python_tests() {
               <> input_printable_text
               <> "\" -> \"Error\""
             }
-            _, _ -> {
-              panic as "Invalid test data configuration - our coerce method and python's coerces method should both succeed or both fail for the same input."
+            Ok(output), Error(_) -> {
+              panic as form_panic_message(
+                input_printable_text,
+                output |> int.to_string,
+                "Error",
+              )
+            }
+            Error(output), Ok(python_output) -> {
+              panic as form_panic_message(
+                input_printable_text,
+                output |> parse_error.to_string,
+                python_output,
+              )
             }
           }
 
@@ -78,4 +102,20 @@ pub fn check_against_python_tests() {
         }),
     ),
   ])
+}
+
+fn form_panic_message(
+  input: String,
+  output: String,
+  python_output: String,
+) -> String {
+  "Invalid test data configuration."
+  <> " Test data for both our's and Python's coerce methods should both expect"
+  <> " to either succeed or fail for the same input.\n"
+  <> "Input: "
+  <> input
+  <> ", Output: "
+  <> output
+  <> ", Python Output: "
+  <> python_output
 }
