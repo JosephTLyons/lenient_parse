@@ -1,4 +1,3 @@
-import gleam/list
 import parse_error.{
   type ParseError, EmptyString, InvalidCharacter, InvalidDecimalPosition,
   InvalidSignPosition, InvalidUnderscorePosition, WhitespaceOnlyString,
@@ -20,7 +19,7 @@ pub type IntegerTestData {
   )
 }
 
-const valid_float_data = [
+pub const float_data = [
   FloatTestData(input: "1.001", output: Ok(1.001), python_output: Ok("1.001")),
   FloatTestData(input: "1.00", output: Ok(1.0), python_output: Ok("1.0")),
   FloatTestData(input: "1.0", output: Ok(1.0), python_output: Ok("1.0")),
@@ -65,10 +64,6 @@ const valid_float_data = [
     output: Ok(1000.0),
     python_output: Ok("1000.0"),
   ),
-]
-
-// TODO - sort these out into invalid catogories and remove this one
-const invalid_float_assortment_data = [
   FloatTestData(
     input: "",
     output: Error(EmptyString),
@@ -110,11 +105,6 @@ const invalid_float_assortment_data = [
     python_output: Error(Nil),
   ),
   FloatTestData(
-    input: "1_000__000.0",
-    output: Error(InvalidUnderscorePosition(6)),
-    python_output: Error(Nil),
-  ),
-  FloatTestData(
     input: "..1",
     output: Error(InvalidDecimalPosition(1)),
     python_output: Error(Nil),
@@ -134,14 +124,6 @@ const invalid_float_assortment_data = [
     output: Error(InvalidDecimalPosition(0)),
     python_output: Error(Nil),
   ),
-  FloatTestData(
-    input: "abc",
-    output: Error(InvalidCharacter("a", 0)),
-    python_output: Error(Nil),
-  ),
-]
-
-const invalid_underscore_position_float_data = [
   FloatTestData(
     input: "1_.000",
     output: Error(InvalidUnderscorePosition(1)),
@@ -177,9 +159,16 @@ const invalid_underscore_position_float_data = [
     output: Error(InvalidUnderscorePosition(4)),
     python_output: Error(Nil),
   ),
-]
-
-const invalid_character_position_float_data = [
+  FloatTestData(
+    input: "1_000__000.0",
+    output: Error(InvalidUnderscorePosition(6)),
+    python_output: Error(Nil),
+  ),
+  FloatTestData(
+    input: "abc",
+    output: Error(InvalidCharacter("a", 0)),
+    python_output: Error(Nil),
+  ),
   FloatTestData(
     input: "100.00c01",
     output: Error(InvalidCharacter("c", 6)),
@@ -187,17 +176,7 @@ const invalid_character_position_float_data = [
   ),
 ]
 
-pub fn float_data() -> List(FloatTestData) {
-  [
-    valid_float_data,
-    invalid_float_assortment_data,
-    invalid_underscore_position_float_data,
-    invalid_character_position_float_data,
-  ]
-  |> list.flatten
-}
-
-const valid_int_data = [
+pub const int_data = [
   IntegerTestData(input: "1", output: Ok(1), python_output: Ok("1")),
   IntegerTestData(input: "+123", output: Ok(123), python_output: Ok("123")),
   IntegerTestData(input: " +123 ", output: Ok(123), python_output: Ok("123")),
@@ -211,10 +190,6 @@ const valid_int_data = [
     output: Ok(1_000_000),
     python_output: Ok("1000000"),
   ), IntegerTestData(input: " 1 ", output: Ok(1), python_output: Ok("1")),
-]
-
-// TODO - sort these out into invalid catogories and remove this one
-const invalid_int_assortment_data = [
   IntegerTestData(
     input: "",
     output: Error(EmptyString),
@@ -256,29 +231,6 @@ const invalid_int_assortment_data = [
     python_output: Error(Nil),
   ),
   IntegerTestData(
-    input: "1_000__000",
-    output: Error(InvalidUnderscorePosition(6)),
-    python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "1.",
-    output: Error(InvalidDecimalPosition(1)),
-    python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "1.0",
-    output: Error(InvalidDecimalPosition(1)),
-    python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "abc",
-    output: Error(InvalidCharacter("a", 0)),
-    python_output: Error(Nil),
-  ),
-]
-
-const invalid_underscore_position_int_data = [
-  IntegerTestData(
     input: "_",
     output: Error(InvalidUnderscorePosition(0)),
     python_output: Error(Nil),
@@ -318,9 +270,11 @@ const invalid_underscore_position_int_data = [
     output: Error(InvalidUnderscorePosition(2)),
     python_output: Error(Nil),
   ),
-]
-
-const invalid_character_position_int_data = [
+  IntegerTestData(
+    input: "1_000__000",
+    output: Error(InvalidUnderscorePosition(6)),
+    python_output: Error(Nil),
+  ),
   IntegerTestData(
     input: "a",
     output: Error(InvalidCharacter("a", 0)),
@@ -346,9 +300,11 @@ const invalid_character_position_int_data = [
     output: Error(InvalidCharacter(" ", 3)),
     python_output: Error(Nil),
   ),
-]
-
-const invalid_sign_position_int_data = [
+  IntegerTestData(
+    input: "abc",
+    output: Error(InvalidCharacter("a", 0)),
+    python_output: Error(Nil),
+  ),
   IntegerTestData(
     input: "1+",
     output: Error(InvalidSignPosition("+", 1)),
@@ -369,9 +325,6 @@ const invalid_sign_position_int_data = [
     output: Error(InvalidSignPosition("-", 1)),
     python_output: Error(Nil),
   ),
-]
-
-const invalid_decimal_position_int_data = [
   IntegerTestData(
     input: ".",
     output: Error(InvalidDecimalPosition(0)),
@@ -392,16 +345,14 @@ const invalid_decimal_position_int_data = [
     output: Error(InvalidDecimalPosition(0)),
     python_output: Error(Nil),
   ),
+  IntegerTestData(
+    input: "1.",
+    output: Error(InvalidDecimalPosition(1)),
+    python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "1.0",
+    output: Error(InvalidDecimalPosition(1)),
+    python_output: Error(Nil),
+  ),
 ]
-
-pub fn int_data() -> List(IntegerTestData) {
-  [
-    valid_int_data,
-    invalid_int_assortment_data,
-    invalid_underscore_position_int_data,
-    invalid_character_position_int_data,
-    invalid_sign_position_int_data,
-    invalid_decimal_position_int_data,
-  ]
-  |> list.flatten
-}

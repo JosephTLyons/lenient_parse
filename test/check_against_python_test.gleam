@@ -11,7 +11,7 @@ pub fn check_against_python_tests() {
   describe("check_against_python_tests", [
     describe(
       "python_float_test",
-      shared_test_data.float_data()
+      shared_test_data.float_data
         |> list.map(fn(test_data) {
           let input = test_data.input
           let input_printable_text = input |> helpers.to_printable_text
@@ -45,7 +45,7 @@ pub fn check_against_python_tests() {
     ),
     describe(
       "python_int_test",
-      shared_test_data.int_data()
+      shared_test_data.int_data
         |> list.map(fn(test_data) {
           let input = test_data.input
           let input_printable_text = input |> helpers.to_printable_text

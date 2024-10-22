@@ -12,7 +12,7 @@ import startest/expect
 pub fn coerce_into_valid_number_string_tests() {
   describe(
     "int_test",
-    shared_test_data.int_data()
+    shared_test_data.int_data
       |> list.map(fn(test_data) {
         let input = test_data.input
         let input_printable_text = input |> helpers.to_printable_text
