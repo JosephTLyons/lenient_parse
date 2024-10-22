@@ -1,8 +1,6 @@
 import gleam/int
 import lenient_parse/internal/tokenizer.{type Token, Whitespace}
 
-// TODO: Better name
-
 pub opaque type WhitespaceBlockTracker {
   WhitespaceBlockTracker(state: Int)
 }

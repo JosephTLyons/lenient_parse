@@ -7,7 +7,6 @@ import shared_test_data
 import startest.{describe, it}
 import startest/expect
 
-// TODO: Refactor body
 pub fn coerce_into_valid_number_string_tests() {
   describe(
     "float_test",

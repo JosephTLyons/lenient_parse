@@ -8,7 +8,6 @@ import shared_test_data
 import startest.{describe, it}
 import startest/expect
 
-// TODO: Refactor body
 pub fn check_against_python_tests() {
   describe("check_against_python_tests", [
     describe(
