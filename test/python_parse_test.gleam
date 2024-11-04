@@ -21,14 +21,14 @@ pub fn check_against_python_tests() {
 
           let message = case output, python_output {
             Ok(_), Ok(python_output) -> {
-              "should_coerce: \""
+              "should_parse: \""
               <> input_printable_text
               <> "\" -> \""
               <> python_output
               <> "\""
             }
             Error(_), Error(_) -> {
-              "should_not_coerce: \""
+              "should_not_parse: \""
               <> input_printable_text
               <> "\" -> \"Error\""
             }
@@ -66,14 +66,14 @@ pub fn check_against_python_tests() {
 
           let message = case output, python_output {
             Ok(_), Ok(python_output) -> {
-              "should_coerce: \""
+              "should_parse: \""
               <> input_printable_text
               <> "\" -> \""
               <> python_output
               <> "\""
             }
             Error(_), Error(_) -> {
-              "should_not_coerce: \""
+              "should_not_parse: \""
               <> input_printable_text
               <> "\" -> \"Error\""
             }
@@ -109,7 +109,7 @@ fn form_panic_message(
   python_output: String,
 ) -> String {
   "Invalid test data configuration."
-  <> " Test data for both our's and Python's coerce methods should both expect"
+  <> " Test data for both our's and Python's parse methods should both expect"
   <> " to either succeed or fail for the same input.\n"
   <> "Input: "
   <> input

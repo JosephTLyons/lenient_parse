@@ -2,14 +2,14 @@ import gleam/result
 import shellout
 
 pub fn to_float(text: String) -> Result(String, Nil) {
-  text |> coerce("float")
+  text |> parse("float")
 }
 
 pub fn to_int(text: String) -> Result(String, Nil) {
-  text |> coerce("int")
+  text |> parse("int")
 }
 
-fn coerce(text: String, parse_function_name: String) -> Result(String, Nil) {
+fn parse(text: String, parse_function_name: String) -> Result(String, Nil) {
   shellout.command(
     run: "uv",
     with: [

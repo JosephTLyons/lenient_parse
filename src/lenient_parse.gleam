@@ -1,6 +1,4 @@
-import lenient_parse/internal/coerce.{parse_float, parse_int}
-
-import lenient_parse/internal/parse
+import lenient_parse/internal/parse.{parse_float, parse_int}
 import parse_error.{type ParseError}
 
 /// Converts a string to a float using a more lenient parsing method than gleam's `float.parse()`. It behaves similarly to Python's `float()` built-in function.
