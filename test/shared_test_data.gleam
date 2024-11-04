@@ -1,6 +1,7 @@
 import parse_error.{
   type ParseError, EmptyString, InvalidCharacter, InvalidDecimalPosition,
-  InvalidSignPosition, InvalidUnderscorePosition, WhitespaceOnlyString,
+  InvalidDigitPosition, InvalidSignPosition, InvalidUnderscorePosition,
+  WhitespaceOnlyString,
 }
 
 pub type FloatTestData {
@@ -122,6 +123,11 @@ pub const float_data = [
   FloatTestData(
     input: ".",
     output: Error(InvalidDecimalPosition(0)),
+    python_output: Error(Nil),
+  ),
+  FloatTestData(
+    input: "..",
+    output: Error(InvalidDecimalPosition(1)),
     python_output: Error(Nil),
   ),
   FloatTestData(
@@ -292,12 +298,12 @@ pub const int_data = [
   ),
   IntegerTestData(
     input: "1 1",
-    output: Error(InvalidCharacter(" ", 1)),
+    output: Error(InvalidDigitPosition("1", 2)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: " 12 34 ",
-    output: Error(InvalidCharacter(" ", 3)),
+    output: Error(InvalidDigitPosition("3", 4)),
     python_output: Error(Nil),
   ),
   IntegerTestData(

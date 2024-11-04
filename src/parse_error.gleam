@@ -27,6 +27,13 @@ pub type ParseError {
   /// - `index`: The position of the invalid sign in the input string.
   InvalidSignPosition(character: String, index: Int)
 
+  /// Represents an error when a digit is in an invalid position within
+  /// the number string.
+  ///
+  /// - `character`: The digit character that caused the error as a `String`.
+  /// - `index`: The position of the invalid digit in the input string.
+  InvalidDigitPosition(character: String, index: Int)
+
   /// Represents an error when an invalid character is encountered during
   /// parsing.
   ///
@@ -67,5 +74,10 @@ pub fn to_string(error: ParseError) -> String {
       "invalid decimal at position: " <> index |> int.to_string
     InvalidSignPosition(sign, index) ->
       "invalid sign \"" <> sign <> "\" at position: " <> index |> int.to_string
+    InvalidDigitPosition(digit, index) ->
+      "invalid digit \""
+      <> digit
+      <> "\" at position: "
+      <> index |> int.to_string
   }
 }

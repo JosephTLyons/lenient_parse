@@ -1,6 +1,8 @@
-import lenient_parse/internal/coerce.{
-  coerce_into_float_string, coerce_into_int_string,
-}
+import lenient_parse/internal/coerce.{parse_float, parse_int}
+
+// import lenient_parse/internal/coerce.{
+//   coerce_into_float_string, coerce_into_int_string,
+// }
 import lenient_parse/internal/parse
 import parse_error.{type ParseError}
 
@@ -25,7 +27,7 @@ import parse_error.{type ParseError}
 /// ```
 pub fn to_float(text: String) -> Result(Float, ParseError) {
   text
-  |> parse.to_float(coerce_into_float_string)
+  |> parse.to_float(parse_float)
 }
 
 /// Converts a string to an integer using a more lenient parsing method than gleam's `int.parse()`.
@@ -46,5 +48,5 @@ pub fn to_float(text: String) -> Result(Float, ParseError) {
 /// ```
 pub fn to_int(text: String) -> Result(Int, ParseError) {
   text
-  |> parse.to_int(coerce_into_int_string)
+  |> parse.to_int(parse_int)
 }

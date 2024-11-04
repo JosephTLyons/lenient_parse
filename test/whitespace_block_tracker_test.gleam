@@ -22,7 +22,7 @@ pub fn whitespace_block_tracker_tests() {
         use <- it("\"" <> printable_text <> "\" -> 0b" <> output_string)
 
         input
-        |> tokenizer.tokenize_string
+        |> tokenizer.tokenize
         |> list.fold(whitespace_block_tracker.new(), fn(tracker, token) {
           tracker |> whitespace_block_tracker.mark(token)
         })

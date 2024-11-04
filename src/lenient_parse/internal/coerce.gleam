@@ -1,129 +1,205 @@
+import gleam/bool
+import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import gleam/string
 import lenient_parse/internal/tokenizer.{
-  type Token, DecimalPoint, Digit, Sign, Underscore, Whitespace,
-}
-import lenient_parse/internal/whitespace_block_tracker.{
-  type WhitespaceBlockTracker,
+  type Token, DecimalPoint, Digit, Sign, Underscore, Unknown, Whitespace,
 }
 
 import parse_error.{
   type ParseError, EmptyString, InvalidCharacter, InvalidDecimalPosition,
-  InvalidSignPosition, InvalidUnderscorePosition, WhitespaceOnlyString,
+  InvalidDigitPosition, InvalidSignPosition, InvalidUnderscorePosition,
+  WhitespaceOnlyString,
 }
 
-pub type ParseState {
-  State(
-    tokens: List(Token),
-    index: Int,
-    previous: Option(Token),
-    text_length: Int,
-    tracker: WhitespaceBlockTracker,
-    allow_float: Bool,
-    seen_decimal: Bool,
-    seen_digit: Bool,
-    acc: String,
-  )
-}
+pub fn parse_float(input: String) -> Result(String, ParseError) {
+  let tokens = input |> tokenizer.tokenize
+  let index = 0
+  let empty_string = ""
 
-fn new(text: String, allow_float allow_float: Bool) -> ParseState {
-  State(
-    tokens: text |> tokenizer.tokenize_string,
-    index: 0,
-    previous: None,
-    text_length: text |> string.length,
-    tracker: whitespace_block_tracker.new(),
-    allow_float: allow_float,
-    seen_decimal: False,
-    seen_digit: False,
-    acc: "",
-  )
-}
+  let pre_whitespace_result = parse_whitespace(tokens, empty_string, index)
+  use #(leading_whitespace, tokens, index) <- result.try(pre_whitespace_result)
 
-pub fn coerce_into_float_string(text: String) -> Result(String, ParseError) {
-  text
-  |> new(allow_float: True)
-  |> coerce_into_valid_number_string
-}
+  let sign_result = parse_sign(tokens, index)
+  use #(sign, tokens, index) <- result.try(sign_result)
 
-pub fn coerce_into_int_string(text: String) -> Result(String, ParseError) {
-  text
-  |> new(allow_float: False)
-  |> coerce_into_valid_number_string
-}
+  let digit_pre_decimal = parse_digit(tokens, empty_string, index, index)
+  use #(digit_pre_decimal, tokens, index) <- result.try(digit_pre_decimal)
 
-fn coerce_into_valid_number_string(
-  state: ParseState,
-) -> Result(String, ParseError) {
-  let at_beginning = state.index == 0
-  let acc_is_empty = state.acc |> string.is_empty
+  let decimal_point_result = parse_decimal_point(tokens, index)
+  use #(decimal_specified, tokens, index) <- result.try(decimal_point_result)
 
-  case state.tokens {
-    [] if at_beginning -> Error(EmptyString)
-    [] if acc_is_empty -> Error(WhitespaceOnlyString)
-    [] -> Ok(state.acc)
-    [first, ..rest] -> {
-      let at_end = state.index == state.text_length - 1
-      let seen_digit = state.seen_digit || { first |> tokenizer.is_digit }
-      let previous_is_underscore = state.previous == Some(Underscore)
-      let previous_is_digit =
-        state.previous
-        |> option.map(tokenizer.is_digit)
-        |> option.unwrap(False)
+  let digit_post_decimal = parse_digit(tokens, empty_string, index, index)
+  use #(digit_post_decimal, tokens, index) <- result.try(digit_post_decimal)
 
-      let parse_result = case first {
-        Sign(sign) if seen_digit ->
-          Error(InvalidSignPosition(sign, state.index))
-        Digit(digit) if previous_is_underscore ->
-          Ok(State(..state, acc: state.acc <> digit))
-        Underscore if at_beginning || at_end || !previous_is_digit ->
-          Error(InvalidUnderscorePosition(state.index))
-        _ if previous_is_underscore ->
-          Error(InvalidUnderscorePosition(state.index - 1))
-        Underscore -> Ok(state)
-        DecimalPoint if !state.allow_float ->
-          Error(InvalidDecimalPosition(state.index))
-        DecimalPoint if state.text_length == 1 || state.seen_decimal ->
-          Error(InvalidDecimalPosition(state.index))
-        DecimalPoint if at_beginning ->
-          Ok(State(..state, seen_decimal: True, acc: "0" <> "." <> state.acc))
-        DecimalPoint if at_end ->
-          Ok(State(..state, seen_decimal: True, acc: state.acc <> "." <> "0"))
-        DecimalPoint ->
-          Ok(State(..state, seen_decimal: True, acc: state.acc <> "."))
-        Whitespace(_) -> Ok(state)
-        _ -> {
-          first
-          |> tokenizer.to_result
-          |> result.map(fn(a) {
-            State(..state, seen_digit: seen_digit, acc: state.acc <> a)
-          })
-          |> result.map_error(InvalidCharacter(_, state.index))
-        }
-      }
+  let post_whitespace_result = parse_whitespace(tokens, empty_string, index)
+  use #(_, tokens, index) <- result.try(post_whitespace_result)
 
-      let tracker = state.tracker |> whitespace_block_tracker.mark(first)
-      let tracker_state = tracker |> whitespace_block_tracker.state()
-
-      case state.previous {
-        Some(previous) if tracker_state == 0b101 -> {
-          let previous = previous |> tokenizer.to_result |> result.unwrap_both
-          Error(InvalidCharacter(previous, state.index - 1))
-        }
-        _ -> {
-          use state <- result.try(parse_result)
-
-          State(
-            ..state,
-            tokens: rest,
-            previous: Some(first),
-            index: state.index + 1,
-            tracker: tracker,
+  case tokens |> list.first {
+    Ok(token) -> Error(extraneous_token_error(token, index))
+    _ -> {
+      case digit_pre_decimal, digit_post_decimal {
+        Some(pre), Some(post) -> Ok(sign <> pre <> "." <> post)
+        Some(pre), None -> Ok(sign <> pre <> ".0")
+        None, Some(post) -> Ok(sign <> "0." <> post)
+        _, _ -> {
+          use <- bool.guard(
+            decimal_specified,
+            Error(InvalidDecimalPosition(index - 1)),
           )
-          |> coerce_into_valid_number_string
+
+          case leading_whitespace {
+            Some(_) -> Error(WhitespaceOnlyString)
+            _ -> Error(EmptyString)
+          }
         }
       }
     }
+  }
+}
+
+pub fn parse_int(input: String) -> Result(String, ParseError) {
+  let tokens = input |> tokenizer.tokenize
+  let index = 0
+  let empty_string = ""
+
+  let pre_whitespace_result = parse_whitespace(tokens, empty_string, index)
+  use #(leading_whitespace, tokens, index) <- result.try(pre_whitespace_result)
+
+  let sign_result = parse_sign(tokens, index)
+  use #(sign, tokens, index) <- result.try(sign_result)
+
+  let digit_result = parse_digit(tokens, empty_string, index, index)
+  use #(digit, tokens, index) <- result.try(digit_result)
+
+  let post_whitespace_result = parse_whitespace(tokens, empty_string, index)
+  use #(_, tokens, index) <- result.try(post_whitespace_result)
+
+  case tokens |> list.first {
+    Ok(token) -> Error(extraneous_token_error(token, index))
+    _ -> {
+      case leading_whitespace, digit {
+        Some(_), Some(digit) | None, Some(digit) -> Ok(sign <> digit)
+        Some(_), None -> Error(WhitespaceOnlyString)
+        _, _ -> Error(EmptyString)
+      }
+    }
+  }
+}
+
+fn parse_whitespace(
+  tokens: List(Token),
+  acc: String,
+  index: Int,
+) -> Result(#(Option(String), List(Token), Int), ParseError) {
+  case tokens {
+    [] ->
+      case acc {
+        "" -> Ok(#(None, tokens, index))
+        _ -> Ok(#(Some(acc), tokens, index))
+      }
+    [first, ..rest] -> {
+      case first {
+        Unknown(character) -> Error(InvalidCharacter(character, index))
+        Whitespace(whitespace) ->
+          parse_whitespace(rest, acc <> whitespace, index + 1)
+        _ -> {
+          case acc {
+            "" -> Ok(#(None, tokens, index))
+            _ -> Ok(#(Some(acc), tokens, index))
+          }
+        }
+      }
+    }
+  }
+}
+
+fn parse_sign(
+  tokens: List(Token),
+  index: Int,
+) -> Result(#(String, List(Token), Int), ParseError) {
+  case tokens {
+    [] -> Ok(#("+", tokens, index))
+    [first, ..rest] -> {
+      case first {
+        Unknown(character) -> Error(InvalidCharacter(character, index))
+        Sign(a) -> Ok(#(a, rest, index + 1))
+        _ -> Ok(#("+", tokens, index))
+      }
+    }
+  }
+}
+
+fn parse_decimal_point(
+  tokens: List(Token),
+  index: Int,
+) -> Result(#(Bool, List(Token), Int), ParseError) {
+  case tokens {
+    [] -> Ok(#(False, tokens, index))
+    [first, ..rest] -> {
+      case first {
+        Unknown(character) -> Error(InvalidCharacter(character, index))
+        DecimalPoint -> Ok(#(True, rest, index + 1))
+        _ -> Ok(#(False, rest, index))
+      }
+    }
+  }
+}
+
+fn parse_digit(
+  tokens: List(Token),
+  acc: String,
+  index: Int,
+  beginning_index: Int,
+) -> Result(#(Option(String), List(Token), Int), ParseError) {
+  let at_beginning = index == beginning_index
+
+  case tokens {
+    [] ->
+      case acc {
+        "" -> Ok(#(None, tokens, index))
+        _ -> Ok(#(Some(acc), tokens, index))
+      }
+    [first, ..rest] -> {
+      let lookahead = rest |> list.first
+      let is_end = case lookahead {
+        Ok(Digit(_)) -> False
+        _ -> True
+      }
+      let next_is_underscore = case lookahead {
+        Ok(Underscore) -> True
+        _ -> False
+      }
+
+      case first {
+        Digit(digit) ->
+          parse_digit(rest, acc <> digit, index + 1, beginning_index)
+        Underscore if next_is_underscore ->
+          Error(parse_error.InvalidUnderscorePosition(index + 1))
+        Underscore if at_beginning || is_end ->
+          Error(parse_error.InvalidUnderscorePosition(index))
+        Underscore -> parse_digit(rest, acc, index + 1, beginning_index)
+        Whitespace(whitespace) if at_beginning ->
+          Error(InvalidCharacter(whitespace, index))
+        Unknown(character) -> Error(InvalidCharacter(character, index))
+        _ -> {
+          case acc {
+            "" -> Ok(#(None, tokens, index))
+            _ -> Ok(#(Some(acc), tokens, index))
+          }
+        }
+      }
+    }
+  }
+}
+
+fn extraneous_token_error(token: Token, index) -> ParseError {
+  case token {
+    Digit(digit) -> InvalidDigitPosition(digit, index)
+    Sign(sign) -> InvalidSignPosition(sign, index)
+    Underscore -> InvalidUnderscorePosition(index)
+    Unknown(character) -> InvalidCharacter(character, index)
+    Whitespace(whitespace) -> InvalidCharacter(whitespace, index)
+    DecimalPoint -> InvalidDecimalPosition(index)
   }
 }
