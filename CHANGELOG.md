@@ -3,6 +3,7 @@
 ## v1.3.0 - xxx
 
 Breaking changes:
+    - `GleamIntParseError` and `GleamIntParseErrorReason` have been removed.
     - `InvalidCharacter` has been renamed to `UnknownCharacter`.
     - A new `InvalidDigitPosition` error has been introduced.
 

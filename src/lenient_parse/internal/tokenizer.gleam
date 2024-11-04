@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/list
 import gleam/string
 import parse_error.{
@@ -6,8 +7,8 @@ import parse_error.{
 }
 
 pub type Token {
-  Sign(String)
-  Digit(String)
+  Sign(Bool)
+  Digit(Int)
   Underscore
   DecimalPoint
   Whitespace(String)
@@ -23,9 +24,18 @@ fn do_tokenize(characters: List(String), acc: List(Token)) -> List(Token) {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
       let token = case first {
-        "-" | "+" -> Sign(first)
-        "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ->
-          Digit(first)
+        "-" -> Sign(False)
+        "+" -> Sign(True)
+        "0" -> Digit(0)
+        "1" -> Digit(1)
+        "2" -> Digit(2)
+        "3" -> Digit(3)
+        "4" -> Digit(4)
+        "5" -> Digit(5)
+        "6" -> Digit(6)
+        "7" -> Digit(7)
+        "8" -> Digit(8)
+        "9" -> Digit(9)
         "." -> DecimalPoint
         "_" -> Underscore
         " " | "\n" | "\t" | "\r" | "\f" | "\r\n" -> Whitespace(first)
@@ -39,8 +49,12 @@ fn do_tokenize(characters: List(String), acc: List(Token)) -> List(Token) {
 
 pub fn error_for_token(token: Token, index) -> ParseError {
   case token {
-    Digit(digit) -> InvalidDigitPosition(digit, index)
-    Sign(sign) -> InvalidSignPosition(sign, index)
+    Digit(digit) -> {
+      let digit = digit |> int.to_string
+      InvalidDigitPosition(digit, index)
+    }
+    Sign(True) -> InvalidSignPosition("+", index)
+    Sign(False) -> InvalidSignPosition("-", index)
     Underscore -> InvalidUnderscorePosition(index)
     Unknown(character) -> UnknownCharacter(character, index)
     Whitespace(whitespace) -> UnknownCharacter(whitespace, index)

@@ -1,4 +1,5 @@
 import gleam/bool
+import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
@@ -10,7 +11,7 @@ import parse_error.{
   WhitespaceOnlyString,
 }
 
-pub fn parse_float(input: String) -> Result(String, ParseError) {
+pub fn parse_float(input: String) -> Result(Float, ParseError) {
   let tokens = input |> tokenizer.tokenize
   let index = 0
   let empty_string = ""
@@ -19,28 +20,35 @@ pub fn parse_float(input: String) -> Result(String, ParseError) {
   use #(leading_whitespace, tokens, index) <- result.try(pre_whitespace_result)
 
   let sign_result = parse_sign(tokens, index)
-  use #(sign, tokens, index) <- result.try(sign_result)
+  use #(is_positive, tokens, index) <- result.try(sign_result)
 
-  let digit_pre_decimal = parse_digit(tokens, empty_string, index, index)
-  use #(digit_pre_decimal, tokens, index) <- result.try(digit_pre_decimal)
+  let whole_digit_result = parse_digit(tokens, 0, index, index, 0)
+  use #(whole_digit, _, tokens, index) <- result.try(whole_digit_result)
 
-  let decimal_point_result = parse_decimal_point(tokens, index)
-  use #(decimal_specified, tokens, index) <- result.try(decimal_point_result)
+  let decimal_result = parse_decimal_point(tokens, index)
+  use #(decimal_specified, tokens, index) <- result.try(decimal_result)
 
-  let digit_post_decimal = parse_digit(tokens, empty_string, index, index)
-  use #(digit_post_decimal, tokens, index) <- result.try(digit_post_decimal)
+  let fractional_digit_result = parse_digit(tokens, 0, index, index, 0)
+  use #(fractional_digit, fractional_digit_length, tokens, index) <- result.try(
+    fractional_digit_result,
+  )
 
   let post_whitespace_result = parse_whitespace(tokens, empty_string, index)
   use #(_, tokens, index) <- result.try(post_whitespace_result)
 
   case tokens |> list.first {
-    Ok(token) -> Error(tokenizer.error_for_token(token, index))
+    Ok(token) -> Error(extraneous_token_error(token, index))
     _ -> {
-      case digit_pre_decimal, digit_post_decimal {
-        Some(pre), Some(post) -> Ok(sign <> pre <> "." <> post)
-        Some(pre), None -> Ok(sign <> pre <> ".0")
-        None, Some(post) -> Ok(sign <> "0." <> post)
+      case whole_digit, fractional_digit {
+        Some(whole), Some(fractional) ->
+          Ok(form_float(is_positive, whole, fractional, fractional_digit_length))
+        Some(whole), None ->
+          Ok(form_float(is_positive, whole, 0, fractional_digit_length))
+        None, Some(fractional) ->
+          Ok(form_float(is_positive, 0, fractional, fractional_digit_length))
         _, _ -> {
+          // TODO: This sucks - hardcoded to take care of one specific test case during the rewrite: "."
+          // There is likely a better way to handle this.
           use <- bool.guard(
             decimal_specified,
             Error(InvalidDecimalPosition(index - 1)),
@@ -56,7 +64,7 @@ pub fn parse_float(input: String) -> Result(String, ParseError) {
   }
 }
 
-pub fn parse_int(input: String) -> Result(String, ParseError) {
+pub fn parse_int(input: String) -> Result(Int, ParseError) {
   let tokens = input |> tokenizer.tokenize
   let index = 0
   let empty_string = ""
@@ -65,10 +73,10 @@ pub fn parse_int(input: String) -> Result(String, ParseError) {
   use #(leading_whitespace, tokens, index) <- result.try(pre_whitespace_result)
 
   let sign_result = parse_sign(tokens, index)
-  use #(sign, tokens, index) <- result.try(sign_result)
+  use #(is_positive, tokens, index) <- result.try(sign_result)
 
-  let digit_result = parse_digit(tokens, empty_string, index, index)
-  use #(digit, tokens, index) <- result.try(digit_result)
+  let digit_result = parse_digit(tokens, 0, index, index, 0)
+  use #(digit, _, tokens, index) <- result.try(digit_result)
 
   let post_whitespace_result = parse_whitespace(tokens, empty_string, index)
   use #(_, tokens, index) <- result.try(post_whitespace_result)
@@ -77,7 +85,11 @@ pub fn parse_int(input: String) -> Result(String, ParseError) {
     Ok(token) -> Error(tokenizer.error_for_token(token, index))
     _ -> {
       case leading_whitespace, digit {
-        Some(_), Some(digit) | None, Some(digit) -> Ok(sign <> digit)
+        Some(_), Some(digit) | None, Some(digit) ->
+          case is_positive {
+            True -> Ok(digit)
+            False -> Ok(-digit)
+          }
         Some(_), None -> Error(WhitespaceOnlyString)
         _, _ -> Error(EmptyString)
       }
@@ -115,14 +127,14 @@ fn parse_whitespace(
 fn parse_sign(
   tokens: List(Token),
   index: Int,
-) -> Result(#(String, List(Token), Int), ParseError) {
+) -> Result(#(Bool, List(Token), Int), ParseError) {
   case tokens {
-    [] -> Ok(#("+", tokens, index))
+    [] -> Ok(#(True, tokens, index))
     [first, ..rest] -> {
       case first {
         Unknown(character) -> Error(UnknownCharacter(character, index))
-        Sign(a) -> Ok(#(a, rest, index + 1))
-        _ -> Ok(#("+", tokens, index))
+        Sign(is_positive) -> Ok(#(is_positive, rest, index + 1))
+        _ -> Ok(#(True, tokens, index))
       }
     }
   }
@@ -146,17 +158,18 @@ fn parse_decimal_point(
 
 fn parse_digit(
   tokens: List(Token),
-  acc: String,
+  acc: Int,
   index: Int,
   beginning_index: Int,
-) -> Result(#(Option(String), List(Token), Int), ParseError) {
+  digit_length: Int,
+) -> Result(#(Option(Int), Int, List(Token), Int), ParseError) {
   let at_beginning = index == beginning_index
 
   case tokens {
     [] ->
-      case acc {
-        "" -> Ok(#(None, tokens, index))
-        _ -> Ok(#(Some(acc), tokens, index))
+      case digit_length > 0 {
+        True -> Ok(#(Some(acc), digit_length, tokens, index))
+        False -> Ok(#(None, digit_length, tokens, index))
       }
     [first, ..rest] -> {
       let lookahead = rest |> list.first
@@ -170,23 +183,73 @@ fn parse_digit(
       }
 
       case first {
-        Digit(digit) ->
-          parse_digit(rest, acc <> digit, index + 1, beginning_index)
+        Digit(digit) -> {
+          let acc = acc * 10 + digit
+          parse_digit(rest, acc, index + 1, beginning_index, digit_length + 1)
+        }
         Underscore if next_is_underscore ->
-          Error(parse_error.InvalidUnderscorePosition(index + 1))
+          Error(InvalidUnderscorePosition(index + 1))
         Underscore if at_beginning || is_end ->
-          Error(parse_error.InvalidUnderscorePosition(index))
-        Underscore -> parse_digit(rest, acc, index + 1, beginning_index)
+          Error(InvalidUnderscorePosition(index))
+        Underscore -> {
+          parse_digit(rest, acc, index + 1, beginning_index, digit_length)
+        }
         Whitespace(whitespace) if at_beginning ->
           Error(UnknownCharacter(whitespace, index))
         Unknown(character) -> Error(UnknownCharacter(character, index))
         _ -> {
-          case acc {
-            "" -> Ok(#(None, tokens, index))
-            _ -> Ok(#(Some(acc), tokens, index))
+          case digit_length > 0 {
+            True -> Ok(#(Some(acc), digit_length, tokens, index))
+            False -> Ok(#(None, digit_length, tokens, index))
           }
         }
       }
     }
+  }
+}
+
+// TODO: Move this to some place that makes more sense
+fn extraneous_token_error(token: Token, index) -> ParseError {
+  case token {
+    Digit(digit) -> {
+      let digit = digit |> int.to_string
+      InvalidDigitPosition(digit, index)
+    }
+    Sign(sign) -> {
+      let sign = case sign {
+        True -> "+"
+        False -> "-"
+      }
+      InvalidSignPosition(sign, index)
+    }
+    Underscore -> InvalidUnderscorePosition(index)
+    Unknown(character) -> UnknownCharacter(character, index)
+    Whitespace(whitespace) -> UnknownCharacter(whitespace, index)
+    DecimalPoint -> InvalidDecimalPosition(index)
+  }
+}
+
+fn form_float(
+  is_positive: Bool,
+  whole_digit: Int,
+  fractional_digit: Int,
+  fractional_length: Int,
+) -> Float {
+  let whole_float = whole_digit |> int.to_float
+  let fractional_float =
+    fractional_digit
+    |> int.to_float
+    |> normalize_fractional_part(fractional_length)
+  let float_value = whole_float +. fractional_float
+  case is_positive {
+    True -> float_value
+    False -> float_value *. -1.0
+  }
+}
+
+fn normalize_fractional_part(value: Float, fractional_length: Int) -> Float {
+  case fractional_length <= 0 {
+    True -> value
+    False -> normalize_fractional_part(value /. 10.0, fractional_length - 1)
   }
 }
