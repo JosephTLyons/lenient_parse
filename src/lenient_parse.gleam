@@ -1,5 +1,8 @@
-import lenient_parse/internal/parse.{parse_float, parse_int}
-import parse_error.{type ParseError}
+import gleam/float
+import gleam/int
+import gleam/result
+import lenient_parse/internal/parse
+import parse_error.{type ParseError, GleamFloatParseError, GleamIntParseError}
 
 /// Converts a string to a float using a more lenient parsing method than gleam's `float.parse()`. It behaves similarly to Python's `float()` built-in function.
 ///
@@ -21,8 +24,15 @@ import parse_error.{type ParseError}
 /// lenient_parse.to_float("abc")      // -> Error(InvalidCharacter("a", 0))
 /// ```
 pub fn to_float(text: String) -> Result(Float, ParseError) {
+  let text = text |> parse.parse_float
+  use text <- result.try(text)
+  let res = text |> float.parse |> result.replace_error(GleamFloatParseError)
+  use <- result.lazy_or(res)
+
   text
-  |> parse.to_float(parse_float)
+  |> int.parse
+  |> result.map(int.to_float)
+  |> result.replace_error(GleamIntParseError)
 }
 
 /// Converts a string to an integer using a more lenient parsing method than gleam's `int.parse()`.
@@ -42,6 +52,6 @@ pub fn to_float(text: String) -> Result(Float, ParseError) {
 /// lenient_parse.to_int("abc")   // -> Error(InvalidCharacter("a", 0))
 /// ```
 pub fn to_int(text: String) -> Result(Int, ParseError) {
-  text
-  |> parse.to_int(parse_int)
+  use text <- result.try(text |> parse.parse_int)
+  text |> int.parse |> result.replace_error(GleamIntParseError)
 }

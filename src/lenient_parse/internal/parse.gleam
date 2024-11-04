@@ -1,6 +1,4 @@
 import gleam/bool
-import gleam/float
-import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
@@ -8,32 +6,9 @@ import lenient_parse/internal/tokenizer.{
   type Token, DecimalPoint, Digit, Sign, Underscore, Unknown, Whitespace,
 }
 import parse_error.{
-  type ParseError, EmptyString, GleamFloatParseError, GleamIntParseError,
-  InvalidCharacter, InvalidDecimalPosition, InvalidDigitPosition,
-  InvalidSignPosition, InvalidUnderscorePosition, WhitespaceOnlyString,
-}
-
-pub fn to_float(
-  text: String,
-  parse_strategy: fn(String) -> Result(String, ParseError),
-) -> Result(Float, ParseError) {
-  let text = text |> parse_strategy
-  use text <- result.try(text)
-  let res = text |> float.parse |> result.replace_error(GleamFloatParseError)
-  use <- result.lazy_or(res)
-
-  text
-  |> int.parse
-  |> result.map(int.to_float)
-  |> result.replace_error(GleamIntParseError)
-}
-
-pub fn to_int(
-  text: String,
-  parse_strategy: fn(String) -> Result(String, ParseError),
-) -> Result(Int, ParseError) {
-  use text <- result.try(text |> parse_strategy)
-  text |> int.parse |> result.replace_error(GleamIntParseError)
+  type ParseError, EmptyString, InvalidCharacter, InvalidDecimalPosition,
+  InvalidDigitPosition, InvalidSignPosition, InvalidUnderscorePosition,
+  WhitespaceOnlyString,
 }
 
 pub fn parse_float(input: String) -> Result(String, ParseError) {
