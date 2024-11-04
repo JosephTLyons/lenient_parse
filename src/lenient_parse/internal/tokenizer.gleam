@@ -47,7 +47,7 @@ fn do_tokenize(characters: List(String), acc: List(Token)) -> List(Token) {
   }
 }
 
-pub fn error_for_token(token: Token, index) -> ParseError {
+pub fn to_error(token: Token, index) -> ParseError {
   case token {
     Digit(digit) -> {
       let digit = digit |> int.to_string

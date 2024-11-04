@@ -7,8 +7,8 @@ import lenient_parse/internal/tokenizer.{
   type Token, DecimalPoint, Digit, Sign, Underscore, Unknown, Whitespace,
 }
 import parse_error.{
-  type ParseError, EmptyString, InvalidDecimalPosition, UnknownCharacter,
-  WhitespaceOnlyString,
+  type ParseError, EmptyString, InvalidDecimalPosition,
+  InvalidUnderscorePosition, UnknownCharacter, WhitespaceOnlyString,
 }
 
 pub fn parse_float(input: String) -> Result(Float, ParseError) {
@@ -37,7 +37,7 @@ pub fn parse_float(input: String) -> Result(Float, ParseError) {
   use #(_, tokens, index) <- result.try(post_whitespace_result)
 
   case tokens |> list.first {
-    Ok(token) -> Error(extraneous_token_error(token, index))
+    Ok(token) -> Error(tokenizer.to_error(token, index))
     _ -> {
       case whole_digit, fractional_digit {
         Some(whole), Some(fractional) ->
@@ -82,7 +82,7 @@ pub fn parse_int(input: String) -> Result(Int, ParseError) {
   use #(_, tokens, index) <- result.try(post_whitespace_result)
 
   case tokens |> list.first {
-    Ok(token) -> Error(tokenizer.error_for_token(token, index))
+    Ok(token) -> Error(tokenizer.to_error(token, index))
     _ -> {
       case leading_whitespace, digit {
         Some(_), Some(digit) | None, Some(digit) ->
@@ -205,27 +205,6 @@ fn parse_digit(
         }
       }
     }
-  }
-}
-
-// TODO: Move this to some place that makes more sense
-fn extraneous_token_error(token: Token, index) -> ParseError {
-  case token {
-    Digit(digit) -> {
-      let digit = digit |> int.to_string
-      InvalidDigitPosition(digit, index)
-    }
-    Sign(sign) -> {
-      let sign = case sign {
-        True -> "+"
-        False -> "-"
-      }
-      InvalidSignPosition(sign, index)
-    }
-    Underscore -> InvalidUnderscorePosition(index)
-    Unknown(character) -> UnknownCharacter(character, index)
-    Whitespace(whitespace) -> UnknownCharacter(whitespace, index)
-    DecimalPoint -> InvalidDecimalPosition(index)
   }
 }
 
