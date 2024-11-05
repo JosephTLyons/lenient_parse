@@ -1,7 +1,8 @@
 import gleam/list
 import gleam/string
 import lenient_parse/internal/token.{
-  type Token, DecimalPoint, Digit, Sign, Underscore, Unknown, Whitespace,
+  type Token, DecimalPoint, Digit, Exponent, Sign, Underscore, Unknown,
+  Whitespace,
 }
 
 pub fn tokenize(text: String) -> List(Token) {
@@ -13,8 +14,8 @@ fn do_tokenize(characters: List(String), acc: List(Token)) -> List(Token) {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
       let token = case first {
-        "-" -> Sign(False)
-        "+" -> Sign(True)
+        "-" -> Sign("-", False)
+        "+" -> Sign("+", True)
         "0" -> Digit(0)
         "1" -> Digit(1)
         "2" -> Digit(2)
@@ -25,6 +26,7 @@ fn do_tokenize(characters: List(String), acc: List(Token)) -> List(Token) {
         "7" -> Digit(7)
         "8" -> Digit(8)
         "9" -> Digit(9)
+        "e" | "E" -> Exponent(first)
         "." -> DecimalPoint
         "_" -> Underscore
         " " | "\n" | "\t" | "\r" | "\f" | "\r\n" -> Whitespace(first)

@@ -2,7 +2,9 @@
 
 ## v1.3.0 - xxx
 
-Breaking changes:
+- Added support for scientific notation for float parsing.
+    - Ex: `lenient_parse.to_float("4e-3")` // Ok(0.004)
+- Breaking changes:
     - `GleamIntParseError` and `GleamIntParseErrorReason` have been removed.
     - `InvalidCharacter` has been renamed to `UnknownCharacter`.
     - A new `InvalidDigitPosition` error has been introduced.

@@ -1,11 +1,11 @@
 import lenient_parse/internal/token.{
-  DecimalPoint, Digit, Sign, Underscore, Unknown, Whitespace,
+  DecimalPoint, Digit, Exponent, Sign, Underscore, Unknown, Whitespace,
 }
 import lenient_parse/internal/tokenizer.{tokenize}
 import startest/expect
 
 pub fn tokenize_test() {
-  " \t\n\r\f\r\n+-0123456789._abc"
+  " \t\n\r\f\r\n+-0123456789eE._abc"
   |> tokenize
   |> expect.to_equal([
     Whitespace(" "),
@@ -14,8 +14,8 @@ pub fn tokenize_test() {
     Whitespace("\r"),
     Whitespace("\f"),
     Whitespace("\r\n"),
-    Sign(True),
-    Sign(False),
+    Sign("+", True),
+    Sign("-", False),
     Digit(0),
     Digit(1),
     Digit(2),
@@ -26,6 +26,8 @@ pub fn tokenize_test() {
     Digit(7),
     Digit(8),
     Digit(9),
+    Exponent("e"),
+    Exponent("E"),
     DecimalPoint,
     Underscore,
     Unknown("a"),

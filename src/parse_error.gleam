@@ -27,12 +27,19 @@ pub type ParseError {
   /// - `index`: The position of the invalid sign in the input string.
   InvalidSignPosition(character: String, index: Int)
 
-  /// Represents an error when a digit is in an invalid position within
-  /// the number string.
+  /// Represents an error when a digit is in an invalid position within the
+  /// number string.
   ///
   /// - `character`: The digit character that caused the error as a `String`.
   /// - `index`: The position of the invalid digit in the input string.
   InvalidDigitPosition(character: String, index: Int)
+
+  /// Represents an error when an exponent character (e or E) is in an invalid
+  /// position within the number string.
+  ///
+  /// - `character`: The exponent character that caused the error as a `String`.
+  /// - `index`: The position of the invalid exponent in the input string.
+  InvalidExponentPosition(character: String, index: Int)
 
   /// Represents an error when an invalid character is encountered during
   /// parsing.
@@ -45,15 +52,10 @@ pub type ParseError {
 @internal
 pub fn to_string(error: ParseError) -> String {
   case error {
-    UnknownCharacter(character, index) ->
-      "unknown character \""
-      <> character
-      <> "\" at index: "
-      <> index |> int.to_string
-    InvalidUnderscorePosition(index) ->
-      "invalid underscore at position: " <> index |> int.to_string
     EmptyString -> "empty string"
     WhitespaceOnlyString -> "whitespace only string"
+    InvalidUnderscorePosition(index) ->
+      "invalid underscore at position: " <> index |> int.to_string
     InvalidDecimalPosition(index) ->
       "invalid decimal at position: " <> index |> int.to_string
     InvalidSignPosition(sign, index) ->
@@ -62,6 +64,16 @@ pub fn to_string(error: ParseError) -> String {
       "invalid digit \""
       <> digit
       <> "\" at position: "
+      <> index |> int.to_string
+    InvalidExponentPosition(exponent, index) ->
+      "invalid exponent \""
+      <> exponent
+      <> "\" at position: "
+      <> index |> int.to_string
+    UnknownCharacter(character, index) ->
+      "unknown character \""
+      <> character
+      <> "\" at index: "
       <> index |> int.to_string
   }
 }

@@ -1,5 +1,4 @@
-import data/float_data
-import data/int_data
+import data
 import gleam/float
 import gleam/int
 import gleam/list
@@ -13,7 +12,7 @@ pub fn check_against_python_tests() {
   describe("check_against_python_tests", [
     describe(
       "python_float_test",
-      float_data.data
+      data.float_data()
         |> list.map(fn(data) {
           let input = data.input
           let input_printable_text = input |> helpers.to_printable_text
@@ -58,7 +57,7 @@ pub fn check_against_python_tests() {
     ),
     describe(
       "python_int_test",
-      int_data.data
+      data.integer_data()
         |> list.map(fn(data) {
           let input = data.input
           let input_printable_text = input |> helpers.to_printable_text
