@@ -330,8 +330,6 @@ fn form_float(
     fractional_digit
     |> int.to_float
     |> normalize_fractional(fractional_length)
-  // io.debug("here")
-  // io.debug(fractional_float)
   let float_value = whole_float +. fractional_float
   let float_value = case is_positive {
     True -> float_value
