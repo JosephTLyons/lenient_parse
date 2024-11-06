@@ -63,6 +63,11 @@ const valid_floats_with_exponents: List(FloatTestData) = [
   FloatTestData(input: ".3e-3", output: Ok(0.0003), python_output: Ok("0.0003")),
   FloatTestData(input: "3.e3", output: Ok(3000.0), python_output: Ok("3000.0")),
   FloatTestData(input: "3.e-3", output: Ok(0.003), python_output: Ok("0.003")),
+  FloatTestData(
+    input: "   -30.01e-2   ",
+    output: Ok(-0.3001),
+    python_output: Ok("-0.3001"),
+  ),
 ]
 
 pub fn data() -> List(FloatTestData) {
