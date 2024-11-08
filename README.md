@@ -16,34 +16,32 @@ import lenient_parse
 import gleam/io
 
 pub fn main() {
-  "1" |> lenient_parse.to_float |> io.debug
+  // --- Float parsing
+
+  // Parse a string containing an integer
+  "1" |> to_float |> io.debug
   // Ok(1.0)
 
-  "1.001" |> lenient_parse.to_float |> io.debug
-  // Ok(1.001)
+  // Parse a string containing a negative float
+  "-5.001" |> to_float |> io.debug
+  // Ok(-5.001)
 
-  "+123.321" |> lenient_parse.to_float |> io.debug
-  // Ok(123.321)
+  // Parse a more complex float with scientific notation
+  "-1_234.567_8e-2" |> to_float |> io.debug
+  // -> Ok(-12.345678)
 
-  "-123.321" |> lenient_parse.to_float |> io.debug
-  // Ok(-123.321)
+  // --- Integer parsing
 
-  "1_000_000.0" |> lenient_parse.to_float |> io.debug
-  // Ok(1.0e6)
-
-  "4e3" |> lenient_parse.to_float |> io.debug
-  // Ok(4.0e3)
-
-  "123" |> lenient_parse.to_int |> io.debug
+  // Parse a string containing an integer
+  "123" |> to_int |> io.debug
   // Ok(123)
 
-  "+123" |> lenient_parse.to_int |> io.debug
-  // Ok(123)
-
-  "-123" |> lenient_parse.to_int |> io.debug
+  // Parse a string containing a negative integer with surrounding whitespace
+  "  -123  " |> to_int |> io.debug
   // Ok(-123)
 
-  "1_000_000" |> lenient_parse.to_int |> io.debug
+  // Parse a string containing an integer with an underscores
+  "1_000_000" |> to_int |> io.debug
   // Ok(1000000)
 }
 ```
