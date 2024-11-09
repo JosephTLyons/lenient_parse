@@ -398,9 +398,21 @@ const invalid_mixed: List(IntegerTestData) = [
     python_output: Error(Nil),
   ),
   IntegerTestData(
-    input: "  1_5_1  ",
+    input: "  1_f_1  ",
     base: 2,
-    output: Error(OutOfBaseRange("5", 5, 4)),
+    output: Error(OutOfBaseRange("f", 15, 4)),
+    python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "  1._5_1  ",
+    base: 2,
+    output: Error(UnknownCharacter(".", 3)),
+    python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "  1_1__1  ",
+    base: 2,
+    output: Error(InvalidUnderscorePosition(6)),
     python_output: Error(Nil),
   ),
 ]

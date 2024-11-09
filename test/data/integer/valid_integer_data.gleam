@@ -171,27 +171,6 @@ const valid_simple_integers_base_8: List(IntegerTestData) = [
   ),
 ]
 
-const valid_simple_integers_with_inferred_base: List(IntegerTestData) = [
-  // IntegerTestData(
-//   input: "0b11111",
-//   base: 0,
-//   output: Ok(31),
-//   python_output: Ok("31"),
-// ),
-// IntegerTestData(
-//   input: "0o377",
-//   base: 0,
-//   output: Ok(255),
-//   python_output: Ok("255"),
-// ),
-// IntegerTestData(
-//   input: "0xdeadbeef",
-//   base: 0,
-//   output: Ok(0xDEADBEEF),
-//   python_output: Ok("3735928559"),
-// ),
-]
-
 const valid_simple_integers_base_16: List(IntegerTestData) = [
   IntegerTestData(
     input: "DEAD_BEEF",
@@ -213,7 +192,6 @@ pub fn data() -> List(IntegerTestData) {
     valid_simple_integers_base_2,
     valid_simple_integers_base_8,
     valid_simple_integers_base_16,
-    valid_simple_integers_with_inferred_base,
     valid_integers_with_underscores,
     valid_integers_with_whitespace,
   ]
