@@ -17,20 +17,11 @@ fn do_tokenize_float(
   case characters {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
+      let base = 10
       let token = case first {
         "." -> DecimalPoint
         "e" | "E" -> ExponentSymbol(first)
-        "-" -> Sign("-", False)
-        "+" -> Sign("+", True)
-        "_" -> Underscore
-        " " | "\n" | "\t" | "\r" | "\f" | "\r\n" -> Whitespace(first)
-        _ -> {
-          let base = 10
-          case character_to_value(first) {
-            Some(value) if value < base -> Digit(first, value, base)
-            _ -> Unknown(first)
-          }
-        }
+        _ -> common_token(first, fn(value) { value < base }, base)
       }
       do_tokenize_float(characters: rest, acc: [token, ..acc])
     }
@@ -49,19 +40,31 @@ fn do_tokenize_int(
   case characters {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
-      let token = case first {
-        "-" -> Sign("-", False)
-        "+" -> Sign("+", True)
-        "_" -> Underscore
-        " " | "\n" | "\t" | "\r" | "\f" | "\r\n" -> Whitespace(first)
-        _ -> {
-          case character_to_value(first) {
-            Some(value) -> Digit(first, value, base)
-            _ -> Unknown(first)
-          }
-        }
-      }
+      let token = common_token(first, fn(_) { True }, base)
       do_tokenize_int(characters: rest, base: base, acc: [token, ..acc])
+    }
+  }
+}
+
+fn common_token(
+  character: String,
+  tokenize_character_as_digit: fn(Int) -> Bool,
+  base: Int,
+) -> Token {
+  case character {
+    "-" -> Sign("-", False)
+    "+" -> Sign("+", True)
+    "_" -> Underscore
+    " " | "\n" | "\t" | "\r" | "\f" | "\r\n" -> Whitespace(character)
+    _ -> {
+      case character_to_value(character) {
+        Some(value) ->
+          case tokenize_character_as_digit(value) {
+            True -> Digit(character, value, base)
+            False -> Unknown(character)
+          }
+        None -> Unknown(character)
+      }
     }
   }
 }
