@@ -228,8 +228,6 @@ fn do_parse_digits(
     [Unknown(character), ..] -> Error(UnknownCharacter(character, index))
     [Whitespace(whitespace), ..] if at_beginning ->
       Error(UnknownCharacter(whitespace, index))
-    [Digit(character, value, False), ..] ->
-      Error(OutOfBaseRange(character, value, index))
     [Underscore, ..rest] -> {
       let lookahead = rest |> list.first
       let at_end = case lookahead {
@@ -265,6 +263,8 @@ fn do_parse_digits(
         acc: acc |> queue.push_back(value),
         at_beginning: False,
       )
+    [Digit(character, value, False), ..] ->
+      Error(OutOfBaseRange(character, value, index))
     _ -> Ok(ParseData(data: acc, tokens: tokens, index: index))
   }
 }
