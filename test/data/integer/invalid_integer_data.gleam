@@ -193,67 +193,67 @@ const invalid_base_range: List(IntegerTestData) = [
   IntegerTestData(
     input: "a",
     base: 10,
-    output: Error(OutOfBaseRange("a", 10, 0)),
+    output: Error(OutOfBaseRange("a", 10, 10, 0)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "1b1",
     base: 10,
-    output: Error(OutOfBaseRange("b", 11, 1)),
+    output: Error(OutOfBaseRange("b", 11, 10, 1)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "abc",
     base: 10,
-    output: Error(OutOfBaseRange("a", 10, 0)),
+    output: Error(OutOfBaseRange("a", 10, 10, 0)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "e",
     base: 10,
-    output: Error(OutOfBaseRange("e", 14, 0)),
+    output: Error(OutOfBaseRange("e", 14, 10, 0)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "E",
     base: 10,
-    output: Error(OutOfBaseRange("E", 14, 0)),
+    output: Error(OutOfBaseRange("E", 14, 10, 0)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "e13",
     base: 10,
-    output: Error(OutOfBaseRange("e", 14, 0)),
+    output: Error(OutOfBaseRange("e", 14, 10, 0)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "1e3",
     base: 10,
-    output: Error(OutOfBaseRange("e", 14, 1)),
+    output: Error(OutOfBaseRange("e", 14, 10, 1)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "13e",
     base: 10,
-    output: Error(OutOfBaseRange("e", 14, 2)),
+    output: Error(OutOfBaseRange("e", 14, 10, 2)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "E13",
     base: 10,
-    output: Error(OutOfBaseRange("E", 14, 0)),
+    output: Error(OutOfBaseRange("E", 14, 10, 0)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "1E3",
     base: 10,
-    output: Error(OutOfBaseRange("E", 14, 1)),
+    output: Error(OutOfBaseRange("E", 14, 10, 1)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "13E",
     base: 10,
-    output: Error(OutOfBaseRange("E", 14, 2)),
+    output: Error(OutOfBaseRange("E", 14, 10, 2)),
     python_output: Error(Nil),
   ),
 ]
@@ -328,13 +328,13 @@ const invalid_base_configurations: List(IntegerTestData) = [
   IntegerTestData(
     input: "151",
     base: 2,
-    output: Error(OutOfBaseRange("5", 5, 1)),
+    output: Error(OutOfBaseRange("5", 5, 2, 1)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "DEAD_BEEF",
     base: 10,
-    output: Error(OutOfBaseRange("D", 13, 0)),
+    output: Error(OutOfBaseRange("D", 13, 10, 0)),
     python_output: Error(Nil),
   ),
 ]
@@ -358,13 +358,13 @@ const invalid_mixed: List(IntegerTestData) = [
   IntegerTestData(
     input: "e_1_3",
     base: 10,
-    output: Error(OutOfBaseRange("e", 14, 0)),
+    output: Error(OutOfBaseRange("e", 14, 10, 0)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
     input: "1_3_e",
     base: 10,
-    output: Error(OutOfBaseRange("e", 14, 4)),
+    output: Error(OutOfBaseRange("e", 14, 10, 4)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
@@ -388,7 +388,7 @@ const invalid_mixed: List(IntegerTestData) = [
   IntegerTestData(
     input: "1_a_2",
     base: 10,
-    output: Error(OutOfBaseRange("a", 10, 2)),
+    output: Error(OutOfBaseRange("a", 10, 10, 2)),
     python_output: Error(Nil),
   ),
   IntegerTestData(
@@ -400,7 +400,7 @@ const invalid_mixed: List(IntegerTestData) = [
   IntegerTestData(
     input: "  1_f_1  ",
     base: 2,
-    output: Error(OutOfBaseRange("f", 15, 4)),
+    output: Error(OutOfBaseRange("f", 15, 2, 4)),
     python_output: Error(Nil),
   ),
   IntegerTestData(

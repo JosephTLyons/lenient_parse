@@ -38,8 +38,9 @@ pub type ParseError {
   ///
   /// - `character`: The string representation of the out-of-range digit.
   /// - `value`: The integer value of the out-of-range digit.
+  /// - `base`: The base in which the digit is out of range.
   /// - `index`: The position of the out-of-range digit in the input string.
-  OutOfBaseRange(character: String, value: Int, index: Int)
+  OutOfBaseRange(character: String, value: Int, base: Int, index: Int)
 
   /// Represents an error when an exponent symbol (e or E) is in an invalid
   /// position within the number string.
@@ -77,13 +78,15 @@ pub fn to_string(error: ParseError) -> String {
       <> digit
       <> "\" at invalid position: "
       <> index |> int.to_string
-    OutOfBaseRange(character, value, index) ->
+    OutOfBaseRange(character, value, base, index) ->
       "digit character \""
       <> character
       <> "\" ("
       <> value |> int.to_string
-      <> ") is out of range for the specified base at position "
+      <> ") at position "
       <> index |> int.to_string
+      <> " is out of range for base: "
+      <> base |> int.to_string
     InvalidExponentSymbolPosition(exponent_symbol, index) ->
       "exponent symbol \""
       <> exponent_symbol

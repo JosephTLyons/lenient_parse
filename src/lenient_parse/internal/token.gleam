@@ -18,7 +18,7 @@ pub fn to_error(token: Token, index) -> ParseError {
   case token {
     Sign(sign, _) -> InvalidSignPosition(sign, index)
     Digit(character, value, base) if value >= base ->
-      OutOfBaseRange(character, value, index)
+      OutOfBaseRange(character, value, base, index)
     Digit(character, _, _) -> InvalidDigitPosition(character, index)
     Underscore -> InvalidUnderscorePosition(index)
     DecimalPoint -> InvalidDecimalPosition(index)

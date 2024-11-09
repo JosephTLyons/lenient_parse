@@ -263,8 +263,8 @@ fn do_parse_digits(
         acc: acc |> queue.push_back(value),
         at_beginning: False,
       )
-    [Digit(character, value, _), ..] ->
-      Error(OutOfBaseRange(character, value, index))
+    [Digit(character, value, base), ..] ->
+      Error(OutOfBaseRange(character, value, base, index))
     _ -> Ok(ParseData(data: acc, tokens: tokens, index: index))
   }
 }

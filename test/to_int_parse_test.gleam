@@ -17,27 +17,18 @@ pub fn to_int_tests() {
         let output = data.output
         let base = data.base
 
-        let base_text = case base {
-          10 -> ""
-          _ -> "(base: " <> base |> int.to_string <> ")"
-        }
-
         let message = case output {
           Ok(output) -> {
             "should_parse: \""
             <> input_printable_text
-            <> "\" "
-            <> base_text
-            <> " -> "
+            <> "\"  -> "
             <> output |> int.to_string
           }
           Error(error) -> {
             let error_string = error |> parse_error.to_string
             "should_not_parse: \""
             <> input_printable_text
-            <> "\" "
-            <> base_text
-            <> " -> "
+            <> "\" -> "
             <> error_string
             <> "\""
           }
