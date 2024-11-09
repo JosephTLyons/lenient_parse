@@ -63,19 +63,29 @@ pub fn check_against_python_tests() {
           let input_printable_text = input |> helpers.to_printable_text
           let output = data.output
           let python_output = data.python_output
+          let base = data.base
+
+          let base_text = case base {
+            10 -> ""
+            _ -> "(base: " <> base |> int.to_string <> ")"
+          }
 
           let message = case output, python_output {
             Ok(_), Ok(python_output) -> {
               "should_parse: \""
               <> input_printable_text
-              <> "\" -> \""
+              <> "\" "
+              <> base_text
+              <> " -> \""
               <> python_output
               <> "\""
             }
             Error(_), Error(_) -> {
               "should_not_parse: \""
               <> input_printable_text
-              <> "\" -> \"Error\""
+              <> "\" "
+              <> base_text
+              <> " -> \"Error\""
             }
             Ok(output), Error(_) -> {
               panic as form_panic_message(
@@ -96,7 +106,7 @@ pub fn check_against_python_tests() {
           use <- it(message)
 
           input
-          |> python_parse.to_int
+          |> python_parse.to_int(base: base)
           |> expect.to_equal(python_output)
         }),
     ),

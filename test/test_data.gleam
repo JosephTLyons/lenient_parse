@@ -1,9 +1,18 @@
 import parse_error.{type ParseError}
 
-pub type TestData(t) {
-  TestData(
+pub type FloatTestData {
+  FloatTestData(
     input: String,
-    output: Result(t, ParseError),
+    output: Result(Float, ParseError),
+    python_output: Result(String, Nil),
+  )
+}
+
+pub type IntegerTestData {
+  IntegerTestData(
+    input: String,
+    base: Int,
+    output: Result(Int, ParseError),
     python_output: Result(String, Nil),
   )
 }

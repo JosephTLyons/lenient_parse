@@ -7,7 +7,7 @@ import parse_error
 import startest.{describe, it}
 import startest/expect
 
-pub fn parse_into_valid_number_string_tests() {
+pub fn to_float_tests() {
   describe(
     "float_test",
     data.float_data()

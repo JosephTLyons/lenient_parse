@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.0 - XXXX-XXX-XX
+
+- Added a new `OutOfBoundsDigit` error that represents a digit that is higher than the base.
+
 ## v1.1.0 - 2024-11-07
 
 - Added support for scientific notation for float parsing.

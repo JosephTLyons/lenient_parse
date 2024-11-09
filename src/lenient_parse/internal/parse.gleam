@@ -15,12 +15,12 @@ import lenient_parse/internal/parse_data.{type ParseData, ParseData}
 import lenient_parse/internal/tokenizer
 import parse_error.{
   type ParseError, EmptyString, InvalidDecimalPosition,
-  InvalidExponentSymbolPosition, InvalidUnderscorePosition, UnknownCharacter,
-  WhitespaceOnlyString,
+  InvalidExponentSymbolPosition, InvalidUnderscorePosition, OutOfBaseRange,
+  UnknownCharacter, WhitespaceOnlyString,
 }
 
-pub fn parse_float(input: String) -> Result(Float, ParseError) {
-  let tokens = input |> tokenizer.tokenize_float
+pub fn parse_float(text text: String) -> Result(Float, ParseError) {
+  let tokens = text |> tokenizer.tokenize_float
   let index = 0
 
   let parse_data = parse_whitespace(tokens, index)
@@ -103,8 +103,8 @@ pub fn parse_float(input: String) -> Result(Float, ParseError) {
   }
 }
 
-pub fn parse_int(input: String) -> Result(Int, ParseError) {
-  let tokens = input |> tokenizer.tokenize_int
+pub fn parse_int(text text: String, base base: Int) -> Result(Int, ParseError) {
+  use tokens <- result.try(tokenizer.tokenize_int(text: text, base: base))
   let index = 0
 
   let parse_data = parse_whitespace(tokens, index)
@@ -129,7 +129,7 @@ pub fn parse_int(input: String) -> Result(Int, ParseError) {
     None, True -> Error(EmptyString)
     Some(_), True -> Error(WhitespaceOnlyString)
     _, False -> {
-      let value = digits |> digits_to_int
+      let value = digits |> digits_to_int_with_base(base: base)
       let value = case is_positive {
         True -> value
         False -> -value
@@ -228,10 +228,12 @@ fn do_parse_digits(
     [Unknown(character), ..] -> Error(UnknownCharacter(character, index))
     [Whitespace(whitespace), ..] if at_beginning ->
       Error(UnknownCharacter(whitespace, index))
+    [Digit(character, value, False), ..] ->
+      Error(OutOfBaseRange(character, value, index))
     [Underscore, ..rest] -> {
       let lookahead = rest |> list.first
       let at_end = case lookahead {
-        Ok(Digit(_)) -> False
+        Ok(Digit(_, _, _)) -> False
         _ -> True
       }
       let next_is_underscore = case lookahead {
@@ -256,11 +258,11 @@ fn do_parse_digits(
         at_beginning: False,
       )
     }
-    [Digit(digit), ..rest] ->
+    [Digit(_, value, True), ..rest] ->
       do_parse_digits(
         tokens: rest,
         index: index + 1,
-        acc: acc |> queue.push_back(digit),
+        acc: acc |> queue.push_back(value),
         at_beginning: False,
       )
     _ -> Ok(ParseData(data: acc, tokens: tokens, index: index))
@@ -291,13 +293,21 @@ fn form_float(
   }
 }
 
-fn digits_to_int(digits: Queue(Int)) -> Int {
-  do_digits_to_int(digits, 0)
+fn digits_to_int(digits digits: Queue(Int)) -> Int {
+  digits_to_int_with_base(digits: digits, base: 10)
 }
 
-fn do_digits_to_int(digits: Queue(Int), acc: Int) -> Int {
+fn digits_to_int_with_base(digits digits: Queue(Int), base base: Int) -> Int {
+  do_digits_to_int(digits: digits, base: base, acc: 0)
+}
+
+fn do_digits_to_int(
+  digits digits: Queue(Int),
+  base base: Int,
+  acc acc: Int,
+) -> Int {
   case digits |> queue.pop_front {
-    Ok(#(digit, rest)) -> do_digits_to_int(rest, acc * 10 + digit)
+    Ok(#(digit, rest)) -> do_digits_to_int(rest, base, acc * base + digit)
     Error(_) -> acc
   }
 }
