@@ -10,7 +10,7 @@ import startest/expect
 pub fn to_int_tests() {
   describe(
     "int_test",
-    data.integer_data()
+    data.integer_test_data()
       |> list.map(fn(data) {
         let input = data.input
         let input_printable_text = input |> helpers.to_printable_text

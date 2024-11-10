@@ -1,26 +1,42 @@
-import gleam/result
+import gleam/dynamic
+import gleam/json
+import gleam/list
 import shellout
+import test_data.{type FloatTestData, type IntegerTestData}
 
-// TODO: Change function name, input name
-// TODO: Make these take lists of test data, do conversion into json string here, return list of results
 pub fn to_floats(
-  input_json_string input_json_string: String,
-) -> Result(String, Nil) {
+  float_test_data float_test_data: List(FloatTestData),
+) -> List(Result(String, Nil)) {
+  let input_json_string =
+    float_test_data
+    |> json.array(fn(data) {
+      json.object([#("input", json.string(data.input))])
+    })
+    |> json.to_string
+
   input_json_string |> parse(program_name: "parse_floats.py")
 }
 
-// TODO: Change function name, input name
 pub fn to_ints(
-  input_json_string input_json_string: String,
-) -> Result(String, Nil) {
+  integer_test_data integer_test_data: List(IntegerTestData),
+) -> List(Result(String, Nil)) {
+  let input_json_string =
+    integer_test_data
+    |> json.array(fn(data) {
+      json.object([
+        #("input", json.string(data.input)),
+        #("base", json.int(data.base)),
+      ])
+    })
+    |> json.to_string
+
   input_json_string |> parse(program_name: "parse_ints.py")
 }
 
-// TODO: Change function name, input name
 fn parse(
   input_json_string input_json_string: String,
   program_name program_name: String,
-) -> Result(String, Nil) {
+) -> List(Result(String, Nil)) {
   let arguments = [
     "run",
     "-p",
@@ -30,6 +46,17 @@ fn parse(
     input_json_string,
   ]
 
-  shellout.command(run: "uv", with: arguments, in: ".", opt: [])
-  |> result.replace_error(Nil)
+  let assert Ok(output_json_string) =
+    shellout.command(run: "uv", with: arguments, in: ".", opt: [])
+
+  let assert Ok(processed_strings) =
+    json.decode(output_json_string, dynamic.list(of: dynamic.string))
+
+  processed_strings
+  |> list.map(fn(value) {
+    case value {
+      "Nil" -> Error(Nil)
+      _ -> Ok(value)
+    }
+  })
 }
