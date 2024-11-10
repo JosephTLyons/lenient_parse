@@ -7,30 +7,26 @@ import test_data.{type FloatTestData, type IntegerTestData}
 pub fn to_floats(
   float_test_data float_test_data: List(FloatTestData),
 ) -> List(Result(String, Nil)) {
-  let input_json_string =
-    float_test_data
-    |> json.array(fn(float_data) {
-      json.object([#("input", json.string(float_data.input))])
-    })
-    |> json.to_string
-
-  input_json_string |> parse(program_name: "parse_floats.py")
+  float_test_data
+  |> json.array(fn(float_data) {
+    json.object([#("input", json.string(float_data.input))])
+  })
+  |> json.to_string
+  |> parse(program_name: "parse_floats.py")
 }
 
 pub fn to_ints(
   integer_test_data integer_test_data: List(IntegerTestData),
 ) -> List(Result(String, Nil)) {
-  let input_json_string =
-    integer_test_data
-    |> json.array(fn(integer_data) {
-      json.object([
-        #("input", json.string(integer_data.input)),
-        #("base", json.int(integer_data.base)),
-      ])
-    })
-    |> json.to_string
-
-  input_json_string |> parse(program_name: "parse_ints.py")
+  integer_test_data
+  |> json.array(fn(integer_data) {
+    json.object([
+      #("input", json.string(integer_data.input)),
+      #("base", json.int(integer_data.base)),
+    ])
+  })
+  |> json.to_string
+  |> parse(program_name: "parse_ints.py")
 }
 
 fn parse(
