@@ -25,7 +25,7 @@ pub fn to_int_with_base(
   text text: String,
   base base: Int,
 ) -> Result(Int, ParseError) {
-  let is_valid_base = base >= 2 && base <= 36
+  let is_valid_base = base == 0 || { base >= 2 && base <= 36 }
   use <- bool.guard(!is_valid_base, Error(InvalidBaseValue(base)))
   let tokens = text |> tokenizer.tokenize_int(base: base)
   tokens |> parser.parse_int(base: base)

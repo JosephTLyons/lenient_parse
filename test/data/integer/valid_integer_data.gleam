@@ -217,10 +217,20 @@ const valid_simple_integers_base_16: List(IntegerTestData) = [
   ),
 ]
 
+// const valid_inferred_base_2: List(IntegerTestData) = [
+//   IntegerTestData(
+//     input: "0b10101",
+//     base: 0,
+//     expected_program_output: Ok(0b10101),
+//     expected_python_output: Ok("21"),
+//   ),
+// ]
+
 pub fn data() -> List(IntegerTestData) {
   [
     valid_simple_integers,
     valid_simple_integers_base_2,
+    // valid_inferred_base_2,
     valid_simple_integers_base_8,
     valid_simple_integers_base_16,
     valid_integers_with_underscores,

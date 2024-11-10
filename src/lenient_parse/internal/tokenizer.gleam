@@ -7,11 +7,12 @@ import lenient_parse/internal/token.{
 }
 
 pub fn tokenize_float(text text: String) -> List(Token) {
-  text |> string.to_graphemes |> do_tokenize_float([])
+  text |> string.to_graphemes |> do_tokenize_float(index: 0, acc: [])
 }
 
 fn do_tokenize_float(
   characters characters: List(String),
+  index index: Int,
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
@@ -19,51 +20,69 @@ fn do_tokenize_float(
     [first, ..rest] -> {
       let base = 10
       let token = case first {
-        "." -> DecimalPoint
-        "e" | "E" -> ExponentSymbol(first)
-        _ -> common_token(first, fn(digit_value) { digit_value < base }, base)
+        "." -> DecimalPoint(#(index, index + 1))
+        "e" | "E" -> ExponentSymbol(#(index, index + 1), first)
+        _ ->
+          common_token(
+            character: first,
+            index: index,
+            tokenize_character_as_digit: fn(digit_value) { digit_value < base },
+            base: base,
+          )
       }
-      do_tokenize_float(characters: rest, acc: [token, ..acc])
+      do_tokenize_float(characters: rest, index: index + 1, acc: [token, ..acc])
     }
   }
 }
 
 pub fn tokenize_int(text text: String, base base: Int) -> List(Token) {
-  text |> string.to_graphemes |> do_tokenize_int(base: base, acc: [])
+  text |> string.to_graphemes |> do_tokenize_int(base: base, index: 0, acc: [])
 }
 
 fn do_tokenize_int(
   characters characters: List(String),
   base base: Int,
+  index index: Int,
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
-      let token = common_token(first, fn(_) { True }, base)
-      do_tokenize_int(characters: rest, base: base, acc: [token, ..acc])
+      let token =
+        common_token(
+          character: first,
+          index: index,
+          tokenize_character_as_digit: fn(_) { True },
+          base: base,
+        )
+      do_tokenize_int(characters: rest, base: base, index: index + 1, acc: [
+        token,
+        ..acc
+      ])
     }
   }
 }
 
 fn common_token(
-  character: String,
-  tokenize_character_as_digit: fn(Int) -> Bool,
-  base: Int,
+  character character: String,
+  index index: Int,
+  tokenize_character_as_digit tokenize_character_as_digit: fn(Int) -> Bool,
+  base base: Int,
 ) -> Token {
   case character {
-    "-" -> Sign("-", False)
-    "+" -> Sign("+", True)
-    "_" -> Underscore
-    " " | "\n" | "\t" | "\r" | "\f" | "\r\n" -> Whitespace(character)
+    "-" -> Sign(#(index, index + 1), "-", False)
+    "+" -> Sign(#(index, index + 1), "+", True)
+    "_" -> Underscore(#(index, index + 1))
+    " " | "\n" | "\t" | "\r" | "\f" | "\r\n" ->
+      Whitespace(#(index, index + 1), character)
     _ -> {
       case character_to_value(character) {
         Some(value) ->
           case tokenize_character_as_digit(value) {
-            True -> Digit(character, value, base)
-            False -> Unknown(character)
+            True -> Digit(#(index, index + 1), character, value, base)
+            False -> Unknown(#(index, index + 1), character)
           }
-        None -> Unknown(character)
+        None -> Unknown(#(index, index + 1), character)
       }
     }
   }
@@ -110,3 +129,12 @@ fn character_to_value(character: String) -> Option(Int) {
     _ -> None
   }
 }
+// Capture the string in all tokens
+// All parse functions return the token, not a character
+// Store index range in t of ParseData?
+// TODOs in code
+// Pass tests
+// Checkpoint
+// A cleaner way to coalesce index ranges?
+
+// Introduce a new token type for each inferrer base
