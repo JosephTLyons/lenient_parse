@@ -73,4 +73,3 @@ pub fn python_processed_integer_data() {
 
   integer_data |> list.zip(processed_values)
 }
-// TODO - test python parsing directly
