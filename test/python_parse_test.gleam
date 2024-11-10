@@ -4,7 +4,6 @@ import gleam/int
 import gleam/list
 import helpers
 import parse_error
-import python/python_parse
 import startest.{describe, it}
 import startest/expect
 
@@ -12,14 +11,16 @@ pub fn check_against_python_tests() {
   describe("check_against_python_tests", [
     describe(
       "python_float_test",
-      data.float_data()
+      data.python_processed_float_data()
         |> list.map(fn(data) {
-          let input = data.input
-          let input_printable_text = input |> helpers.to_printable_text
-          let output = data.output
-          let python_output = data.python_output
+          let input = { data.0 }.input
+          let expected_program_output = { data.0 }.expected_program_output
+          let expected_python_output = { data.0 }.expected_python_output
+          let actual_python_output = data.1
 
-          let message = case output, python_output {
+          let input_printable_text = input |> helpers.to_printable_text
+
+          let message = case expected_program_output, expected_python_output {
             Ok(_), Ok(python_output) -> {
               "should_parse: \""
               <> input_printable_text
@@ -50,27 +51,28 @@ pub fn check_against_python_tests() {
 
           use <- it(message)
 
-          input
-          |> python_parse.to_float
-          |> expect.to_equal(python_output)
+          expected_python_output
+          |> expect.to_equal(actual_python_output)
         }),
     ),
     describe(
       "python_int_test",
-      data.integer_data()
+      data.python_processed_integer_data()
         |> list.map(fn(data) {
-          let input = data.input
+          let input = { data.0 }.input
+          let base = { data.0 }.base
+          let expected_program_output = { data.0 }.expected_program_output
+          let expected_python_output = { data.0 }.expected_python_output
+          let actual_python_output = data.1
+
           let input_printable_text = input |> helpers.to_printable_text
-          let output = data.output
-          let python_output = data.python_output
-          let base = data.base
 
           let base_text = case base {
             10 -> ""
             _ -> "(base: " <> base |> int.to_string <> ")"
           }
 
-          let message = case output, python_output {
+          let message = case expected_program_output, expected_python_output {
             Ok(_), Ok(python_output) -> {
               "should_parse: \""
               <> input_printable_text
@@ -105,9 +107,8 @@ pub fn check_against_python_tests() {
 
           use <- it(message)
 
-          input
-          |> python_parse.to_int(base: base)
-          |> expect.to_equal(python_output)
+          expected_python_output
+          |> expect.to_equal(actual_python_output)
         }),
     ),
   ])

@@ -1,20 +1,24 @@
-import gleam/int
-import gleam/list
-import gleam/option.{type Option, None, Some}
 import gleam/result
 import shellout
 
-pub fn to_float(text text: String) -> Result(String, Nil) {
-  text |> parse(program_name: "parse_float.py", base: None)
+// TODO: Change function name, input name
+// TODO: Make these take lists of test data, do conversion into json string here, return list of results
+pub fn to_floats(
+  input_json_string input_json_string: String,
+) -> Result(String, Nil) {
+  input_json_string |> parse(program_name: "parse_floats.py")
 }
 
-pub fn to_int(text text: String, base base: Int) -> Result(String, Nil) {
-  text |> parse(program_name: "parse_int.py", base: Some(base))
+// TODO: Change function name, input name
+pub fn to_ints(
+  input_json_string input_json_string: String,
+) -> Result(String, Nil) {
+  input_json_string |> parse(program_name: "parse_ints.py")
 }
 
+// TODO: Change function name, input name
 fn parse(
-  text text: String,
-  base base: Option(Int),
+  input_json_string input_json_string: String,
   program_name program_name: String,
 ) -> Result(String, Nil) {
   let arguments = [
@@ -23,12 +27,9 @@ fn parse(
     "3.13",
     "python",
     "./test/python/" <> program_name,
-    text,
+    input_json_string,
   ]
-  let arguments = case base {
-    Some(base) -> arguments |> list.append([base |> int.to_string])
-    None -> arguments
-  }
+
   shellout.command(run: "uv", with: arguments, in: ".", opt: [])
   |> result.replace_error(Nil)
 }

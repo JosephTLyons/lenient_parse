@@ -3,8 +3,8 @@ import parse_error.{type ParseError}
 pub type FloatTestData {
   FloatTestData(
     input: String,
-    output: Result(Float, ParseError),
-    python_output: Result(String, Nil),
+    expected_program_output: Result(Float, ParseError),
+    expected_python_output: Result(String, Nil),
   )
 }
 
@@ -12,7 +12,7 @@ pub type IntegerTestData {
   IntegerTestData(
     input: String,
     base: Int,
-    output: Result(Int, ParseError),
-    python_output: Result(String, Nil),
+    expected_program_output: Result(Int, ParseError),
+    expected_python_output: Result(String, Nil),
   )
 }

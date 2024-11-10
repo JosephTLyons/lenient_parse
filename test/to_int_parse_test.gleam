@@ -14,7 +14,7 @@ pub fn to_int_tests() {
       |> list.map(fn(data) {
         let input = data.input
         let input_printable_text = input |> helpers.to_printable_text
-        let output = data.output
+        let expected_program_output = data.expected_program_output
         let base = data.base
 
         let base_text = case base {
@@ -22,7 +22,7 @@ pub fn to_int_tests() {
           _ -> "(base: " <> base |> int.to_string <> ")"
         }
 
-        let message = case output {
+        let message = case expected_program_output {
           Ok(output) -> {
             "should_parse: \""
             <> input_printable_text
@@ -45,7 +45,7 @@ pub fn to_int_tests() {
 
         input
         |> lenient_parse.to_int_with_base(base: base)
-        |> expect.to_equal(output)
+        |> expect.to_equal(expected_program_output)
       }),
   )
 }

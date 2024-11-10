@@ -14,9 +14,9 @@ pub fn to_float_tests() {
       |> list.map(fn(data) {
         let input = data.input
         let input_printable_text = input |> helpers.to_printable_text
-        let output = data.output
+        let expected_program_output = data.expected_program_output
 
-        let message = case output {
+        let message = case expected_program_output {
           Ok(output) -> {
             "should_parse: \""
             <> input_printable_text
@@ -37,7 +37,7 @@ pub fn to_float_tests() {
 
         input
         |> lenient_parse.to_float
-        |> expect.to_equal(output)
+        |> expect.to_equal(expected_program_output)
       }),
   )
 }
