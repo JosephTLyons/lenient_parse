@@ -9,8 +9,8 @@ pub fn to_floats(
 ) -> List(Result(String, Nil)) {
   let input_json_string =
     float_test_data
-    |> json.array(fn(data) {
-      json.object([#("input", json.string(data.input))])
+    |> json.array(fn(float_data) {
+      json.object([#("input", json.string(float_data.input))])
     })
     |> json.to_string
 
@@ -22,10 +22,10 @@ pub fn to_ints(
 ) -> List(Result(String, Nil)) {
   let input_json_string =
     integer_test_data
-    |> json.array(fn(data) {
+    |> json.array(fn(integer_data) {
       json.object([
-        #("input", json.string(data.input)),
-        #("base", json.int(data.base)),
+        #("input", json.string(integer_data.input)),
+        #("base", json.int(integer_data.base)),
       ])
     })
     |> json.to_string
