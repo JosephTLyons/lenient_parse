@@ -42,7 +42,6 @@ pub fn tokenize_int(text text: String, base base: Int) -> List(Token) {
   |> do_tokenize_int(base: base, index: 0, base_prefix_found: False, acc: [])
 }
 
-// TODO: clean up this logic, super WET
 fn do_tokenize_int(
   characters characters: List(String),
   base base: Int,
@@ -55,61 +54,25 @@ fn do_tokenize_int(
     [first, ..rest] -> {
       let lookahead = rest |> list.first
 
-      let a = case base_prefix_found, base, first, lookahead {
-        False, 0, "0", Ok(a) if a == "b" || a == "B" -> {
-          let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
-          let rest = case rest {
-            [] -> []
-            [_, ..rest] -> rest
-          }
-          Some(#(index + 2, token, rest, True))
-        }
-        False, 0, "0", Ok(a) if a == "o" || a == "O" -> {
-          let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
-          let rest = case rest {
-            [] -> []
-            [_, ..rest] -> rest
-          }
-          Some(#(index + 2, token, rest, True))
-        }
-        False, 0, "0", Ok(a) if a == "x" || a == "X" -> {
-          let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
-          let rest = case rest {
-            [] -> []
-            [_, ..rest] -> rest
-          }
-          Some(#(index + 2, token, rest, True))
-        }
-        False, 2, "0", Ok(a) if a == "b" || a == "B" -> {
-          let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
-          let rest = case rest {
-            [] -> []
-            [_, ..rest] -> rest
-          }
-          Some(#(index + 2, token, rest, True))
-        }
-        False, 8, "0", Ok(a) if a == "o" || a == "O" -> {
-          let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
-          let rest = case rest {
-            [] -> []
-            [_, ..rest] -> rest
-          }
-          Some(#(index + 2, token, rest, True))
-        }
-        False, 16, "0", Ok(a) if a == "x" || a == "X" -> {
-          let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
-          let rest = case rest {
-            [] -> []
-            [_, ..rest] -> rest
-          }
-          Some(#(index + 2, token, rest, True))
-        }
-        _, _, _, _ -> None
-      }
-
-      let #(index, token, rest, base_prefix_found) = case a {
-        Some(a) -> a
-        None -> {
+      let #(index, token, rest, base_prefix_found) = case
+        base_prefix_found,
+        base,
+        first,
+        lookahead
+      {
+        False, 0, "0", Ok(a) if a == "b" || a == "B" ->
+          create_base_prefix(index, a, base_2, rest)
+        False, 0, "0", Ok(a) if a == "o" || a == "O" ->
+          create_base_prefix(index, a, base_8, rest)
+        False, 0, "0", Ok(a) if a == "x" || a == "X" ->
+          create_base_prefix(index, a, base_16, rest)
+        False, 2, "0", Ok(a) if a == "b" || a == "B" ->
+          create_base_prefix(index, a, base_2, rest)
+        False, 8, "0", Ok(a) if a == "o" || a == "O" ->
+          create_base_prefix(index, a, base_8, rest)
+        False, 16, "0", Ok(a) if a == "x" || a == "X" ->
+          create_base_prefix(index, a, base_16, rest)
+        _, _, _, _ -> {
           let token =
             common_token(
               character: first,
@@ -130,6 +93,20 @@ fn do_tokenize_int(
       )
     }
   }
+}
+
+fn create_base_prefix(
+  index: Int,
+  specifier: String,
+  base: Int,
+  rest: List(String),
+) -> #(Int, Token, List(String), Bool) {
+  let token = BasePrefix(#(index, index + 2), "0" <> specifier, base)
+  let new_rest = case rest {
+    [] -> []
+    [_, ..rest] -> rest
+  }
+  #(index + 2, token, new_rest, True)
 }
 
 fn common_token(
