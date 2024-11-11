@@ -5,7 +5,9 @@ import gleam/option.{type Option, None, Some}
 import gleam/order
 import gleam/queue.{type Queue}
 import gleam/result
-import lenient_parse/internal/base_constants.{base_10}
+import lenient_parse/internal/base_constants.{
+  base_0, base_10, base_16, base_2, base_8,
+}
 import lenient_parse/internal/scale
 import lenient_parse/internal/token.{
   type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
@@ -122,7 +124,9 @@ pub fn parse_int(
   use ParseData(is_positive, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = case base {
-    a if a == 0 || a == 2 || a == 8 || a == 16 -> {
+    base
+      if base == base_0 || base == base_2 || base == base_8 || base == base_16
+    -> {
       let parse_data = parse_base_prefix(tokens, next_index)
       use ParseData(base_data, next_index, tokens) <- result.try(parse_data)
 
@@ -132,9 +136,9 @@ pub fn parse_int(
           Some(#(index_range, prefix)),
         )
         None -> {
-          let default_base = case a {
+          let default_base = case base {
             0 -> base_10
-            _ -> a
+            _ -> base
           }
 
           #(default_base, None)

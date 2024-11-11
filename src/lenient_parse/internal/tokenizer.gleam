@@ -1,7 +1,9 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import lenient_parse/internal/base_constants.{base_10, base_16, base_2, base_8}
+import lenient_parse/internal/base_constants.{
+  base_0, base_10, base_16, base_2, base_8,
+}
 import lenient_parse/internal/token.{
   type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
   Unknown, Whitespace,
@@ -60,15 +62,15 @@ fn do_tokenize_int(
         lookahead
       {
         False, "0", Ok(specifier)
-          if { base == 0 || base == 2 }
+          if { base == base_0 || base == base_2 }
           && { specifier == "b" || specifier == "B" }
         -> create_base_prefix(index, specifier, base_2, rest)
         False, "0", Ok(specifier)
-          if { base == 0 || base == 8 }
+          if { base == base_0 || base == base_8 }
           && { specifier == "o" || specifier == "O" }
         -> create_base_prefix(index, specifier, base_8, rest)
         False, "0", Ok(specifier)
-          if { base == 0 || base == 16 }
+          if { base == base_0 || base == base_16 }
           && { specifier == "x" || specifier == "X" }
         -> create_base_prefix(index, specifier, base_16, rest)
         _, _, _ -> {
