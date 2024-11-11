@@ -2,8 +2,8 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
 import lenient_parse/internal/token.{
-  type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
-  Whitespace,
+  type Token, DecimalPoint, Digit, ExponentSymbol, InferredBase, Sign,
+  Underscore, Unknown, Whitespace,
 }
 
 pub fn tokenize_float(text text: String) -> List(Token) {
@@ -36,29 +36,123 @@ fn do_tokenize_float(
 }
 
 pub fn tokenize_int(text text: String, base base: Int) -> List(Token) {
-  text |> string.to_graphemes |> do_tokenize_int(base: base, index: 0, acc: [])
+  text
+  |> string.to_graphemes
+  |> do_tokenize_int(base: base, index: 0, inferred_base_found: False, acc: [])
 }
 
+// TODO - clean up this logic, super WET
 fn do_tokenize_int(
   characters characters: List(String),
   base base: Int,
   index index: Int,
+  inferred_base_found inferred_base_found: Bool,
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
-      let token =
-        common_token(
-          character: first,
-          index: index,
-          tokenize_character_as_digit: fn(_) { True },
-          base: base,
-        )
-      do_tokenize_int(characters: rest, base: base, index: index + 1, acc: [
-        token,
-        ..acc
-      ])
+      let lookahead = rest |> list.first
+
+      case inferred_base_found, base, first, lookahead {
+        False, 0, "0", Ok(a) if a == "b" || a == "B" -> {
+          let base = 2
+          let token = InferredBase(#(index, index + 2), "0" <> a, base)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
+          }
+
+          do_tokenize_int(
+            characters: rest,
+            base: base,
+            index: index + 2,
+            inferred_base_found: True,
+            acc: [token, ..acc],
+          )
+        }
+        False, 0, "0", Ok(a) if a == "o" || a == "O" -> {
+          let base = 8
+          let token = InferredBase(#(index, index + 2), "0" <> a, base)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
+          }
+
+          do_tokenize_int(
+            characters: rest,
+            base: base,
+            index: index + 2,
+            inferred_base_found: True,
+            acc: [token, ..acc],
+          )
+        }
+        False, 0, "0", Ok(a) if a == "x" || a == "X" -> {
+          let base = 16
+          let token = InferredBase(#(index, index + 2), "0" <> a, base)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
+          }
+
+          do_tokenize_int(
+            characters: rest,
+            base: base,
+            index: index + 2,
+            inferred_base_found: True,
+            acc: [token, ..acc],
+          )
+        }
+
+        // _, 0, _, _ -> {
+        //   let token =
+        //     common_token(
+        //       character: first,
+        //       index: index,
+        //       tokenize_character_as_digit: fn(_) { True },
+        //       base: base,
+        //     )
+        //   let base = 10
+        //   case token {
+        //     Digit(_, _, _, _) -> {
+        //       let base = 10
+        //       do_tokenize_int(
+        //         characters: rest,
+        //         base: base,
+        //         index: index + 1,
+        //         inferred_base_found: True,
+        //         acc: [token, ..acc],
+        //       )
+        //     }
+        //     token -> {
+        //       do_tokenize_int(
+        //         characters: rest,
+        //         base: base,
+        //         index: index + 1,
+        //         inferred_base_found: True,
+        //         acc: [token, ..acc],
+        //       )
+        //     }
+        //   }
+        // }
+        _, _, _, _ -> {
+          let token =
+            common_token(
+              character: first,
+              index: index,
+              tokenize_character_as_digit: fn(_) { True },
+              base: base,
+            )
+
+          do_tokenize_int(
+            characters: rest,
+            base: base,
+            index: index + 1,
+            inferred_base_found: inferred_base_found,
+            acc: [token, ..acc],
+          )
+        }
+      }
     }
   }
 }
@@ -129,3 +223,7 @@ fn character_to_value(character: String) -> Option(Int) {
     _ -> None
   }
 }
+// TODO
+// First, determine if we need to use block tokenization
+// If so, then the parser only needs to check the first two characters of the digit strin
+// If not, then the tokenizer needs to store the 2 characters in the InferredBase variant

@@ -217,6 +217,34 @@ const valid_simple_integers_base_16: List(IntegerTestData) = [
   ),
 ]
 
+const valid_simple_inferred_base: List(IntegerTestData) = [
+  IntegerTestData(
+    input: "0b10",
+    base: 0,
+    expected_program_output: Ok(0b10),
+    expected_python_output: Ok("2"),
+  ),
+  IntegerTestData(
+    input: "0o01234",
+    base: 0,
+    expected_program_output: Ok(0o01234),
+    expected_python_output: Ok("668"),
+  ),
+  IntegerTestData(
+    input: "0xDEADBEEF",
+    base: 0,
+    expected_program_output: Ok(0xDEADBEEF),
+    expected_python_output: Ok("3735928559"),
+  ),
+  // IntegerTestData(
+//   input: "666",
+//   base: 0,
+//   expected_program_output: Ok(666),
+//   expected_python_output: Ok("666"),
+// ),
+// TODO: + and - tests
+]
+
 pub fn data() -> List(IntegerTestData) {
   [
     valid_simple_integers,
@@ -225,6 +253,7 @@ pub fn data() -> List(IntegerTestData) {
     valid_simple_integers_base_16,
     valid_integers_with_underscores,
     valid_integers_with_whitespace,
+    valid_simple_inferred_base,
   ]
   |> list.flatten
 }

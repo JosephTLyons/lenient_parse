@@ -2,7 +2,7 @@ import gleam/list
 import parse_error.{
   EmptyString, InvalidBaseValue, InvalidDigitPosition, InvalidSignPosition,
   InvalidUnderscorePosition, OutOfBaseRange, UnknownCharacter,
-  WhitespaceOnlyString,
+  WhitespaceOnlyString, X,
 }
 import test_data.{type IntegerTestData, IntegerTestData}
 
@@ -417,6 +417,34 @@ const invalid_mixed: List(IntegerTestData) = [
   ),
 ]
 
+const invalid_inferred_base: List(IntegerTestData) = [
+  // TODO: Figure out what error for this
+  // IntegerTestData(
+  //   input: "0b",
+  //   base: 0,
+  //   expected_program_output: Error(X),
+  //   expected_python_output: Error(Nil),
+  // ),
+  IntegerTestData(
+    input: "0b100b",
+    base: 0,
+    expected_program_output: Error(OutOfBaseRange("b", 11, 2, 5)),
+    expected_python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "0b1001",
+    base: 8,
+    expected_program_output: Error(OutOfBaseRange("b", 11, 8, 1)),
+    expected_python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "0XABCD",
+    base: 2,
+    expected_program_output: Error(OutOfBaseRange("X", 33, 2, 1)),
+    expected_python_output: Error(Nil),
+  ),
+]
+
 pub fn data() -> List(IntegerTestData) {
   [
     invalid_empty_or_whitespace,
@@ -427,6 +455,7 @@ pub fn data() -> List(IntegerTestData) {
     invalid_sign_positions,
     invalid_base_configurations,
     invalid_base_value,
+    invalid_inferred_base,
     invalid_mixed,
   ]
   |> list.flatten

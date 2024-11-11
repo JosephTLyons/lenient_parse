@@ -1,5 +1,6 @@
 import lenient_parse/internal/token.{
-  DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown, Whitespace,
+  DecimalPoint, Digit, ExponentSymbol, InferredBase, Sign, Underscore, Unknown,
+  Whitespace,
 }
 import lenient_parse/internal/tokenizer
 import startest/expect
@@ -158,3 +159,79 @@ pub fn tokenize_int_base_36_test() {
     Digit(#(4, 5), "z", 35, 36),
   ])
 }
+
+pub fn tokenize_int_inferred_base_2_test() {
+  "   0b1010b"
+  |> tokenizer.tokenize_int(base: 0)
+  |> expect.to_equal([
+    Whitespace(#(0, 1), " "),
+    Whitespace(#(1, 2), " "),
+    Whitespace(#(2, 3), " "),
+    InferredBase(#(3, 5), "0b", 2),
+    Digit(#(5, 6), "1", 1, 2),
+    Digit(#(6, 7), "0", 0, 2),
+    Digit(#(7, 8), "1", 1, 2),
+    Digit(#(8, 9), "0", 0, 2),
+    Digit(#(9, 10), "b", 11, 2),
+  ])
+}
+
+pub fn tokenize_int_inferred_base_8_test() {
+  "   0o0123456780o"
+  |> tokenizer.tokenize_int(base: 0)
+  |> expect.to_equal([
+    Whitespace(#(0, 1), " "),
+    Whitespace(#(1, 2), " "),
+    Whitespace(#(2, 3), " "),
+    InferredBase(#(3, 5), "0o", 8),
+    Digit(#(5, 6), "0", 0, 8),
+    Digit(#(6, 7), "1", 1, 8),
+    Digit(#(7, 8), "2", 2, 8),
+    Digit(#(8, 9), "3", 3, 8),
+    Digit(#(9, 10), "4", 4, 8),
+    Digit(#(10, 11), "5", 5, 8),
+    Digit(#(11, 12), "6", 6, 8),
+    Digit(#(12, 13), "7", 7, 8),
+    Digit(#(13, 14), "8", 8, 8),
+    Digit(#(14, 15), "0", 0, 8),
+    Digit(#(15, 16), "o", 24, 8),
+  ])
+}
+
+pub fn tokenize_int_inferred_base_16_test() {
+  " +0XDEAD_BEEF0x "
+  |> tokenizer.tokenize_int(base: 0)
+  |> expect.to_equal([
+    Whitespace(#(0, 1), " "),
+    Sign(#(1, 2), "+", True),
+    InferredBase(#(2, 4), "0X", 16),
+    Digit(#(4, 5), "D", 13, 16),
+    Digit(#(5, 6), "E", 14, 16),
+    Digit(#(6, 7), "A", 10, 16),
+    Digit(#(7, 8), "D", 13, 16),
+    Underscore(#(8, 9)),
+    Digit(#(9, 10), "B", 11, 16),
+    Digit(#(10, 11), "E", 14, 16),
+    Digit(#(11, 12), "E", 14, 16),
+    Digit(#(12, 13), "F", 15, 16),
+    Digit(#(13, 14), "0", 0, 16),
+    Digit(#(14, 15), "x", 33, 16),
+    Whitespace(#(15, 16), " "),
+  ])
+}
+// pub fn tokenize_int_inferred_base_10_test() {
+//   "1990_04_12"
+//   |> tokenizer.tokenize_int(base: 0)
+//   |> expect.to_equal([
+//     Digit(#(0, 1), "1", 1, 10),
+//     Digit(#(1, 2), "9", 9, 10),
+//     Digit(#(2, 3), "9", 9, 10),
+//     Digit(#(3, 4), "0", 0, 10),
+//     Underscore(#(4, 5)),
+//     Digit(#(5, 6), "0", 0, 10),
+//     Digit(#(6, 7), "4", 4, 10),
+//     Underscore(#(7, 8)),
+//     Digit(#(8, 9), "1", 1, 10),
+//     Digit(#(9, 10), "2", 2, 10),
+//   ])
+// }

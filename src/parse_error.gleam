@@ -34,6 +34,9 @@ pub type ParseError {
   /// - `index`: The position of the invalid digit in the input string.
   InvalidDigitPosition(character: String, index: Int)
 
+  // TODO
+  X
+
   /// Represents an error when a digit character is out of the valid range for
   /// the specified base.
   ///
@@ -81,6 +84,7 @@ pub fn to_string(error: ParseError) -> String {
       <> digit
       <> "\" at invalid position: "
       <> index |> int.to_string
+    X -> "hi"
     OutOfBaseRange(character, value, base, index) ->
       "digit character \""
       <> character

@@ -7,8 +7,8 @@ import gleam/queue.{type Queue}
 import gleam/result
 import lenient_parse/internal/scale
 import lenient_parse/internal/token.{
-  type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
-  Whitespace,
+  type Token, DecimalPoint, Digit, ExponentSymbol, InferredBase, Sign,
+  Underscore, Unknown, Whitespace,
 }
 import parse_error.{
   type ParseError, EmptyString, InvalidDecimalPosition,
@@ -120,6 +120,21 @@ pub fn parse_int(
   let parse_data = parse_sign(tokens, next_index)
   use ParseData(is_positive, next_index, tokens) <- result.try(parse_data)
 
+  let parse_data = case base {
+    0 -> {
+      let parse_data = parse_inferred_base(tokens, next_index)
+      use ParseData(base, next_index, tokens) <- result.try(parse_data)
+      let base = case base {
+        Some(base) -> base
+        None -> 10
+      }
+
+      Ok(ParseData(base, next_index, tokens))
+    }
+    _ -> Ok(ParseData(base, next_index, tokens))
+  }
+  use ParseData(base, next_index, tokens) <- result.try(parse_data)
+
   let parse_data = parse_digits(tokens, next_index)
   use ParseData(digits, next_index, tokens) <- result.try(parse_data)
 
@@ -191,6 +206,20 @@ fn parse_sign(
     _ -> {
       Ok(ParseData(data: True, next_index: index, tokens: tokens))
     }
+  }
+}
+
+fn parse_inferred_base(
+  tokens tokens: List(Token),
+  index index: Int,
+) -> Result(ParseData(Option(Int)), ParseError) {
+  case tokens {
+    [Unknown(#(start_index, _), character), ..] ->
+      Error(UnknownCharacter(character, start_index))
+    [InferredBase(#(_, end_index), _, base), ..rest] -> {
+      Ok(ParseData(data: Some(base), next_index: end_index, tokens: rest))
+    }
+    _ -> Ok(ParseData(data: None, next_index: index, tokens: tokens))
   }
 }
 

@@ -1,12 +1,13 @@
 import parse_error.{
   type ParseError, InvalidDecimalPosition, InvalidDigitPosition,
   InvalidExponentSymbolPosition, InvalidSignPosition, InvalidUnderscorePosition,
-  OutOfBaseRange, UnknownCharacter,
+  OutOfBaseRange, UnknownCharacter, X,
 }
 
 pub type Token {
   Sign(#(Int, Int), String, Bool)
   Digit(#(Int, Int), character: String, value: Int, base: Int)
+  InferredBase(#(Int, Int), prefix: String, base: Int)
   Underscore(#(Int, Int))
   DecimalPoint(#(Int, Int))
   ExponentSymbol(#(Int, Int), String)
@@ -21,6 +22,7 @@ pub fn to_error(token: Token) -> ParseError {
       OutOfBaseRange(character, value, base, start_index)
     Digit(#(start_index, _), character, _, _) ->
       InvalidDigitPosition(character, start_index)
+    InferredBase(_, _, _) -> X
     Underscore(#(start_index, _)) -> InvalidUnderscorePosition(start_index)
     DecimalPoint(#(start_index, _)) -> InvalidDecimalPosition(start_index)
     ExponentSymbol(#(start_index, _), exponent_symbol) ->
