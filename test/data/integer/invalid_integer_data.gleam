@@ -6,8 +6,7 @@ import parse_error.{
 }
 import test_data.{type IntegerTestData, IntegerTestData}
 
-// TODO: Rename all lists to make more sense
-const empty_or_whitespace: List(IntegerTestData) = [
+const invalid_empty_or_whitespace: List(IntegerTestData) = [
   IntegerTestData(
     input: "",
     base: 10,
@@ -64,7 +63,7 @@ const empty_or_whitespace: List(IntegerTestData) = [
   ),
 ]
 
-const underscore_position: List(IntegerTestData) = [
+const invalid_underscore_position: List(IntegerTestData) = [
   IntegerTestData(
     input: "_",
     base: 10,
@@ -133,7 +132,7 @@ const underscore_position: List(IntegerTestData) = [
   ),
 ]
 
-const characters: List(IntegerTestData) = [
+const unknown_character: List(IntegerTestData) = [
   IntegerTestData(
     input: "+ 1",
     base: 10,
@@ -190,7 +189,7 @@ const characters: List(IntegerTestData) = [
   ),
 ]
 
-const base_range: List(IntegerTestData) = [
+const out_of_base_range: List(IntegerTestData) = [
   IntegerTestData(
     input: "a",
     base: 10,
@@ -257,9 +256,21 @@ const base_range: List(IntegerTestData) = [
     expected_program_output: Error(OutOfBaseRange(2, "E", 14, 10)),
     expected_python_output: Error(Nil),
   ),
+  IntegerTestData(
+    input: "151",
+    base: 2,
+    expected_program_output: Error(OutOfBaseRange(1, "5", 5, 2)),
+    expected_python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "DEAD_BEEF",
+    base: 10,
+    expected_program_output: Error(OutOfBaseRange(0, "D", 13, 10)),
+    expected_python_output: Error(Nil),
+  ),
 ]
 
-const digit_position: List(IntegerTestData) = [
+const invalid_digit_position: List(IntegerTestData) = [
   IntegerTestData(
     input: "1 1",
     base: 10,
@@ -286,7 +297,7 @@ const digit_position: List(IntegerTestData) = [
   ),
 ]
 
-const sign_position: List(IntegerTestData) = [
+const invalid_sign_position: List(IntegerTestData) = [
   IntegerTestData(
     input: "1+",
     base: 10,
@@ -325,22 +336,7 @@ const sign_position: List(IntegerTestData) = [
   ),
 ]
 
-const base_configuration: List(IntegerTestData) = [
-  IntegerTestData(
-    input: "151",
-    base: 2,
-    expected_program_output: Error(OutOfBaseRange(1, "5", 5, 2)),
-    expected_python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "DEAD_BEEF",
-    base: 10,
-    expected_program_output: Error(OutOfBaseRange(0, "D", 13, 10)),
-    expected_python_output: Error(Nil),
-  ),
-]
-
-const base_value: List(IntegerTestData) = [
+const invalid_base_value: List(IntegerTestData) = [
   IntegerTestData(
     input: "151",
     base: 1,
@@ -355,7 +351,40 @@ const base_value: List(IntegerTestData) = [
   ),
 ]
 
-const mixed: List(IntegerTestData) = [
+const base_prefix_only: List(IntegerTestData) = [
+  IntegerTestData(
+    input: "  0b",
+    base: 0,
+    expected_program_output: Error(BasePrefixOnly(#(2, 4), "0b")),
+    expected_python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "  0b  ",
+    base: 0,
+    expected_program_output: Error(UnknownCharacter(4, " ")),
+    expected_python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "0b100b",
+    base: 0,
+    expected_program_output: Error(OutOfBaseRange(5, "b", 11, 2)),
+    expected_python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "0b1001",
+    base: 8,
+    expected_program_output: Error(OutOfBaseRange(1, "b", 11, 8)),
+    expected_python_output: Error(Nil),
+  ),
+  IntegerTestData(
+    input: "0XABCD",
+    base: 2,
+    expected_program_output: Error(OutOfBaseRange(1, "X", 33, 2)),
+    expected_python_output: Error(Nil),
+  ),
+]
+
+const invalid_mixed: List(IntegerTestData) = [
   IntegerTestData(
     input: "e_1_3",
     base: 10,
@@ -449,51 +478,17 @@ const mixed: List(IntegerTestData) = [
   ),
 ]
 
-const base_prefix_configuration: List(IntegerTestData) = [
-  IntegerTestData(
-    input: "  0b",
-    base: 0,
-    expected_program_output: Error(BasePrefixOnly(#(2, 4), "0b")),
-    expected_python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "  0b  ",
-    base: 0,
-    expected_program_output: Error(UnknownCharacter(4, " ")),
-    expected_python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "0b100b",
-    base: 0,
-    expected_program_output: Error(OutOfBaseRange(5, "b", 11, 2)),
-    expected_python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "0b1001",
-    base: 8,
-    expected_program_output: Error(OutOfBaseRange(1, "b", 11, 8)),
-    expected_python_output: Error(Nil),
-  ),
-  IntegerTestData(
-    input: "0XABCD",
-    base: 2,
-    expected_program_output: Error(OutOfBaseRange(1, "X", 33, 2)),
-    expected_python_output: Error(Nil),
-  ),
-]
-
 pub fn data() -> List(IntegerTestData) {
   [
-    empty_or_whitespace,
-    underscore_position,
-    characters,
-    base_range,
-    digit_position,
-    sign_position,
-    base_configuration,
-    base_value,
-    base_prefix_configuration,
-    mixed,
+    invalid_empty_or_whitespace,
+    invalid_underscore_position,
+    unknown_character,
+    out_of_base_range,
+    invalid_digit_position,
+    invalid_sign_position,
+    invalid_base_value,
+    base_prefix_only,
+    invalid_mixed,
   ]
   |> list.flatten
 }

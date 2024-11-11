@@ -5,8 +5,7 @@ import parse_error.{
 }
 import test_data.{type FloatTestData, FloatTestData}
 
-// TODO: Rename all lists to make more sense
-const empty_or_whitespace: List(FloatTestData) = [
+const invalid_empty_or_whitespace: List(FloatTestData) = [
   FloatTestData(
     input: "",
     expected_program_output: Error(EmptyString),
@@ -54,7 +53,7 @@ const empty_or_whitespace: List(FloatTestData) = [
   ),
 ]
 
-const decimal_position: List(FloatTestData) = [
+const invalid_decimal_position: List(FloatTestData) = [
   FloatTestData(
     input: "..1",
     expected_program_output: Error(InvalidDecimalPosition(0)),
@@ -97,7 +96,7 @@ const decimal_position: List(FloatTestData) = [
   ),
 ]
 
-const underscore_position: List(FloatTestData) = [
+const invalid_underscore_position: List(FloatTestData) = [
   FloatTestData(
     input: "_.",
     expected_program_output: Error(InvalidUnderscorePosition(0)),
@@ -160,7 +159,7 @@ const underscore_position: List(FloatTestData) = [
   ),
 ]
 
-const character: List(FloatTestData) = [
+const unknown_character: List(FloatTestData) = [
   FloatTestData(
     input: ". ",
     expected_program_output: Error(UnknownCharacter(1, " ")),
@@ -188,7 +187,7 @@ const character: List(FloatTestData) = [
   ),
 ]
 
-const exponent_position: List(FloatTestData) = [
+const invalid_exponent_symbol_position: List(FloatTestData) = [
   FloatTestData(
     input: "e",
     expected_program_output: Error(InvalidExponentSymbolPosition(0, "e")),
@@ -266,7 +265,7 @@ const exponent_position: List(FloatTestData) = [
   ),
 ]
 
-const mixed: List(FloatTestData) = [
+const invalid_mixed: List(FloatTestData) = [
   FloatTestData(
     input: "4.0E_2",
     expected_program_output: Error(InvalidUnderscorePosition(4)),
@@ -336,12 +335,12 @@ const mixed: List(FloatTestData) = [
 
 pub fn data() -> List(FloatTestData) {
   [
-    empty_or_whitespace,
-    decimal_position,
-    underscore_position,
-    character,
-    exponent_position,
-    mixed,
+    invalid_empty_or_whitespace,
+    invalid_decimal_position,
+    invalid_underscore_position,
+    unknown_character,
+    invalid_exponent_symbol_position,
+    invalid_mixed,
   ]
   |> list.flatten
 }

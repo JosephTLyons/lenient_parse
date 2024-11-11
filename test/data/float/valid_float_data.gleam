@@ -1,8 +1,7 @@
 import gleam/list
 import test_data.{type FloatTestData, FloatTestData}
 
-// TODO: Rename all lists to make more sense
-const simple_float: List(FloatTestData) = [
+const valid_simple: List(FloatTestData) = [
   FloatTestData(
     input: "1.001",
     expected_program_output: Ok(1.001),
@@ -80,7 +79,7 @@ const simple_float: List(FloatTestData) = [
   ),
 ]
 
-const float_with_underscore: List(FloatTestData) = [
+const valid_underscore: List(FloatTestData) = [
   FloatTestData(
     input: "1_000_000.0",
     expected_program_output: Ok(1_000_000.0),
@@ -108,7 +107,7 @@ const float_with_underscore: List(FloatTestData) = [
   ),
 ]
 
-const float_with_whitespace: List(FloatTestData) = [
+const valid_whitespace: List(FloatTestData) = [
   FloatTestData(
     input: " 1 ",
     expected_program_output: Ok(1.0),
@@ -136,7 +135,7 @@ const float_with_whitespace: List(FloatTestData) = [
   ),
 ]
 
-const float_with_exponent: List(FloatTestData) = [
+const valid_exponent_symbol_position: List(FloatTestData) = [
   FloatTestData(
     input: "4e3",
     expected_program_output: Ok(4000.0),
@@ -214,7 +213,7 @@ const float_with_exponent: List(FloatTestData) = [
   ),
 ]
 
-const mixed: List(FloatTestData) = [
+const valid_mixed: List(FloatTestData) = [
   FloatTestData(
     input: "   -30.01e-2   ",
     expected_program_output: Ok(-0.3001),
@@ -239,11 +238,11 @@ const mixed: List(FloatTestData) = [
 
 pub fn data() -> List(FloatTestData) {
   [
-    simple_float,
-    float_with_underscore,
-    float_with_whitespace,
-    float_with_exponent,
-    mixed,
+    valid_simple,
+    valid_underscore,
+    valid_whitespace,
+    valid_exponent_symbol_position,
+    valid_mixed,
   ]
   |> list.flatten
 }
