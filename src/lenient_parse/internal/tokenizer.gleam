@@ -1,9 +1,10 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
+import lenient_parse/internal/base_constants.{base_10, base_16, base_2, base_8}
 import lenient_parse/internal/token.{
-  type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
-  Whitespace,
+  type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
+  Unknown, Whitespace,
 }
 
 pub fn tokenize_float(text text: String) -> List(Token) {
@@ -18,7 +19,6 @@ fn do_tokenize_float(
   case characters {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
-      let base = 10
       let token = case first {
         "." -> DecimalPoint(#(index, index + 1))
         "e" | "E" -> ExponentSymbol(#(index, index + 1), first)
@@ -26,8 +26,9 @@ fn do_tokenize_float(
           common_token(
             character: first,
             index: index,
-            tokenize_character_as_digit: fn(digit_value) { digit_value < base },
-            base: base,
+            tokenize_character_as_digit: fn(digit_value) {
+              digit_value < base_10
+            },
           )
       }
       do_tokenize_float(characters: rest, index: index + 1, acc: [token, ..acc])
@@ -36,29 +37,148 @@ fn do_tokenize_float(
 }
 
 pub fn tokenize_int(text text: String, base base: Int) -> List(Token) {
-  text |> string.to_graphemes |> do_tokenize_int(base: base, index: 0, acc: [])
+  text
+  |> string.to_graphemes
+  |> do_tokenize_int(base: base, index: 0, base_prefix_found: False, acc: [])
 }
 
+// TODO: clean up this logic, super WET
 fn do_tokenize_int(
   characters characters: List(String),
   base base: Int,
   index index: Int,
+  base_prefix_found base_prefix_found: Bool,
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
-      let token =
-        common_token(
-          character: first,
-          index: index,
-          tokenize_character_as_digit: fn(_) { True },
-          base: base,
-        )
-      do_tokenize_int(characters: rest, base: base, index: index + 1, acc: [
-        token,
-        ..acc
-      ])
+      let lookahead = rest |> list.first
+
+      let #(index, token, rest, base_prefix_found) = case base {
+        0 -> {
+          case base_prefix_found, first, lookahead {
+            False, "0", Ok(a) if a == "b" || a == "B" -> {
+              let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
+              let rest = case rest {
+                [] -> []
+                [_, ..rest] -> rest
+              }
+              #(index + 2, token, rest, True)
+            }
+            False, "0", Ok(a) if a == "o" || a == "O" -> {
+              let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
+              let rest = case rest {
+                [] -> []
+                [_, ..rest] -> rest
+              }
+              #(index + 2, token, rest, True)
+            }
+            False, "0", Ok(a) if a == "x" || a == "X" -> {
+              let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
+              let rest = case rest {
+                [] -> []
+                [_, ..rest] -> rest
+              }
+              #(index + 2, token, rest, True)
+            }
+            _, _, _ -> {
+              let token =
+                common_token(
+                  character: first,
+                  index: index,
+                  tokenize_character_as_digit: fn(_) { True },
+                )
+
+              #(index + 1, token, rest, base_prefix_found)
+            }
+          }
+        }
+        2 -> {
+          case base_prefix_found, first, lookahead {
+            False, "0", Ok(a) if a == "b" || a == "B" -> {
+              let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
+              let rest = case rest {
+                [] -> []
+                [_, ..rest] -> rest
+              }
+              #(index + 2, token, rest, True)
+            }
+            _, _, _ -> {
+              let token =
+                common_token(
+                  character: first,
+                  index: index,
+                  tokenize_character_as_digit: fn(_) { True },
+                )
+
+              #(index + 1, token, rest, base_prefix_found)
+            }
+          }
+        }
+        8 -> {
+          case base_prefix_found, first, lookahead {
+            False, "0", Ok(a) if a == "o" || a == "O" -> {
+              let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
+              let rest = case rest {
+                [] -> []
+                [_, ..rest] -> rest
+              }
+              #(index + 2, token, rest, True)
+            }
+            _, _, _ -> {
+              let token =
+                common_token(
+                  character: first,
+                  index: index,
+                  tokenize_character_as_digit: fn(_) { True },
+                )
+
+              #(index + 1, token, rest, base_prefix_found)
+            }
+          }
+        }
+        16 -> {
+          case base_prefix_found, first, lookahead {
+            False, "0", Ok(a) if a == "x" || a == "X" -> {
+              let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
+              let rest = case rest {
+                [] -> []
+                [_, ..rest] -> rest
+              }
+              #(index + 2, token, rest, True)
+            }
+            _, _, _ -> {
+              let token =
+                common_token(
+                  character: first,
+                  index: index,
+                  tokenize_character_as_digit: fn(_) { True },
+                )
+
+              #(index + 1, token, rest, base_prefix_found)
+            }
+          }
+        }
+        _ -> {
+          let token =
+            common_token(
+              character: first,
+              index: index,
+              tokenize_character_as_digit: fn(_) { True },
+            )
+
+          #(index + 1, token, rest, base_prefix_found)
+        }
+      }
+
+      do_tokenize_int(
+        characters: rest,
+        base: base,
+        index: index,
+        base_prefix_found: base_prefix_found,
+        acc: [token, ..acc],
+      )
     }
   }
 }
@@ -67,7 +187,6 @@ fn common_token(
   character character: String,
   index index: Int,
   tokenize_character_as_digit tokenize_character_as_digit: fn(Int) -> Bool,
-  base base: Int,
 ) -> Token {
   case character {
     "-" -> Sign(#(index, index + 1), "-", False)
@@ -79,7 +198,7 @@ fn common_token(
       case character_to_value(character) {
         Some(value) ->
           case tokenize_character_as_digit(value) {
-            True -> Digit(#(index, index + 1), character, value, base)
+            True -> Digit(#(index, index + 1), character, value)
             False -> Unknown(#(index, index + 1), character)
           }
         None -> Unknown(#(index, index + 1), character)

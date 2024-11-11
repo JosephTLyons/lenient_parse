@@ -1,12 +1,13 @@
 import parse_error.{
-  type ParseError, InvalidDecimalPosition, InvalidDigitPosition,
+  type ParseError, BasePrefixOnly, InvalidDecimalPosition, InvalidDigitPosition,
   InvalidExponentSymbolPosition, InvalidSignPosition, InvalidUnderscorePosition,
   OutOfBaseRange, UnknownCharacter,
 }
 
 pub type Token {
   Sign(#(Int, Int), String, Bool)
-  Digit(#(Int, Int), character: String, value: Int, base: Int)
+  Digit(#(Int, Int), character: String, value: Int)
+  BasePrefix(#(Int, Int), prefix: String, base: Int)
   Underscore(#(Int, Int))
   DecimalPoint(#(Int, Int))
   ExponentSymbol(#(Int, Int), String)
@@ -14,20 +15,21 @@ pub type Token {
   Unknown(#(Int, Int), String)
 }
 
-pub fn to_error(token: Token) -> ParseError {
+pub fn to_error(token: Token, base: Int) -> ParseError {
   case token {
-    Sign(#(start_index, _), sign, _) -> InvalidSignPosition(sign, start_index)
-    Digit(#(start_index, _), character, value, base) if value >= base ->
-      OutOfBaseRange(character, value, base, start_index)
-    Digit(#(start_index, _), character, _, _) ->
-      InvalidDigitPosition(character, start_index)
+    Sign(#(start_index, _), sign, _) -> InvalidSignPosition(start_index, sign)
+    Digit(#(start_index, _), character, value) if value >= base ->
+      OutOfBaseRange(start_index, character, value, base)
+    Digit(#(start_index, _), character, _) ->
+      InvalidDigitPosition(start_index, character)
+    BasePrefix(index_range, prefix, _) -> BasePrefixOnly(index_range, prefix)
     Underscore(#(start_index, _)) -> InvalidUnderscorePosition(start_index)
     DecimalPoint(#(start_index, _)) -> InvalidDecimalPosition(start_index)
     ExponentSymbol(#(start_index, _), exponent_symbol) ->
-      InvalidExponentSymbolPosition(exponent_symbol, start_index)
+      InvalidExponentSymbolPosition(start_index, exponent_symbol)
     Whitespace(#(start_index, _), whitespace) ->
-      UnknownCharacter(whitespace, start_index)
+      UnknownCharacter(start_index, whitespace)
     Unknown(#(start_index, _), character) ->
-      UnknownCharacter(character, start_index)
+      UnknownCharacter(start_index, character)
   }
 }

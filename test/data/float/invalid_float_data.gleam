@@ -5,7 +5,8 @@ import parse_error.{
 }
 import test_data.{type FloatTestData, FloatTestData}
 
-const invalid_empty_or_whitespace: List(FloatTestData) = [
+// TODO: Rename all lists to make more sense
+const empty_or_whitespace: List(FloatTestData) = [
   FloatTestData(
     input: "",
     expected_program_output: Error(EmptyString),
@@ -53,7 +54,7 @@ const invalid_empty_or_whitespace: List(FloatTestData) = [
   ),
 ]
 
-const invalid_decimal_positions: List(FloatTestData) = [
+const decimal_position: List(FloatTestData) = [
   FloatTestData(
     input: "..1",
     expected_program_output: Error(InvalidDecimalPosition(0)),
@@ -96,7 +97,7 @@ const invalid_decimal_positions: List(FloatTestData) = [
   ),
 ]
 
-const invalid_underscore_positions: List(FloatTestData) = [
+const underscore_position: List(FloatTestData) = [
   FloatTestData(
     input: "_.",
     expected_program_output: Error(InvalidUnderscorePosition(0)),
@@ -159,113 +160,113 @@ const invalid_underscore_positions: List(FloatTestData) = [
   ),
 ]
 
-const invalid_characters: List(FloatTestData) = [
+const character: List(FloatTestData) = [
   FloatTestData(
     input: ". ",
-    expected_program_output: Error(UnknownCharacter(" ", 1)),
+    expected_program_output: Error(UnknownCharacter(1, " ")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "abc",
-    expected_program_output: Error(UnknownCharacter("a", 0)),
+    expected_program_output: Error(UnknownCharacter(0, "a")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "100.00c01",
-    expected_program_output: Error(UnknownCharacter("c", 6)),
+    expected_program_output: Error(UnknownCharacter(6, "c")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "3.14f",
-    expected_program_output: Error(UnknownCharacter("f", 4)),
+    expected_program_output: Error(UnknownCharacter(4, "f")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "$100.00",
-    expected_program_output: Error(UnknownCharacter("$", 0)),
+    expected_program_output: Error(UnknownCharacter(0, "$")),
     expected_python_output: Error(Nil),
   ),
 ]
 
-const invalid_exponent_positions: List(FloatTestData) = [
+const exponent_position: List(FloatTestData) = [
   FloatTestData(
     input: "e",
-    expected_program_output: Error(InvalidExponentSymbolPosition("e", 0)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(0, "e")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "E",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 0)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(0, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "e4",
-    expected_program_output: Error(InvalidExponentSymbolPosition("e", 0)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(0, "e")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "E4",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 0)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(0, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4e",
-    expected_program_output: Error(InvalidExponentSymbolPosition("e", 1)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(1, "e")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4E",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 1)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(1, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4.e",
-    expected_program_output: Error(InvalidExponentSymbolPosition("e", 2)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(2, "e")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4.E",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 2)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(2, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4e.",
-    expected_program_output: Error(InvalidExponentSymbolPosition("e", 1)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(1, "e")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4E.",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 1)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(1, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "E4.0",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 0)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(0, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4.0E",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 3)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(3, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "1_234.e-4e",
-    expected_program_output: Error(InvalidExponentSymbolPosition("e", 9)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(9, "e")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "1e2e3",
-    expected_program_output: Error(InvalidExponentSymbolPosition("e", 3)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(3, "e")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "1E2E3",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 3)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(3, "E")),
     expected_python_output: Error(Nil),
   ),
 ]
 
-const invalid_mixed: List(FloatTestData) = [
+const mixed: List(FloatTestData) = [
   FloatTestData(
     input: "4.0E_2",
     expected_program_output: Error(InvalidUnderscorePosition(4)),
@@ -318,29 +319,29 @@ const invalid_mixed: List(FloatTestData) = [
   ),
   FloatTestData(
     input: " 4.0E",
-    expected_program_output: Error(InvalidExponentSymbolPosition("E", 4)),
+    expected_program_output: Error(InvalidExponentSymbolPosition(4, "E")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: "4.0E ",
-    expected_program_output: Error(UnknownCharacter(" ", 4)),
+    expected_program_output: Error(UnknownCharacter(4, " ")),
     expected_python_output: Error(Nil),
   ),
   FloatTestData(
     input: " 4.0E ",
-    expected_program_output: Error(UnknownCharacter(" ", 5)),
+    expected_program_output: Error(UnknownCharacter(5, " ")),
     expected_python_output: Error(Nil),
   ),
 ]
 
 pub fn data() -> List(FloatTestData) {
   [
-    invalid_empty_or_whitespace,
-    invalid_decimal_positions,
-    invalid_underscore_positions,
-    invalid_characters,
-    invalid_exponent_positions,
-    invalid_mixed,
+    empty_or_whitespace,
+    decimal_position,
+    underscore_position,
+    character,
+    exponent_position,
+    mixed,
   ]
   |> list.flatten
 }

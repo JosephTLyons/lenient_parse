@@ -23,7 +23,7 @@ import gleam/io
 import lenient_parse
 
 pub fn main() {
-  // Parse a string containing an integer into a float
+  // Parse a string containing an integer value into a float
 
   "1" |> lenient_parse.to_float |> io.debug // Ok(1.0)
   "1" |> float.parse |> io.debug // Error(Nil)
@@ -33,12 +33,12 @@ pub fn main() {
   "-5.001" |> lenient_parse.to_float |> io.debug // Ok(-5.001)
   "-5.001" |> float.parse |> io.debug // Ok(-5.001)
 
-  // Parse a more complex float with scientific notation
+  // Parse a string containing a complex float with scientific notation
 
   "-1_234.567_8e-2" |> lenient_parse.to_float |> io.debug // Ok(-12.345678)
   "-1_234.567_8e-2" |> float.parse |> io.debug // Error(Nil)
 
-  // Parse a string containing an integer into an integer
+  // Parse a string containing an integer
 
   "123" |> lenient_parse.to_int |> io.debug // Ok(123)
   "123" |> int.parse |> io.debug // Ok(123)
@@ -53,15 +53,31 @@ pub fn main() {
   "1_000_000" |> lenient_parse.to_int |> io.debug // Ok(1000000)
   "1_000_000" |> int.parse |> io.debug // Error(Nil)
 
-  // Parse a binary string with underscores
+  // Parse a string containing a binary number with underscores
 
   "1000_0000" |> lenient_parse.to_int_with_base(base: 2) |> io.debug // Ok(128)
   "1000_0000" |> int.base_parse(2) |> io.debug // Error(Nil)
 
-  // Parse a hexadecimal string with underscores
+  // Parse a string containing a hexadecimal number with underscores
 
-  "DEAD_BEEF" |> lenient_parse.to_int_with_base(base: 16) |> io.debug// Ok(3735928559)
+  "DEAD_BEEF" |> lenient_parse.to_int_with_base(base: 16) |> io.debug // Ok(3735928559)
   "DEAD_BEEF" |> int.base_parse(16) |> io.debug // Error(Nil)
+
+  // Use base 0 to automatically detect the base when parsing strings with prefix indicators
+
+  "0b10" |> lenient_parse.to_int_with_base(base: 0) |> io.debug // Ok(2)
+  "0b10" |> int.base_parse(0) |> io.debug // Error(Nil)
+
+  "0o01234" |> lenient_parse.to_int_with_base(base: 0) |> io.debug // Ok(668)
+  "0o01234" |> int.base_parse(0) |> io.debug // Error(Nil)
+
+  "0xDEADBEEF" |> lenient_parse.to_int_with_base(base: 0) |> io.debug // Ok(3735928559)
+  "0xDEADBEEF" |> int.base_parse(0) |> io.debug // Error(Nil)
+
+  // If no prefix string is present, base 0 defaults to base 10
+
+  "-4" |> lenient_parse.to_int_with_base(base: 0) |> io.debug // Ok(-4)
+  "-4" |> int.base_parse(0) |> io.debug // Error(Nil)
 
   // Nice errors
 

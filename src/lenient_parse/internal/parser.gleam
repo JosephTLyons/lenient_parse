@@ -5,13 +5,14 @@ import gleam/option.{type Option, None, Some}
 import gleam/order
 import gleam/queue.{type Queue}
 import gleam/result
+import lenient_parse/internal/base_constants.{base_10}
 import lenient_parse/internal/scale
 import lenient_parse/internal/token.{
-  type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
-  Whitespace,
+  type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
+  Unknown, Whitespace,
 }
 import parse_error.{
-  type ParseError, EmptyString, InvalidDecimalPosition,
+  type ParseError, BasePrefixOnly, EmptyString, InvalidDecimalPosition,
   InvalidExponentSymbolPosition, InvalidUnderscorePosition, OutOfBaseRange,
   UnknownCharacter, WhitespaceOnlyString,
 }
@@ -29,14 +30,14 @@ pub fn parse_float(tokens tokens: List(Token)) -> Result(Float, ParseError) {
   let parse_data = parse_sign(tokens, next_index)
   use ParseData(is_positive, next_index, tokens) <- result.try(parse_data)
 
-  let parse_data = parse_digits(tokens, next_index)
+  let parse_data = parse_digits(tokens, next_index, base_10)
   use ParseData(whole_digits, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = parse_decimal_point(tokens, next_index)
   use ParseData(decimal_specified, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = case decimal_specified {
-    True -> parse_digits(tokens, next_index)
+    True -> parse_digits(tokens, next_index, base_10)
     False -> Ok(ParseData(queue.new(), next_index, tokens))
   }
   use ParseData(fractional_digits, next_index, tokens) <- result.try(parse_data)
@@ -53,7 +54,7 @@ pub fn parse_float(tokens tokens: List(Token)) -> Result(Float, ParseError) {
 
   let parse_data = case missing_digit_parts, exponent_symbol {
     True, Some(exponent_symbol) ->
-      Error(InvalidExponentSymbolPosition(exponent_symbol, next_index - 1))
+      Error(InvalidExponentSymbolPosition(next_index - 1, exponent_symbol))
     _, None -> Ok(ParseData(0, next_index, tokens))
     _, Some(exponent_symbol) -> {
       let parse_data = parse_sign(tokens, next_index)
@@ -61,14 +62,14 @@ pub fn parse_float(tokens tokens: List(Token)) -> Result(Float, ParseError) {
         parse_data,
       )
 
-      let parse_data = parse_digits(tokens, next_index)
+      let parse_data = parse_digits(tokens, next_index, base_10)
       use ParseData(exponent_digits, next_index, tokens) <- result.try(
         parse_data,
       )
 
       let parse_data = case exponent_digits |> queue.is_empty {
         True ->
-          Error(InvalidExponentSymbolPosition(exponent_symbol, next_index - 1))
+          Error(InvalidExponentSymbolPosition(next_index - 1, exponent_symbol))
         False -> Ok(ParseData(exponent_digits, next_index, tokens))
       }
       use ParseData(exponent_digits, next_index, tokens) <- result.try(
@@ -91,7 +92,7 @@ pub fn parse_float(tokens tokens: List(Token)) -> Result(Float, ParseError) {
 
   let remaining_token_result = case tokens {
     [] -> Ok(Nil)
-    [token, ..] -> Error(token.to_error(token))
+    [token, ..] -> Error(token.to_error(token, base_10))
   }
   use _ <- result.try(remaining_token_result)
 
@@ -120,7 +121,35 @@ pub fn parse_int(
   let parse_data = parse_sign(tokens, next_index)
   use ParseData(is_positive, next_index, tokens) <- result.try(parse_data)
 
-  let parse_data = parse_digits(tokens, next_index)
+  let parse_data = case base {
+    a if a == 0 || a == 2 || a == 8 || a == 16 -> {
+      let parse_data = parse_base_prefix(tokens, next_index)
+      use ParseData(base_data, next_index, tokens) <- result.try(parse_data)
+
+      let #(base, prefix_data) = case base_data {
+        Some(#(index_range, prefix, base)) -> #(
+          base,
+          Some(#(index_range, prefix)),
+        )
+        None -> {
+          let default_base = case a {
+            0 -> base_10
+            _ -> a
+          }
+
+          #(default_base, None)
+        }
+      }
+
+      Ok(ParseData(#(base, prefix_data), next_index, tokens))
+    }
+    _ -> Ok(ParseData(#(base, None), next_index, tokens))
+  }
+  use ParseData(#(base, prefix_data), next_index, tokens) <- result.try(
+    parse_data,
+  )
+
+  let parse_data = parse_digits(tokens, next_index, base)
   use ParseData(digits, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = parse_whitespace(tokens, next_index)
@@ -128,14 +157,16 @@ pub fn parse_int(
 
   let remaining_token_result = case tokens {
     [] -> Ok(Nil)
-    [token, ..] -> Error(token.to_error(token))
+    [token, ..] -> Error(token.to_error(token, base))
   }
   use _ <- result.try(remaining_token_result)
 
-  case leading_whitespace, digits |> queue.is_empty {
-    None, True -> Error(EmptyString)
-    Some(_), True -> Error(WhitespaceOnlyString)
-    _, False -> {
+  case leading_whitespace, prefix_data, digits |> queue.is_empty {
+    None, None, True -> Error(EmptyString)
+    _, Some(#(index_range, prefix)), True ->
+      Error(BasePrefixOnly(index_range, prefix))
+    Some(_), _, True -> Error(WhitespaceOnlyString)
+    _, _, _ -> {
       let value = digits |> digits_to_int_with_base(base: base)
       let value = case is_positive {
         True -> value
@@ -160,7 +191,7 @@ fn do_parse_whitespace(
 ) -> Result(ParseData(Option(String)), ParseError) {
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(character, start_index))
+      Error(UnknownCharacter(start_index, character))
     [Whitespace(#(_, end_index), whitespace), ..rest] -> {
       do_parse_whitespace(
         tokens: rest,
@@ -185,12 +216,30 @@ fn parse_sign(
 ) -> Result(ParseData(Bool), ParseError) {
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(character, start_index))
+      Error(UnknownCharacter(start_index, character))
     [Sign(#(_, end_index), _, is_positive), ..rest] ->
       Ok(ParseData(data: is_positive, next_index: end_index, tokens: rest))
     _ -> {
       Ok(ParseData(data: True, next_index: index, tokens: tokens))
     }
+  }
+}
+
+fn parse_base_prefix(
+  tokens tokens: List(Token),
+  index index: Int,
+) -> Result(ParseData(Option(#(#(Int, Int), String, Int))), ParseError) {
+  case tokens {
+    [Unknown(#(start_index, _), character), ..] ->
+      Error(UnknownCharacter(start_index, character))
+    [BasePrefix(index_range, prefix, base), ..rest] -> {
+      Ok(ParseData(
+        data: Some(#(index_range, prefix, base)),
+        next_index: index_range.1,
+        tokens: rest,
+      ))
+    }
+    _ -> Ok(ParseData(data: None, next_index: index, tokens: tokens))
   }
 }
 
@@ -200,7 +249,7 @@ fn parse_decimal_point(
 ) -> Result(ParseData(Bool), ParseError) {
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(character, start_index))
+      Error(UnknownCharacter(start_index, character))
     [DecimalPoint(#(_, end_index)), ..rest] ->
       Ok(ParseData(data: True, next_index: end_index, tokens: rest))
     _ -> Ok(ParseData(data: False, next_index: index, tokens: tokens))
@@ -213,7 +262,7 @@ fn parse_exponent_symbol(
 ) -> Result(ParseData(Option(String)), ParseError) {
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(character, start_index))
+      Error(UnknownCharacter(start_index, character))
     [ExponentSymbol(#(_, end_index), exponent_symbol), ..rest] ->
       Ok(ParseData(
         data: Some(exponent_symbol),
@@ -227,10 +276,12 @@ fn parse_exponent_symbol(
 fn parse_digits(
   tokens tokens: List(Token),
   index index: Int,
+  base base: Int,
 ) -> Result(ParseData(Queue(Int)), ParseError) {
   do_parse_digits(
     tokens: tokens,
     index: index,
+    base: base,
     acc: queue.new(),
     at_beginning: True,
   )
@@ -239,18 +290,19 @@ fn parse_digits(
 fn do_parse_digits(
   tokens tokens: List(Token),
   index index: Int,
+  base base: Int,
   acc acc: Queue(Int),
   at_beginning at_beginning: Bool,
 ) -> Result(ParseData(Queue(Int)), ParseError) {
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(character, start_index))
+      Error(UnknownCharacter(start_index, character))
     [Whitespace(#(start_index, _), whitespace), ..] if at_beginning ->
-      Error(UnknownCharacter(whitespace, start_index))
+      Error(UnknownCharacter(start_index, whitespace))
     [Underscore(#(start_index, end_index)), ..rest] -> {
       let lookahead = rest |> list.first
       let at_end = case lookahead {
-        Ok(Digit(_, _, _, _)) -> False
+        Ok(Digit(_, _, _)) -> False
         _ -> True
       }
       let next_is_underscore = case lookahead {
@@ -271,20 +323,22 @@ fn do_parse_digits(
       do_parse_digits(
         tokens: rest,
         index: end_index,
+        base: base,
         acc: acc,
         at_beginning: False,
       )
     }
-    [Digit(#(_, end_index), _, value, base), ..rest] if value < base -> {
+    [Digit(#(_, end_index), _, value), ..rest] if value < base -> {
       do_parse_digits(
         tokens: rest,
         index: end_index,
+        base: base,
         acc: acc |> queue.push_back(value),
         at_beginning: False,
       )
     }
-    [Digit(#(start_index, _), character, value, base), ..] ->
-      Error(OutOfBaseRange(character, value, base, start_index))
+    [Digit(#(start_index, _), character, value), ..] ->
+      Error(OutOfBaseRange(start_index, character, value, base))
     _ -> Ok(ParseData(data: acc, next_index: index, tokens: tokens))
   }
 }
@@ -314,7 +368,7 @@ fn form_float(
 }
 
 fn digits_to_int(digits digits: Queue(Int)) -> Int {
-  digits_to_int_with_base(digits: digits, base: 10)
+  digits_to_int_with_base(digits: digits, base: base_10)
 }
 
 fn digits_to_int_with_base(digits digits: Queue(Int), base base: Int) -> Int {
@@ -345,8 +399,8 @@ fn do_power(
       }
     }
     order.Gt ->
-      do_power(base, exponent - 1, scale_factor * 10, exponent_is_positive)
+      do_power(base, exponent - 1, scale_factor * base_10, exponent_is_positive)
     order.Lt ->
-      do_power(base, exponent + 1, scale_factor * 10, exponent_is_positive)
+      do_power(base, exponent + 1, scale_factor * base_10, exponent_is_positive)
   }
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.0 - XXXX-XX-XX
+
+- Added base 0 support to `lenient_parse.to_int_with_base`. WHen providing a base of 0, the function will automatically detect the base from the input string using the prefix (`0b`, `0o`, `0x`). If no prefix is found, the function will default to base 10.
+
 ## v1.2.0 - 2024-11-09
 
 - Added arbitrary base support for integer parsing - use pub `lenient_parse.to_int_with_base`.
