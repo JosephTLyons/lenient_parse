@@ -129,12 +129,3 @@ fn character_to_value(character: String) -> Option(Int) {
     _ -> None
   }
 }
-// Capture the string in all tokens
-// All parse functions return the token, not a character
-// Store index range in t of ParseData?
-// TODOs in code
-// Pass tests
-// Checkpoint
-// A cleaner way to coalesce index ranges?
-
-// Introduce a new token type for each inferrer base
