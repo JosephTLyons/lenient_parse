@@ -56,23 +56,22 @@ fn do_tokenize_int(
 
       let #(index, token, rest, base_prefix_found) = case
         base_prefix_found,
-        base,
         first,
         lookahead
       {
-        False, 0, "0", Ok(a) if a == "b" || a == "B" ->
-          create_base_prefix(index, a, base_2, rest)
-        False, 0, "0", Ok(a) if a == "o" || a == "O" ->
-          create_base_prefix(index, a, base_8, rest)
-        False, 0, "0", Ok(a) if a == "x" || a == "X" ->
-          create_base_prefix(index, a, base_16, rest)
-        False, 2, "0", Ok(a) if a == "b" || a == "B" ->
-          create_base_prefix(index, a, base_2, rest)
-        False, 8, "0", Ok(a) if a == "o" || a == "O" ->
-          create_base_prefix(index, a, base_8, rest)
-        False, 16, "0", Ok(a) if a == "x" || a == "X" ->
-          create_base_prefix(index, a, base_16, rest)
-        _, _, _, _ -> {
+        False, "0", Ok(specifier)
+          if { base == 0 || base == 2 }
+          && { specifier == "b" || specifier == "B" }
+        -> create_base_prefix(index, specifier, base_2, rest)
+        False, "0", Ok(specifier)
+          if { base == 0 || base == 8 }
+          && { specifier == "o" || specifier == "O" }
+        -> create_base_prefix(index, specifier, base_8, rest)
+        False, "0", Ok(specifier)
+          if { base == 0 || base == 16 }
+          && { specifier == "x" || specifier == "X" }
+        -> create_base_prefix(index, specifier, base_16, rest)
+        _, _, _ -> {
           let token =
             common_token(
               character: first,
