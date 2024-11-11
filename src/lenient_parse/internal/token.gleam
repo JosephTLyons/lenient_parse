@@ -6,7 +6,6 @@ import parse_error.{
 
 pub type Token {
   Sign(#(Int, Int), String, Bool)
-  // InferredBase(character: String, value: Int, base: Int)
   Digit(#(Int, Int), character: String, value: Int, base: Int)
   Underscore(#(Int, Int))
   DecimalPoint(#(Int, Int))
