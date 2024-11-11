@@ -120,17 +120,6 @@ pub fn parse_int(
   let parse_data = parse_sign(tokens, index_range)
   use ParseData(is_positive, index_range, tokens) <- result.try(parse_data)
 
-  // let parse_data = case base {
-  //   0 -> parse_base(tokens, index)
-  //   _ -> Ok(ParseData(Some(base), tokens, index))
-  // }
-  // use ParseData(inferred_base, tokens, index) <- result.try(parse_data)
-
-  // let base = case inferred_base {
-  //   Some(base) -> base
-  //   None -> base
-  // }
-
   let parse_data = parse_digits(tokens, index_range)
   use ParseData(digits, index_range, tokens) <- result.try(parse_data)
 
@@ -204,36 +193,6 @@ fn parse_sign(
     }
   }
 }
-
-// fn parse_base(
-//   tokens: List(Token),
-//   index: Int,
-// ) -> Result(ParseData(Option(Int)), ParseError) {
-//   case tokens {
-//     [Unknown(character), ..] -> Error(UnknownCharacter(character, index))
-//     [Digit(_, 0, _), ..rest] -> {
-//       let lookahead = rest |> list.first
-
-//       let base = case lookahead {
-//         Ok(Digit(character, _, _)) if character == "b" || character == "B" ->
-//           Some(2)
-//         Ok(Digit(character, _, _)) if character == "o" || character == "O" ->
-//           Some(8)
-//         Ok(Digit(character, _, _)) if character == "x" || character == "x" ->
-//           Some(16)
-//         _ -> None
-//       }
-
-//       // Feels a bit hacky
-//       let rest = case rest |> list.pop(fn(_) { True }) {
-//         Ok(#(_, tokens)) -> tokens
-//         Error(_) -> rest
-//       }
-//       Ok(ParseData(data: base, tokens: rest, index: index + 2))
-//     }
-//     _ -> Ok(ParseData(data: None, tokens: tokens, index: index))
-//   }
-// }
 
 fn parse_decimal_point(
   tokens: List(Token),
