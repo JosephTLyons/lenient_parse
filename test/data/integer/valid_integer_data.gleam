@@ -221,7 +221,6 @@ pub fn data() -> List(IntegerTestData) {
   [
     valid_simple_integers,
     valid_simple_integers_base_2,
-    // valid_inferred_base_2,
     valid_simple_integers_base_8,
     valid_simple_integers_base_16,
     valid_integers_with_underscores,
