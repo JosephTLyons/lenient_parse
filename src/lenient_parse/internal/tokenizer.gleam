@@ -55,112 +55,61 @@ fn do_tokenize_int(
     [first, ..rest] -> {
       let lookahead = rest |> list.first
 
-      let #(index, token, rest, base_prefix_found) = case base {
-        0 -> {
-          case base_prefix_found, first, lookahead {
-            False, "0", Ok(a) if a == "b" || a == "B" -> {
-              let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
-              let rest = case rest {
-                [] -> []
-                [_, ..rest] -> rest
-              }
-              #(index + 2, token, rest, True)
-            }
-            False, "0", Ok(a) if a == "o" || a == "O" -> {
-              let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
-              let rest = case rest {
-                [] -> []
-                [_, ..rest] -> rest
-              }
-              #(index + 2, token, rest, True)
-            }
-            False, "0", Ok(a) if a == "x" || a == "X" -> {
-              let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
-              let rest = case rest {
-                [] -> []
-                [_, ..rest] -> rest
-              }
-              #(index + 2, token, rest, True)
-            }
-            _, _, _ -> {
-              let token =
-                common_token(
-                  character: first,
-                  index: index,
-                  tokenize_character_as_digit: fn(_) { True },
-                )
-
-              #(index + 1, token, rest, base_prefix_found)
-            }
+      let a = case base_prefix_found, base, first, lookahead {
+        False, 0, "0", Ok(a) if a == "b" || a == "B" -> {
+          let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
           }
+          Some(#(index + 2, token, rest, True))
         }
-        2 -> {
-          case base_prefix_found, first, lookahead {
-            False, "0", Ok(a) if a == "b" || a == "B" -> {
-              let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
-              let rest = case rest {
-                [] -> []
-                [_, ..rest] -> rest
-              }
-              #(index + 2, token, rest, True)
-            }
-            _, _, _ -> {
-              let token =
-                common_token(
-                  character: first,
-                  index: index,
-                  tokenize_character_as_digit: fn(_) { True },
-                )
-
-              #(index + 1, token, rest, base_prefix_found)
-            }
+        False, 0, "0", Ok(a) if a == "o" || a == "O" -> {
+          let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
           }
+          Some(#(index + 2, token, rest, True))
         }
-        8 -> {
-          case base_prefix_found, first, lookahead {
-            False, "0", Ok(a) if a == "o" || a == "O" -> {
-              let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
-              let rest = case rest {
-                [] -> []
-                [_, ..rest] -> rest
-              }
-              #(index + 2, token, rest, True)
-            }
-            _, _, _ -> {
-              let token =
-                common_token(
-                  character: first,
-                  index: index,
-                  tokenize_character_as_digit: fn(_) { True },
-                )
-
-              #(index + 1, token, rest, base_prefix_found)
-            }
+        False, 0, "0", Ok(a) if a == "x" || a == "X" -> {
+          let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
           }
+          Some(#(index + 2, token, rest, True))
         }
-        16 -> {
-          case base_prefix_found, first, lookahead {
-            False, "0", Ok(a) if a == "x" || a == "X" -> {
-              let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
-              let rest = case rest {
-                [] -> []
-                [_, ..rest] -> rest
-              }
-              #(index + 2, token, rest, True)
-            }
-            _, _, _ -> {
-              let token =
-                common_token(
-                  character: first,
-                  index: index,
-                  tokenize_character_as_digit: fn(_) { True },
-                )
-
-              #(index + 1, token, rest, base_prefix_found)
-            }
+        False, 2, "0", Ok(a) if a == "b" || a == "B" -> {
+          let token = BasePrefix(#(index, index + 2), "0" <> a, base_2)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
           }
+          Some(#(index + 2, token, rest, True))
         }
-        _ -> {
+        False, 8, "0", Ok(a) if a == "o" || a == "O" -> {
+          let token = BasePrefix(#(index, index + 2), "0" <> a, base_8)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
+          }
+          Some(#(index + 2, token, rest, True))
+        }
+        False, 16, "0", Ok(a) if a == "x" || a == "X" -> {
+          let token = BasePrefix(#(index, index + 2), "0" <> a, base_16)
+          let rest = case rest {
+            [] -> []
+            [_, ..rest] -> rest
+          }
+          Some(#(index + 2, token, rest, True))
+        }
+        _, _, _, _ -> None
+      }
+
+      let #(index, token, rest, base_prefix_found) = case a {
+        Some(a) -> a
+        None -> {
           let token =
             common_token(
               character: first,
