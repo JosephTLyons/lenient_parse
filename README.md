@@ -86,7 +86,7 @@ pub fn main() {
 }
 ```
 
-## Testing
+## Rigorous Testing
 
 `lenient_parse`'s [testing is
 extensive](https://github.com/JosephTLyons/lenient_parse/tree/main/test/data).
@@ -96,6 +96,8 @@ Python's built-ins succeed, `lenient_parse` should also succeed with identical
 results. If Python's built-ins fail to parse, `lenient_parse` should also fail.
 This ensures that `lenient_parse` behaves consistently with Python's built-ins
 for all supplied test data.
+
+## Development
 
 To run the tests for this package, you'll need to [install
 `uv`](https://docs.astral.sh/uv/getting-started/installation/).
