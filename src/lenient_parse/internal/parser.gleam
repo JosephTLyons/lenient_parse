@@ -32,14 +32,14 @@ pub fn parse_float(tokens tokens: List(Token)) -> Result(Float, ParseError) {
   let parse_data = parse_sign(tokens, next_index)
   use ParseData(is_positive, next_index, tokens) <- result.try(parse_data)
 
-  let parse_data = parse_digits(tokens, next_index, base_10)
+  let parse_data = parse_digits(tokens, next_index, base_10, False)
   use ParseData(whole_digits, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = parse_decimal_point(tokens, next_index)
   use ParseData(decimal_specified, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = case decimal_specified {
-    True -> parse_digits(tokens, next_index, base_10)
+    True -> parse_digits(tokens, next_index, base_10, False)
     False -> Ok(ParseData(queue.new(), next_index, tokens))
   }
   use ParseData(fractional_digits, next_index, tokens) <- result.try(parse_data)
@@ -64,7 +64,7 @@ pub fn parse_float(tokens tokens: List(Token)) -> Result(Float, ParseError) {
         parse_data,
       )
 
-      let parse_data = parse_digits(tokens, next_index, base_10)
+      let parse_data = parse_digits(tokens, next_index, base_10, False)
       use ParseData(exponent_digits, next_index, tokens) <- result.try(
         parse_data,
       )
@@ -153,7 +153,8 @@ pub fn parse_int(
     parse_data,
   )
 
-  let parse_data = parse_digits(tokens, next_index, base)
+  let parse_data =
+    parse_digits(tokens, next_index, base, prefix_data |> option.is_some)
   use ParseData(digits, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = parse_whitespace(tokens, next_index)
@@ -281,6 +282,7 @@ fn parse_digits(
   tokens tokens: List(Token),
   index index: Int,
   base base: Int,
+  has_base_prefix has_base_prefix: Bool,
 ) -> Result(ParseData(Queue(Int)), ParseError) {
   do_parse_digits(
     tokens: tokens,
@@ -288,6 +290,7 @@ fn parse_digits(
     base: base,
     acc: queue.new(),
     at_beginning: True,
+    has_base_prefix: has_base_prefix,
   )
 }
 
@@ -297,6 +300,7 @@ fn do_parse_digits(
   base base: Int,
   acc acc: Queue(Int),
   at_beginning at_beginning: Bool,
+  has_base_prefix has_base_prefix: Bool,
 ) -> Result(ParseData(Queue(Int)), ParseError) {
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
@@ -320,7 +324,7 @@ fn do_parse_digits(
       )
 
       use <- bool.guard(
-        at_beginning || at_end,
+        { at_beginning && !has_base_prefix } || at_end,
         Error(InvalidUnderscorePosition(start_index)),
       )
 
@@ -330,6 +334,7 @@ fn do_parse_digits(
         base: base,
         acc: acc,
         at_beginning: False,
+        has_base_prefix: has_base_prefix,
       )
     }
     [Digit(#(_, end_index), _, value), ..rest] if value < base -> {
@@ -339,6 +344,7 @@ fn do_parse_digits(
         base: base,
         acc: acc |> queue.push_back(value),
         at_beginning: False,
+        has_base_prefix: has_base_prefix,
       )
     }
     [Digit(#(start_index, _), character, value), ..] ->

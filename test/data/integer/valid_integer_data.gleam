@@ -130,12 +130,12 @@ const valid_simple_base_prefix: List(IntegerTestData) = [
     expected_python_output: Ok("2"),
   ),
   // Base 0, has prefix, and an underscore between the prefix and the number
-  // IntegerTestData(
-  //   input: "0x_DEAD_BEEF",
-  //   base: 0,
-  //   expected_program_output: Ok(0xDEADBEEF),
-  //   expected_python_output: Ok("3735928559"),
-  // ),
+  IntegerTestData(
+    input: "0x_DEAD_BEEF",
+    base: 0,
+    expected_program_output: Ok(0xDEADBEEF),
+    expected_python_output: Ok("3735928559"),
+  ),
   // Base 0, has no prefix, default to decimal
   IntegerTestData(
     input: " \n6_666",
