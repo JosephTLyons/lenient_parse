@@ -18,7 +18,7 @@ pub fn check_against_python_tests() {
           let expected_python_output = { data.0 }.expected_python_output
           let actual_python_output = data.1
 
-          let input_printable_text = input |> helpers.to_printable_text
+          let input_printable_text = input |> helpers.to_printable_text(False)
 
           let message = case expected_program_output, expected_python_output {
             Ok(_), Ok(python_output) -> {
@@ -28,16 +28,18 @@ pub fn check_against_python_tests() {
               <> python_output
               <> "\""
             }
-            Error(_), Error(_) -> {
+            Error(_), Error(python_error) -> {
               "should_not_parse: \""
               <> input_printable_text
-              <> "\" -> \"Error\""
+              <> "\" -> \""
+              <> python_error.message
+              <> "\""
             }
-            Ok(output), Error(_) -> {
+            Ok(output), Error(python_error) -> {
               panic as form_panic_message(
                 input_printable_text,
                 output |> float.to_string,
-                "Error",
+                python_error.message,
               )
             }
             Error(output), Ok(python_output) -> {
@@ -65,11 +67,13 @@ pub fn check_against_python_tests() {
           let expected_python_output = { data.0 }.expected_python_output
           let actual_python_output = data.1
 
-          let input_printable_text = input |> helpers.to_printable_text
+          let input_printable_text = input |> helpers.to_printable_text(False)
+
+          // TODO: Fix print logic here
 
           let base_text = case base {
             10 -> ""
-            _ -> "(base: " <> base |> int.to_string <> ")"
+            _ -> "(base: " <> base |> int.to_string <> ") "
           }
 
           let message = case expected_program_output, expected_python_output {
@@ -82,18 +86,20 @@ pub fn check_against_python_tests() {
               <> python_output
               <> "\""
             }
-            Error(_), Error(_) -> {
+            Error(_), Error(python_error) -> {
               "should_not_parse: \""
               <> input_printable_text
               <> "\" "
               <> base_text
-              <> " -> \"Error\""
+              <> "-> \""
+              <> python_error.message
+              <> "\""
             }
-            Ok(output), Error(_) -> {
+            Ok(output), Error(python_error) -> {
               panic as form_panic_message(
                 input_printable_text,
                 output |> int.to_string,
-                "Error",
+                python_error.message,
               )
             }
             Error(output), Ok(python_output) -> {

@@ -6,12 +6,12 @@ data_list = json.loads(json_data)
 output_values = []
 
 for item in data_list:
-    text = item["input"]
+    input = item["input"]
 
     try:
-        value = float(text)
-    except ValueError:
-        value = "ValueError"
+        value = float(input)
+    except ValueError as e:
+        value = f"ValueError: {e}"
 
     output_values.append(str(value))
 
