@@ -49,11 +49,6 @@ fn parse(
   let assert Ok(parsed_strings) =
     json.decode(output_json_string, dynamic.list(of: dynamic.string))
 
-  // TODO: Use a regex to extract info from each value error string. Will need
-  // to be different per float and int error. Will also need to have different
-  // variants. A ValueError will hold an InvalidLiteralIntError with the
-  // captured strings.
-
   parsed_strings
   |> list.map(fn(value) {
     case value {

@@ -9,9 +9,6 @@ import parse_error.{
 import python/python_error.{type PythonError, ValueError}
 import test_data.{type IntegerTestData, IntegerTestData}
 
-// TODO: PythonError into structured data via a regex?
-// TODO: Add direct testing of sending in a handful of error values into python and asserting we are constructing correct records
-
 fn invalid_literal_for_int_error(input: String, base: Int) -> PythonError {
   let message =
     "invalid literal for int() with base "
