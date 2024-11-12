@@ -19,7 +19,7 @@ pub fn to_int_tests() {
 
         let base_text = case base {
           10 -> ""
-          _ -> "(base: " <> base |> int.to_string <> ")"
+          _ -> "(base: " <> base |> int.to_string <> ") "
         }
 
         let message = case expected_program_output {
@@ -28,7 +28,7 @@ pub fn to_int_tests() {
             <> input_printable_text
             <> "\" "
             <> base_text
-            <> " -> "
+            <> "-> "
             <> output |> int.to_string
           }
           Error(error) -> {

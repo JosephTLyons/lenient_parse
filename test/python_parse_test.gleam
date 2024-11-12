@@ -69,8 +69,6 @@ pub fn check_against_python_tests() {
 
           let input_printable_text = input |> helpers.to_printable_text(False)
 
-          // TODO: Fix print logic here
-
           let base_text = case base {
             10 -> ""
             _ -> "(base: " <> base |> int.to_string <> ") "
@@ -82,7 +80,7 @@ pub fn check_against_python_tests() {
               <> input_printable_text
               <> "\" "
               <> base_text
-              <> " -> \""
+              <> "-> \""
               <> python_output
               <> "\""
             }
