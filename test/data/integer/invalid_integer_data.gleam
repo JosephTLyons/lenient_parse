@@ -476,6 +476,12 @@ const invalid_mixed: List(IntegerTestData) = [
     expected_program_output: Error(InvalidUnderscorePosition(11)),
     expected_python_output: Error(Nil),
   ),
+  IntegerTestData(
+    input: "_0xDEAD_BEEF",
+    base: 0,
+    expected_program_output: Error(InvalidUnderscorePosition(0)),
+    expected_python_output: Error(Nil),
+  ),
 ]
 
 pub fn data() -> List(IntegerTestData) {
