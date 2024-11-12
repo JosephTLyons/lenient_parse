@@ -11,8 +11,6 @@ import test_data.{type IntegerTestData, IntegerTestData}
 
 // TODO: PythonError into structured data via a regex?
 // TODO: Add direct testing of sending in a handful of error values into python and asserting we are constructing correct records
-// TODO: Can we analyze the Exception and form a structured json string within Python that we can more safely deserialize, over a regex?
-//    Include exception type (ValueError), message, and values that are injected into the message? If possible
 
 fn invalid_literal_for_int_error(input: String, base: Int) -> PythonError {
   let message =
