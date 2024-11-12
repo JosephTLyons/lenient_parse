@@ -64,15 +64,15 @@ fn do_tokenize_int(
         False, "0", Ok(specifier)
           if { base == base_0 || base == base_2 }
           && { specifier == "b" || specifier == "B" }
-        -> create_base_prefix(index, specifier, base_2, rest)
+        -> base_prefix_token_data(index, specifier, base_2, rest)
         False, "0", Ok(specifier)
           if { base == base_0 || base == base_8 }
           && { specifier == "o" || specifier == "O" }
-        -> create_base_prefix(index, specifier, base_8, rest)
+        -> base_prefix_token_data(index, specifier, base_8, rest)
         False, "0", Ok(specifier)
           if { base == base_0 || base == base_16 }
           && { specifier == "x" || specifier == "X" }
-        -> create_base_prefix(index, specifier, base_16, rest)
+        -> base_prefix_token_data(index, specifier, base_16, rest)
         _, _, _ -> {
           let token =
             common_token(
@@ -96,7 +96,7 @@ fn do_tokenize_int(
   }
 }
 
-fn create_base_prefix(
+fn base_prefix_token_data(
   index: Int,
   specifier: String,
   base: Int,
