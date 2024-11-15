@@ -2,19 +2,17 @@ import gleam/int
 import gleam/order
 import lenient_parse/internal/base_constants.{base_10}
 
-pub fn multiply_by_power_of_10(factor: Float, base: Int, exponent: Int) {
-  do_multiply_by_power_of_10(
+pub fn expand_scientific_notation_float(factor: Float, exponent: Int) {
+  do_expand_scientific_notation_float(
     factor: factor,
-    base: base,
     exponent: exponent,
     scale_factor: 1,
     exponent_is_positive: exponent >= 0,
   )
 }
 
-fn do_multiply_by_power_of_10(
+fn do_expand_scientific_notation_float(
   factor factor: Float,
-  base base: Int,
   exponent exponent: Int,
   scale_factor scale_factor: Int,
   exponent_is_positive exponent_is_positive: Bool,
@@ -28,17 +26,15 @@ fn do_multiply_by_power_of_10(
       }
     }
     order.Gt ->
-      do_multiply_by_power_of_10(
+      do_expand_scientific_notation_float(
         factor,
-        base,
         exponent - 1,
         scale_factor * base_10,
         exponent_is_positive,
       )
     order.Lt ->
-      do_multiply_by_power_of_10(
+      do_expand_scientific_notation_float(
         factor,
-        base,
         exponent + 1,
         scale_factor * base_10,
         exponent_is_positive,

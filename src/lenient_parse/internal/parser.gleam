@@ -7,7 +7,7 @@ import gleam/result
 import lenient_parse/internal/base_constants.{
   base_0, base_10, base_16, base_2, base_8,
 }
-import lenient_parse/internal/math.{multiply_by_power_of_10}
+import lenient_parse/internal/math.{expand_scientific_notation_float}
 import lenient_parse/internal/scale
 import lenient_parse/internal/token.{
   type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
@@ -368,7 +368,7 @@ fn form_float(
     all_digits
     |> digits_to_int
     |> int.to_float
-    |> multiply_by_power_of_10(base_10, -fractional_digits_length)
+    |> expand_scientific_notation_float(-fractional_digits_length)
   use <- bool.guard(is_positive, scaled_float_value)
   scaled_float_value *. -1.0
 }
