@@ -2,12 +2,12 @@ import gleam/bool
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/order
 import gleam/queue.{type Queue}
 import gleam/result
 import lenient_parse/internal/base_constants.{
   base_0, base_10, base_16, base_2, base_8,
 }
+import lenient_parse/internal/math.{multiply_by_power_of_10}
 import lenient_parse/internal/scale
 import lenient_parse/internal/token.{
   type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
@@ -361,20 +361,16 @@ fn form_float(
 ) -> Float {
   let #(whole_digits, fractional_digits) =
     scale.by_10(whole_digits, fractional_digits, exponent)
-
-  let whole_float = whole_digits |> digits_to_int |> int.to_float
-
   let fractional_digits_length = fractional_digits |> queue.length
-  let fractional_float =
-    fractional_digits
+  let #(all_digits, _) =
+    scale.by_10(whole_digits, fractional_digits, fractional_digits_length)
+  let scaled_float_value =
+    all_digits
     |> digits_to_int
     |> int.to_float
-    |> power(-fractional_digits_length)
-
-  case is_positive {
-    True -> whole_float +. fractional_float
-    False -> { whole_float +. fractional_float } *. -1.0
-  }
+    |> multiply_by_power_of_10(base_10, -fractional_digits_length)
+  use <- bool.guard(is_positive, scaled_float_value)
+  scaled_float_value *. -1.0
 }
 
 fn digits_to_int(digits digits: Queue(Int)) -> Int {
@@ -383,34 +379,4 @@ fn digits_to_int(digits digits: Queue(Int)) -> Int {
 
 fn digits_to_int_with_base(digits digits: Queue(Int), base base: Int) -> Int {
   digits |> queue.to_list |> list.fold(0, fn(acc, digit) { acc * base + digit })
-}
-
-fn power(base: Float, exponent: Int) {
-  do_power(
-    base: base,
-    exponent: exponent,
-    scale_factor: 1,
-    exponent_is_positive: exponent >= 0,
-  )
-}
-
-fn do_power(
-  base base: Float,
-  exponent exponent: Int,
-  scale_factor scale_factor: Int,
-  exponent_is_positive exponent_is_positive,
-) -> Float {
-  case int.compare(exponent, 0) {
-    order.Eq -> {
-      let scale_factor_float = scale_factor |> int.to_float
-      case exponent_is_positive {
-        True -> base *. scale_factor_float
-        False -> base /. scale_factor_float
-      }
-    }
-    order.Gt ->
-      do_power(base, exponent - 1, scale_factor * base_10, exponent_is_positive)
-    order.Lt ->
-      do_power(base, exponent + 1, scale_factor * base_10, exponent_is_positive)
-  }
 }

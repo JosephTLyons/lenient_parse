@@ -7,6 +7,18 @@ const valid_simple: List(FloatTestData) = [
     expected_program_output: Ok(1.001),
     expected_python_output: Ok("1.001"),
   ),
+  // Would produce a floating point error in v1.3.1: 2.7119999999999997
+  FloatTestData(
+    input: "2.712",
+    expected_program_output: Ok(2.712),
+    expected_python_output: Ok("2.712"),
+  ),
+  // Would produce a floating point error in v1.3.1: 7.5776864147000005
+  FloatTestData(
+    input: "7.5776864147",
+    expected_program_output: Ok(7.5776864147),
+    expected_python_output: Ok("7.5776864147"),
+  ),
   FloatTestData(
     input: "1.00",
     expected_program_output: Ok(1.0),
