@@ -1,5 +1,4 @@
 *.beam
 *.ez
-.DS_Store
 /build
 erl_crash.dump

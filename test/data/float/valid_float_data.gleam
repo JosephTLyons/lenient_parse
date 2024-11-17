@@ -213,7 +213,7 @@ const valid_exponent_symbol_position: List(FloatTestData) = [
   ),
 ]
 
-const precision_error: List(FloatTestData) = [
+const precision: List(FloatTestData) = [
   // Would produce a floating point error in v1.3.1: 2.7119999999999997
   FloatTestData(
     input: "2.712",
@@ -225,6 +225,13 @@ const precision_error: List(FloatTestData) = [
     input: "7.5776864147",
     expected_program_output: Ok(7.5776864147),
     expected_python_output: Ok("7.5776864147"),
+  ),
+  // Would produce a floating point error in v1.3.2: 8556272791.328557
+  FloatTestData(
+    input: "8556272791.3285562727",
+    expected_program_output: Ok(8_556_272_791.328556),
+    // Python rounds this value
+    expected_python_output: Ok("8556272791.328556"),
   ),
 ]
 
@@ -257,7 +264,7 @@ pub fn data() -> List(FloatTestData) {
     valid_underscore,
     valid_whitespace,
     valid_exponent_symbol_position,
-    precision_error,
+    precision,
     valid_mixed,
   ]
   |> list.flatten

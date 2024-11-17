@@ -6,7 +6,9 @@ licences = ["Apache-2.0"]
 repository = { type = "github", user = "JosephTLyons", repo = "lenient_parse" }
 
 [dependencies]
+bigi = ">= 3.2.0 and < 4.0.0"
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
+pilkku = { path = "./local_deps/pilkku" }
 
 [dev-dependencies]
 gleam_json = ">= 1.0.1 and < 2.0.0"

@@ -103,7 +103,8 @@ functions. We verify that `lenient_parse` produces the same output as Python. If
 Python's built-ins succeed, `lenient_parse` should also succeed with identical
 results. If Python's built-ins fail to parse, `lenient_parse` should also fail.
 This ensures that `lenient_parse` behaves consistently with Python's built-ins
-for all supplied test data.
+for all supplied test data. Tests are run against both the Erlang and JavaScript
+targets.
 
 If you run into a case where `lenient_parse` and Python's built-ins disagree,
 please open an [issue](https://github.com/JosephTLyons/lenient_parse/issues) -
