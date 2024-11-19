@@ -13,7 +13,7 @@ pub fn to_int_tests() {
     data.integer_test_data()
       |> list.map(fn(data) {
         let input = data.input
-        let input_printable_text = input |> helpers.to_printable_text(False)
+        let input_printable_text = input |> helpers.to_printable_text
         let expected_program_output = data.expected_program_output
         let base = data.base
 

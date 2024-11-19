@@ -1,3 +1,4 @@
+import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
@@ -8,14 +9,25 @@ import lenient_parse/internal/token.{
   type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
   Unknown, Whitespace,
 }
+import lenient_parse/internal/whitespace.{type WhitespaceData}
 
 pub fn tokenize_float(text text: String) -> List(Token) {
-  text |> string.to_graphemes |> do_tokenize_float(index: 0, acc: [])
+  text
+  |> string.to_graphemes
+  |> do_tokenize_float(
+    index: 0,
+    whitespace_character_dict: whitespace.character_dict(),
+    acc: [],
+  )
 }
 
 fn do_tokenize_float(
   characters characters: List(String),
   index index: Int,
+  whitespace_character_dict whitespace_character_dict: Dict(
+    String,
+    WhitespaceData,
+  ),
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
@@ -28,12 +40,18 @@ fn do_tokenize_float(
           common_token(
             character: first,
             index: index,
+            whitespace_character_dict: whitespace_character_dict,
             tokenize_character_as_digit: fn(digit_value) {
               digit_value < base_10
             },
           )
       }
-      do_tokenize_float(characters: rest, index: index + 1, acc: [token, ..acc])
+      do_tokenize_float(
+        characters: rest,
+        index: index + 1,
+        whitespace_character_dict: whitespace_character_dict,
+        acc: [token, ..acc],
+      )
     }
   }
 }
@@ -41,7 +59,13 @@ fn do_tokenize_float(
 pub fn tokenize_int(text text: String, base base: Int) -> List(Token) {
   text
   |> string.to_graphemes
-  |> do_tokenize_int(base: base, index: 0, base_prefix_found: False, acc: [])
+  |> do_tokenize_int(
+    base: base,
+    index: 0,
+    whitespace_character_dict: whitespace.character_dict(),
+    base_prefix_found: False,
+    acc: [],
+  )
 }
 
 fn do_tokenize_int(
@@ -49,6 +73,10 @@ fn do_tokenize_int(
   base base: Int,
   index index: Int,
   base_prefix_found base_prefix_found: Bool,
+  whitespace_character_dict whitespace_character_dict: Dict(
+    String,
+    WhitespaceData,
+  ),
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
@@ -79,6 +107,7 @@ fn do_tokenize_int(
               character: first,
               index: index,
               tokenize_character_as_digit: fn(_) { True },
+              whitespace_character_dict: whitespace_character_dict,
             )
 
           #(index + 1, token, rest, base_prefix_found)
@@ -90,6 +119,7 @@ fn do_tokenize_int(
         base: base,
         index: index,
         base_prefix_found: base_prefix_found,
+        whitespace_character_dict: whitespace_character_dict,
         acc: [token, ..acc],
       )
     }
@@ -114,21 +144,29 @@ fn common_token(
   character character: String,
   index index: Int,
   tokenize_character_as_digit tokenize_character_as_digit: fn(Int) -> Bool,
+  whitespace_character_dict whitespace_character_dict: Dict(
+    String,
+    WhitespaceData,
+  ),
 ) -> Token {
   case character {
     "-" -> Sign(#(index, index + 1), "-", False)
     "+" -> Sign(#(index, index + 1), "+", True)
     "_" -> Underscore(#(index, index + 1))
-    " " | "\n" | "\t" | "\r" | "\f" | "\r\n" ->
-      Whitespace(#(index, index + 1), character)
     _ -> {
-      case character_to_value(character) {
-        Some(value) ->
-          case tokenize_character_as_digit(value) {
-            True -> Digit(#(index, index + 1), character, value)
-            False -> Unknown(#(index, index + 1), character)
+      case whitespace_character_dict |> dict.get(character) {
+        Ok(whitespace_data) ->
+          Whitespace(#(index, index + 1), data: whitespace_data)
+        Error(_) -> {
+          case character_to_value(character) {
+            Some(value) ->
+              case tokenize_character_as_digit(value) {
+                True -> Digit(#(index, index + 1), character, value)
+                False -> Unknown(#(index, index + 1), character)
+              }
+            None -> Unknown(#(index, index + 1), character)
           }
-        None -> Unknown(#(index, index + 1), character)
+        }
       }
     }
   }

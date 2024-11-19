@@ -1,3 +1,4 @@
+import lenient_parse/internal/whitespace.{type WhitespaceData}
 import parse_error.{
   type ParseError, BasePrefixOnly, InvalidDecimalPosition, InvalidDigitPosition,
   InvalidExponentSymbolPosition, InvalidSignPosition, InvalidUnderscorePosition,
@@ -11,7 +12,8 @@ pub type Token {
   Underscore(#(Int, Int))
   DecimalPoint(#(Int, Int))
   ExponentSymbol(#(Int, Int), String)
-  Whitespace(#(Int, Int), String)
+  Whitespace(#(Int, Int), data: WhitespaceData)
+  // TDDO: Store value
   Unknown(#(Int, Int), String)
 }
 
@@ -27,8 +29,8 @@ pub fn to_error(token: Token, base: Int) -> ParseError {
     DecimalPoint(#(start_index, _)) -> InvalidDecimalPosition(start_index)
     ExponentSymbol(#(start_index, _), exponent_symbol) ->
       InvalidExponentSymbolPosition(start_index, exponent_symbol)
-    Whitespace(#(start_index, _), whitespace) ->
-      UnknownCharacter(start_index, whitespace)
+    Whitespace(#(start_index, _), data) ->
+      UnknownCharacter(start_index, data.printable)
     Unknown(#(start_index, _), character) ->
       UnknownCharacter(start_index, character)
   }

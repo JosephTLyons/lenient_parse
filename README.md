@@ -94,7 +94,7 @@ pub fn main() {
 
 `lenient_parse`'s testing is extensive. We test the tokenization step, the
 overall parse procedure, as well as various intermediate layers. We currently
-have ~500 passing tests. Regressions are **not** welcome here.
+have ~600 passing tests. Regressions are **not** welcome here.
 
 ### Backed by Python
 

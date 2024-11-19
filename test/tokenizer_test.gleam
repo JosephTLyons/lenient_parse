@@ -1,3 +1,10 @@
+import gleam/dict
+import gleam/list
+import gleam/string
+import lenient_parse/internal/whitespace.{
+  carriage_return, form_feed, horizontal_tab, line_feed, space, windows_newline,
+}
+
 import lenient_parse/internal/base_constants.{
   base_0, base_10, base_16, base_2, base_8,
 }
@@ -14,12 +21,12 @@ pub fn tokenize_float_test() {
   " \t\n\r\f\r\n+-0123456789eE._abc"
   |> tokenizer.tokenize_float
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), "\t"),
-    Whitespace(#(2, 3), "\n"),
-    Whitespace(#(3, 4), "\r"),
-    Whitespace(#(4, 5), "\f"),
-    Whitespace(#(5, 6), "\r\n"),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), horizontal_tab),
+    Whitespace(#(2, 3), line_feed),
+    Whitespace(#(3, 4), carriage_return),
+    Whitespace(#(4, 5), form_feed),
+    Whitespace(#(5, 6), windows_newline),
     Sign(#(6, 7), "+", True),
     Sign(#(7, 8), "-", False),
     Digit(#(8, 9), "0", 0),
@@ -48,12 +55,12 @@ pub fn tokenize_int_base_10_test() {
   " \t\n\r\f\r\n+-0123456789eE._abcZ"
   |> tokenizer.tokenize_int(base: base_10)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), "\t"),
-    Whitespace(#(2, 3), "\n"),
-    Whitespace(#(3, 4), "\r"),
-    Whitespace(#(4, 5), "\f"),
-    Whitespace(#(5, 6), "\r\n"),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), horizontal_tab),
+    Whitespace(#(2, 3), line_feed),
+    Whitespace(#(3, 4), carriage_return),
+    Whitespace(#(4, 5), form_feed),
+    Whitespace(#(5, 6), windows_newline),
     Sign(#(6, 7), "+", True),
     Sign(#(7, 8), "-", False),
     Digit(#(8, 9), "0", 0),
@@ -167,9 +174,9 @@ pub fn tokenize_int_with_0b_prefix_and_base_0_test() {
   "   0b1010b"
   |> tokenizer.tokenize_int(base: base_0)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), " "),
-    Whitespace(#(2, 3), " "),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), space),
+    Whitespace(#(2, 3), space),
     BasePrefix(#(3, 5), "0b", base_2),
     Digit(#(5, 6), "1", 1),
     Digit(#(6, 7), "0", 0),
@@ -183,9 +190,9 @@ pub fn tokenize_int_with_0o_prefix_and_base_0_test() {
   "   0o0123456780o"
   |> tokenizer.tokenize_int(base: base_0)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), " "),
-    Whitespace(#(2, 3), " "),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), space),
+    Whitespace(#(2, 3), space),
     BasePrefix(#(3, 5), "0o", base_8),
     Digit(#(5, 6), "0", 0),
     Digit(#(6, 7), "1", 1),
@@ -205,7 +212,7 @@ pub fn tokenize_int_with_0x_prefix_and_base_0_test() {
   " +0XDEAD_BEEF0x "
   |> tokenizer.tokenize_int(base: base_0)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
+    Whitespace(#(0, 1), space),
     Sign(#(1, 2), "+", True),
     BasePrefix(#(2, 4), "0X", base_16),
     Digit(#(4, 5), "D", 13),
@@ -219,7 +226,7 @@ pub fn tokenize_int_with_0x_prefix_and_base_0_test() {
     Digit(#(12, 13), "F", 15),
     Digit(#(13, 14), "0", 0),
     Digit(#(14, 15), "x", 33),
-    Whitespace(#(15, 16), " "),
+    Whitespace(#(15, 16), space),
   ])
 }
 
@@ -227,15 +234,15 @@ pub fn tokenize_int_with_0b_prefix_and_base_2_test() {
   "   0b1010 a"
   |> tokenizer.tokenize_int(base: base_2)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), " "),
-    Whitespace(#(2, 3), " "),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), space),
+    Whitespace(#(2, 3), space),
     BasePrefix(#(3, 5), "0b", base_2),
     Digit(#(5, 6), "1", 1),
     Digit(#(6, 7), "0", 0),
     Digit(#(7, 8), "1", 1),
     Digit(#(8, 9), "0", 0),
-    Whitespace(#(9, 10), " "),
+    Whitespace(#(9, 10), space),
     Digit(#(10, 11), "a", 10),
   ])
 }
@@ -244,13 +251,13 @@ pub fn tokenize_int_with_0o_prefix_and_base_8_test() {
   "   0o77 a"
   |> tokenizer.tokenize_int(base: base_8)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), " "),
-    Whitespace(#(2, 3), " "),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), space),
+    Whitespace(#(2, 3), space),
     BasePrefix(#(3, 5), "0o", base_8),
     Digit(#(5, 6), "7", 7),
     Digit(#(6, 7), "7", 7),
-    Whitespace(#(7, 8), " "),
+    Whitespace(#(7, 8), space),
     Digit(#(8, 9), "a", 10),
   ])
 }
@@ -259,15 +266,15 @@ pub fn tokenize_int_with_0x_prefix_and_base_16_test() {
   "   0x_ABC ."
   |> tokenizer.tokenize_int(base: base_16)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), " "),
-    Whitespace(#(2, 3), " "),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), space),
+    Whitespace(#(2, 3), space),
     BasePrefix(#(3, 5), "0x", base_16),
     Underscore(#(5, 6)),
     Digit(#(6, 7), "A", 10),
     Digit(#(7, 8), "B", 11),
     Digit(#(8, 9), "C", 12),
-    Whitespace(#(9, 10), " "),
+    Whitespace(#(9, 10), space),
     Unknown(#(10, 11), "."),
   ])
 }
@@ -344,9 +351,9 @@ pub fn tokenize_int_with_no_prefix_and_base_0_test() {
   "  \n+1990_04_12.0e4 "
   |> tokenizer.tokenize_int(base: base_0)
   |> expect.to_equal([
-    Whitespace(#(0, 1), " "),
-    Whitespace(#(1, 2), " "),
-    Whitespace(#(2, 3), "\n"),
+    Whitespace(#(0, 1), space),
+    Whitespace(#(1, 2), space),
+    Whitespace(#(2, 3), line_feed),
     Sign(#(3, 4), "+", True),
     Digit(#(4, 5), "1", 1),
     Digit(#(5, 6), "9", 9),
@@ -362,7 +369,7 @@ pub fn tokenize_int_with_no_prefix_and_base_0_test() {
     Digit(#(15, 16), "0", 0),
     Digit(#(16, 17), "e", 14),
     Digit(#(17, 18), "4", 4),
-    Whitespace(#(18, 19), " "),
+    Whitespace(#(18, 19), space),
   ])
 }
 
@@ -399,4 +406,23 @@ pub fn tokenize_int_with_base_16_and_hexadecimal_prefix_test() {
     Digit(#(3, 4), "B", 11),
     Digit(#(4, 5), "C", 12),
   ])
+}
+
+// ---- Tests for all whitespace characters
+
+pub fn tokenize_int_with_all_whitespace_characters_test() {
+  let whitespace_character_strings = whitespace.character_dict() |> dict.to_list
+
+  let expected_tokens =
+    whitespace_character_strings
+    |> list.index_map(fn(whitespace_data, index) {
+      Whitespace(#(index, index + 1), data: whitespace_data.1)
+    })
+
+  let whitespace_character_strings = whitespace.character_dict() |> dict.keys()
+
+  whitespace_character_strings
+  |> string.join("")
+  |> tokenizer.tokenize_int(base: base_10)
+  |> expect.to_equal(expected_tokens)
 }

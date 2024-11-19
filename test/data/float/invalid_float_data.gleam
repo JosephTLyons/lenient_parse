@@ -1,7 +1,10 @@
+import gleam/dict
 import gleam/list
+import gleam/string
 import helpers
+import lenient_parse/internal/whitespace
 import parse_error.{
-  type ParseError, EmptyString, InvalidDecimalPosition,
+  type ParseError, EmptyString, InvalidDecimalPosition, InvalidDigitPosition,
   InvalidExponentSymbolPosition, InvalidUnderscorePosition, UnknownCharacter,
   WhitespaceOnlyString,
 }
@@ -18,7 +21,7 @@ fn float_test_data(
   expected_program_output expected_program_output: Result(Float, ParseError),
   python_error_function python_error_function: fn(String) -> PythonError,
 ) -> FloatTestData {
-  let printable_text = input |> helpers.to_printable_text(True)
+  let printable_text = input |> helpers.to_printable_text
 
   FloatTestData(
     input: input,
@@ -28,6 +31,9 @@ fn float_test_data(
 }
 
 fn invalid_empty_or_whitespace() -> List(FloatTestData) {
+  let all_whitespace_characters_string =
+    whitespace.character_dict() |> dict.keys |> string.join("")
+
   [
     float_test_data(
       input: "",
@@ -71,6 +77,11 @@ fn invalid_empty_or_whitespace() -> List(FloatTestData) {
     ),
     float_test_data(
       input: "  \t  ",
+      expected_program_output: Error(WhitespaceOnlyString),
+      python_error_function: could_not_convert_string_to_float_error,
+    ),
+    float_test_data(
+      input: all_whitespace_characters_string,
       expected_program_output: Error(WhitespaceOnlyString),
       python_error_function: could_not_convert_string_to_float_error,
     ),
@@ -214,6 +225,14 @@ fn unknown_character() -> List(FloatTestData) {
       expected_program_output: Error(UnknownCharacter(0, "$")),
       python_error_function: could_not_convert_string_to_float_error,
     ),
+    float_test_data(
+      input: "1." <> whitespace.four_per_em_space.character <> "0",
+      expected_program_output: Error(UnknownCharacter(
+        2,
+        whitespace.four_per_em_space.character,
+      )),
+      python_error_function: could_not_convert_string_to_float_error,
+    ),
   ]
 }
 
@@ -297,6 +316,16 @@ fn invalid_exponent_symbol_position() -> List(FloatTestData) {
   ]
 }
 
+fn invalid_digit_position() {
+  [
+    float_test_data(
+      input: "1" <> whitespace.four_per_em_space.character <> "0",
+      expected_program_output: Error(InvalidDigitPosition(2, "0")),
+      python_error_function: could_not_convert_string_to_float_error,
+    ),
+  ]
+}
+
 fn invalid_mixed() -> List(FloatTestData) {
   [
     float_test_data(
@@ -374,6 +403,7 @@ pub fn data() -> List(FloatTestData) {
     invalid_underscore_position(),
     unknown_character(),
     invalid_exponent_symbol_position(),
+    invalid_digit_position(),
     invalid_mixed(),
   ]
   |> list.flatten

@@ -1,34 +1,31 @@
+import gleam/dict.{type Dict}
 import gleam/string
+import lenient_parse/internal/whitespace.{type WhitespaceData}
 
-pub fn to_printable_text(text: String, python_output: Bool) -> String {
+pub fn to_printable_text(text: String) -> String {
   do_to_printable_text(
     characters: text |> string.to_graphemes,
-    python_output: python_output,
+    whitespace_strings_dict: whitespace.character_dict(),
     acc: "",
   )
 }
 
 fn do_to_printable_text(
   characters characters: List(String),
-  python_output python_output: Bool,
+  whitespace_strings_dict whitespace_strings_dict: Dict(String, WhitespaceData),
   acc acc: String,
 ) -> String {
   case characters {
     [] -> acc
     [first, ..rest] -> {
-      let printable = case first {
-        "\t" -> "\\t"
-        "\n" -> "\\n"
-        "\r" -> "\\r"
-        // Python weirdly converts "\f" to "\x0c"
-        "\f" if python_output -> "\\x0c"
-        "\f" -> "\\f"
-        "\r\n" -> "\\r\\n"
-        _ -> first
+      let printable = case whitespace_strings_dict |> dict.get(first) {
+        Ok(whitespace_data) -> whitespace_data.printable
+        Error(_) -> first
       }
+
       do_to_printable_text(
         characters: rest,
-        python_output: python_output,
+        whitespace_strings_dict: whitespace_strings_dict,
         acc: acc <> printable,
       )
     }

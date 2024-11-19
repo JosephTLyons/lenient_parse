@@ -1,7 +1,10 @@
+import gleam/dict
 import gleam/int
 import gleam/list
+import gleam/string
 import helpers
 import lenient_parse/internal/base_constants.{base_0, base_10, base_2, base_8}
+import lenient_parse/internal/whitespace
 import parse_error.{
   type ParseError, BasePrefixOnly, EmptyString, InvalidBaseValue,
   InvalidDigitPosition, InvalidSignPosition, InvalidUnderscorePosition,
@@ -31,7 +34,7 @@ fn integer_test_data(
   expected_program_output expected_program_output: Result(Int, ParseError),
   python_error_function python_error_function: fn(String, Int) -> PythonError,
 ) -> IntegerTestData {
-  let printable_text = input |> helpers.to_printable_text(True)
+  let printable_text = input |> helpers.to_printable_text
 
   IntegerTestData(
     input: input,
@@ -42,6 +45,9 @@ fn integer_test_data(
 }
 
 fn invalid_empty_or_whitespace() -> List(IntegerTestData) {
+  let all_whitespace_characters_string =
+    whitespace.character_dict() |> dict.keys |> string.join("")
+
   [
     integer_test_data(
       input: "",
@@ -51,6 +57,12 @@ fn invalid_empty_or_whitespace() -> List(IntegerTestData) {
     ),
     integer_test_data(
       input: " ",
+      base: base_10,
+      expected_program_output: Error(WhitespaceOnlyString),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "   ",
       base: base_10,
       expected_program_output: Error(WhitespaceOnlyString),
       python_error_function: invalid_literal_for_int_error,
@@ -92,7 +104,7 @@ fn invalid_empty_or_whitespace() -> List(IntegerTestData) {
       python_error_function: invalid_literal_for_int_error,
     ),
     integer_test_data(
-      input: "   ",
+      input: all_whitespace_characters_string,
       base: base_10,
       expected_program_output: Error(WhitespaceOnlyString),
       python_error_function: invalid_literal_for_int_error,
@@ -177,6 +189,15 @@ fn unknown_characters() -> List(IntegerTestData) {
       input: "+ 1",
       base: base_10,
       expected_program_output: Error(UnknownCharacter(1, " ")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "+" <> whitespace.hair_space.character <> "1",
+      base: base_10,
+      expected_program_output: Error(UnknownCharacter(
+        1,
+        whitespace.hair_space.character,
+      )),
       python_error_function: invalid_literal_for_int_error,
     ),
     integer_test_data(
@@ -337,6 +358,163 @@ fn invalid_digit_position() -> List(IntegerTestData) {
       input: "123 456",
       base: base_10,
       expected_program_output: Error(InvalidDigitPosition(4, "4")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    // Unicode cases
+    integer_test_data(
+      input: "7" <> whitespace.horizontal_tab.character <> "9",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "9")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "7" <> whitespace.line_feed.character <> "8",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "8")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "2" <> whitespace.vertical_tab.character <> "3",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "3")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "3" <> whitespace.form_feed.character <> "4",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "4")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "5" <> whitespace.carriage_return.character <> "6",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "6")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "6" <> whitespace.space.character <> "7",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "7")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "8" <> whitespace.next_line.character <> "9",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "9")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "9" <> whitespace.no_break_space.character <> "0",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "0")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "0" <> whitespace.ogham_space_mark.character <> "1",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "1")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "1" <> whitespace.en_quad.character <> "2",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "2")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "2" <> whitespace.em_quad.character <> "3",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "3")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "3" <> whitespace.en_space.character <> "4",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "4")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "5" <> whitespace.em_space.character <> "6",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "6")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "6" <> whitespace.three_per_em_space.character <> "7",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "7")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "7" <> whitespace.four_per_em_space.character <> "8",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "8")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "8" <> whitespace.six_per_em_space.character <> "9",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "9")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "9" <> whitespace.figure_space.character <> "0",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "0")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "0" <> whitespace.punctuation_space.character <> "1",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "1")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "1" <> whitespace.thin_space.character <> "2",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "2")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "2" <> whitespace.hair_space.character <> "3",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "3")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "3" <> whitespace.line_separator.character <> "4",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "4")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "5" <> whitespace.paragraph_separator.character <> "6",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "6")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "6" <> whitespace.narrow_no_break_space.character <> "7",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "7")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "7" <> whitespace.medium_mathematical_space.character <> "8",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "8")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "8" <> whitespace.ideographic_space.character <> "9",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "9")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "1" <> whitespace.windows_newline.character <> "0",
+      base: base_10,
+      expected_program_output: Error(InvalidDigitPosition(2, "0")),
       python_error_function: invalid_literal_for_int_error,
     ),
   ]

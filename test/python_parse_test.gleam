@@ -18,7 +18,7 @@ pub fn check_against_python_tests() {
           let expected_python_output = { data.0 }.expected_python_output
           let actual_python_output = data.1
 
-          let input_printable_text = input |> helpers.to_printable_text(False)
+          let input_printable_text = input |> helpers.to_printable_text
 
           let message = case expected_program_output, expected_python_output {
             Ok(_), Ok(python_output) -> {
@@ -67,7 +67,7 @@ pub fn check_against_python_tests() {
           let expected_python_output = { data.0 }.expected_python_output
           let actual_python_output = data.1
 
-          let input_printable_text = input |> helpers.to_printable_text(False)
+          let input_printable_text = input |> helpers.to_printable_text
 
           let base_text = case base {
             10 -> ""

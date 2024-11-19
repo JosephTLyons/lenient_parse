@@ -198,11 +198,11 @@ fn do_parse_whitespace(
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
       Error(UnknownCharacter(start_index, character))
-    [Whitespace(#(_, end_index), whitespace), ..rest] -> {
+    [Whitespace(#(_, end_index), data), ..rest] -> {
       do_parse_whitespace(
         tokens: rest,
         index: end_index,
-        acc: acc <> whitespace,
+        acc: acc <> data.character,
       )
     }
     _ -> {
@@ -306,8 +306,8 @@ fn do_parse_digits(
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
       Error(UnknownCharacter(start_index, character))
-    [Whitespace(#(start_index, _), whitespace), ..] if at_beginning ->
-      Error(UnknownCharacter(start_index, whitespace))
+    [Whitespace(#(start_index, _), data), ..] if at_beginning ->
+      Error(UnknownCharacter(start_index, data.character))
     [Underscore(#(start_index, end_index)), ..rest] -> {
       let lookahead = rest |> list.first
       let at_end = case lookahead {
