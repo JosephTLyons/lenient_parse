@@ -185,6 +185,16 @@ fn valid_simple_base_prefix() -> List(IntegerTestData) {
       expected_program_output: Ok(0xDEADBEEF),
       expected_python_output: Ok("3735928559"),
     ),
+    // Base 0, has no prefix, default to decimal - should parse, as it is just
+    // the integer 0. If we specified anything else after this, it would have to
+    // be a specifier, or this would be an error, as base 0 looks for a base
+    // prefix.
+    IntegerTestData(
+      input: "0",
+      base: base_0,
+      expected_program_output: Ok(0),
+      expected_python_output: Ok("0"),
+    ),
     // Base 0, has no prefix, default to decimal
     IntegerTestData(
       input: " \n6_666",
@@ -247,6 +257,13 @@ fn valid_simple_base_prefix() -> List(IntegerTestData) {
       base: base_16,
       expected_program_output: Ok(0xDEAD_BEEF),
       expected_python_output: Ok("3735928559"),
+    ),
+    // Has a base prefix substring at the end of the input string that isn't treated as a base prefix
+    IntegerTestData(
+      input: "0XDEAD_BEEF0b",
+      base: base_16,
+      expected_program_output: Ok(0xDEAD_BEEF0b),
+      expected_python_output: Ok("956397711115"),
     ),
   ]
 }

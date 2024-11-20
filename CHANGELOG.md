@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.3.5 - 2024-11-19
+
+- Fixed a bug where base prefix substrings would be recognized as such later in the string.
+    - The `0b` in `0XDEAD_BEEF0b` should be catorgized as digits and not a base prefix.
+- Fixed a bug where, in base 0 mode, `lenient_parse` would parse a string with an incomplete base prefix.
+    - `01` should reject, as it is missing a specifier (`b`, `B`, `o`, `O`, `x`, `X`).
+
 ## v1.3.4 - 2024-11-19
 
 - Fixed a bug where `lenient_parse` was rejecting strings containing leading / trailing uncommon whitespace characters.

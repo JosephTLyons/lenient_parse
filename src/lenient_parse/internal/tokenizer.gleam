@@ -2,12 +2,10 @@ import gleam/dict.{type Dict}
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import lenient_parse/internal/base_constants.{
-  base_0, base_10, base_16, base_2, base_8,
-}
+import lenient_parse/internal/base_constants.{base_10}
 import lenient_parse/internal/token.{
-  type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
-  Unknown, Whitespace,
+  type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
+  Whitespace,
 }
 import lenient_parse/internal/whitespace.{type WhitespaceData}
 
@@ -56,23 +54,19 @@ fn do_tokenize_float(
   }
 }
 
-pub fn tokenize_int(text text: String, base base: Int) -> List(Token) {
+pub fn tokenize_int(text text: String) -> List(Token) {
   text
   |> string.to_graphemes
   |> do_tokenize_int(
-    base: base,
     index: 0,
     whitespace_character_dict: whitespace.character_dict(),
-    base_prefix_found: False,
     acc: [],
   )
 }
 
 fn do_tokenize_int(
   characters characters: List(String),
-  base base: Int,
   index index: Int,
-  base_prefix_found base_prefix_found: Bool,
   whitespace_character_dict whitespace_character_dict: Dict(
     String,
     WhitespaceData,
@@ -82,62 +76,22 @@ fn do_tokenize_int(
   case characters {
     [] -> acc |> list.reverse
     [first, ..rest] -> {
-      let lookahead = rest |> list.first
-
-      let #(index, token, rest, base_prefix_found) = case
-        base_prefix_found,
-        first,
-        lookahead
-      {
-        False, "0", Ok(specifier)
-          if { base == base_0 || base == base_2 }
-          && { specifier == "b" || specifier == "B" }
-        -> base_prefix_token_data(index, specifier, base_2, rest)
-        False, "0", Ok(specifier)
-          if { base == base_0 || base == base_8 }
-          && { specifier == "o" || specifier == "O" }
-        -> base_prefix_token_data(index, specifier, base_8, rest)
-        False, "0", Ok(specifier)
-          if { base == base_0 || base == base_16 }
-          && { specifier == "x" || specifier == "X" }
-        -> base_prefix_token_data(index, specifier, base_16, rest)
-        _, _, _ -> {
-          let token =
-            common_token(
-              character: first,
-              index: index,
-              tokenize_character_as_digit: fn(_) { True },
-              whitespace_character_dict: whitespace_character_dict,
-            )
-
-          #(index + 1, token, rest, base_prefix_found)
-        }
-      }
+      let token =
+        common_token(
+          character: first,
+          index: index,
+          tokenize_character_as_digit: fn(_) { True },
+          whitespace_character_dict: whitespace_character_dict,
+        )
 
       do_tokenize_int(
         characters: rest,
-        base: base,
-        index: index,
-        base_prefix_found: base_prefix_found,
+        index: index + 1,
         whitespace_character_dict: whitespace_character_dict,
         acc: [token, ..acc],
       )
     }
   }
-}
-
-fn base_prefix_token_data(
-  index: Int,
-  specifier: String,
-  base: Int,
-  rest: List(String),
-) -> #(Int, Token, List(String), Bool) {
-  let token = BasePrefix(#(index, index + 2), "0" <> specifier, base)
-  let new_rest = case rest {
-    [] -> []
-    [_, ..rest] -> rest
-  }
-  #(index + 2, token, new_rest, True)
 }
 
 fn common_token(

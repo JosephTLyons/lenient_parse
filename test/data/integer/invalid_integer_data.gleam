@@ -682,6 +682,17 @@ fn invalid_mixed() -> List(IntegerTestData) {
       expected_program_output: Error(UnknownCharacter(7, ".")),
       python_error_function: invalid_literal_for_int_error,
     ),
+    // Base 0, has no prefix, default to decimal - should not parse with leading
+    // 0 because a leading 0 is considered a flag for start of base prefix
+    // string and we are missing the specifier. When in base 0, to parse a
+    // string as base 10, it must not have a leading 0, unless it is the value
+    // 0.
+    integer_test_data(
+      input: "01",
+      base: base_0,
+      expected_program_output: Error(UnknownCharacter(1, "1")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
     integer_test_data(
       input: " \n0x ABC.",
       base: base_0,

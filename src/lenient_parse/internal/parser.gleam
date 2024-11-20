@@ -9,8 +9,8 @@ import lenient_parse/internal/base_constants.{
 import lenient_parse/internal/build
 import lenient_parse/internal/convert.{digits_to_int, digits_to_int_with_base}
 import lenient_parse/internal/token.{
-  type Token, BasePrefix, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore,
-  Unknown, Whitespace,
+  type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
+  Whitespace,
 }
 import parse_error.{
   type ParseError, BasePrefixOnly, EmptyString, InvalidDecimalPosition,
@@ -128,7 +128,7 @@ pub fn parse_int_tokens(
     base
       if base == base_0 || base == base_2 || base == base_8 || base == base_16
     -> {
-      let parse_data = parse_base_prefix(tokens, next_index)
+      let parse_data = parse_base_prefix(tokens, next_index, base)
       use ParseData(base_data, next_index, tokens) <- result.try(parse_data)
 
       let #(base, prefix_data) = case base_data {
@@ -234,19 +234,72 @@ fn parse_sign(
 fn parse_base_prefix(
   tokens tokens: List(Token),
   index index: Int,
+  base base: Int,
 ) -> Result(ParseData(Option(#(#(Int, Int), String, Int))), ParseError) {
   case tokens {
     [Unknown(#(start_index, _), character), ..] ->
       Error(UnknownCharacter(start_index, character))
-    [BasePrefix(index_range, prefix, base), ..rest] -> {
-      Ok(ParseData(
-        data: Some(#(index_range, prefix, base)),
-        next_index: index_range.1,
-        tokens: rest,
-      ))
+    [Digit(index_range, "0", _), ..rest] -> {
+      let lookahead = rest |> list.first
+
+      case lookahead {
+        Ok(Digit(_, specifier, _))
+          if { base == base_0 || base == base_2 }
+          && { specifier == "b" || specifier == "B" }
+        ->
+          form_base_prefix(
+            tokens: rest,
+            index_range: index_range,
+            specifier: specifier,
+            base: base_2,
+          )
+        Ok(Digit(_, specifier, _))
+          if { base == base_0 || base == base_8 }
+          && { specifier == "o" || specifier == "O" }
+        ->
+          form_base_prefix(
+            tokens: rest,
+            index_range: index_range,
+            specifier: specifier,
+            base: base_8,
+          )
+        Ok(Digit(_, specifier, _))
+          if { base == base_0 || base == base_16 }
+          && { specifier == "x" || specifier == "X" }
+        ->
+          form_base_prefix(
+            tokens: rest,
+            index_range: index_range,
+            specifier: specifier,
+            base: base_16,
+          )
+        Ok(Digit(#(start_index, _), character, _)) if base == base_0 -> {
+          Error(UnknownCharacter(start_index, character))
+        }
+        _ -> Ok(ParseData(data: None, next_index: index, tokens: tokens))
+      }
     }
     _ -> Ok(ParseData(data: None, next_index: index, tokens: tokens))
   }
+}
+
+fn form_base_prefix(
+  tokens tokens: List(Token),
+  index_range index_range: #(Int, Int),
+  specifier specifier: String,
+  base base: Int,
+) -> Result(ParseData(Option(#(#(Int, Int), String, Int))), ParseError) {
+  let #(start_index, end_index) = index_range
+  let rest = case tokens {
+    [] -> []
+    [_, ..tokens] -> tokens
+  }
+
+  Ok(ParseData(
+    data: Some(#(#(start_index, end_index + 1), "0" <> specifier, base)),
+    next_index: end_index + 2,
+    tokens: rest,
+  ))
 }
 
 fn parse_decimal_point(
@@ -337,6 +390,9 @@ fn do_parse_digits(
         at_beginning: False,
         has_base_prefix: has_base_prefix,
       )
+    }
+    [Digit(#(start_index, _), character, _), ..] if base == base_0 -> {
+      Error(UnknownCharacter(start_index, character))
     }
     [Digit(#(_, end_index), _, value), ..rest] if value < base -> {
       do_parse_digits(

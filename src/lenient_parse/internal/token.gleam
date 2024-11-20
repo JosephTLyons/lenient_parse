@@ -1,6 +1,6 @@
 import lenient_parse/internal/whitespace.{type WhitespaceData}
 import parse_error.{
-  type ParseError, BasePrefixOnly, InvalidDecimalPosition, InvalidDigitPosition,
+  type ParseError, InvalidDecimalPosition, InvalidDigitPosition,
   InvalidExponentSymbolPosition, InvalidSignPosition, InvalidUnderscorePosition,
   OutOfBaseRange, UnknownCharacter,
 }
@@ -8,7 +8,6 @@ import parse_error.{
 pub type Token {
   Sign(#(Int, Int), String, Bool)
   Digit(#(Int, Int), character: String, value: Int)
-  BasePrefix(#(Int, Int), prefix: String, base: Int)
   Underscore(#(Int, Int))
   DecimalPoint(#(Int, Int))
   ExponentSymbol(#(Int, Int), String)
@@ -24,7 +23,6 @@ pub fn to_error(token: Token, base: Int) -> ParseError {
       OutOfBaseRange(start_index, character, value, base)
     Digit(#(start_index, _), character, _) ->
       InvalidDigitPosition(start_index, character)
-    BasePrefix(index_range, prefix, _) -> BasePrefixOnly(index_range, prefix)
     Underscore(#(start_index, _)) -> InvalidUnderscorePosition(start_index)
     DecimalPoint(#(start_index, _)) -> InvalidDecimalPosition(start_index)
     ExponentSymbol(#(start_index, _), exponent_symbol) ->

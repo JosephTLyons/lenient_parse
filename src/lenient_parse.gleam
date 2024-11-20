@@ -29,6 +29,6 @@ pub fn to_int_with_base(
   use <- bool.guard(!is_valid_base, Error(InvalidBaseValue(base)))
 
   text
-  |> tokenizer.tokenize_int(base: base)
+  |> tokenizer.tokenize_int
   |> parser.parse_int_tokens(base: base)
 }
