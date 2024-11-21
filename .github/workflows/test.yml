@@ -17,11 +17,11 @@ jobs:
                   otp-version: "26.0.2"
                   gleam-version: "1.5.0"
                   rebar3-version: "3"
-                  enable-cache: true
             - name: Install uv
               uses: astral-sh/setup-uv@v3
               with:
                   version: "latest"
+                  enable-cache: true
             - run: gleam deps download
             - name: Run JavaScript tests
               run: gleam test --target javascript
