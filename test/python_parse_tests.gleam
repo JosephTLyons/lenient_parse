@@ -52,8 +52,7 @@ pub fn check_against_python_tests() {
 
           use <- it(message)
 
-          expected_python_output
-          |> expect.to_equal(actual_python_output)
+          expected_python_output |> expect.to_equal(actual_python_output)
         }),
     ),
     describe(

@@ -9,21 +9,37 @@ pub fn to_floats(
   float_test_data float_test_data: List(FloatTestData),
 ) -> List(Result(String, PythonError)) {
   float_test_data
-  |> json.array(fn(float_data) {
-    json.object([#("input", json.string(float_data.input))])
+  |> list.map(fn(float_data) { float_data.input })
+  |> to_floats_from_list
+}
+
+pub fn to_floats_from_list(
+  float_strings: List(String),
+) -> List(Result(String, PythonError)) {
+  float_strings
+  |> json.array(fn(float_string) {
+    json.object([#("input", json.string(float_string))])
   })
   |> json.to_string
   |> parse(program_name: "parse_floats.py")
 }
 
-pub fn to_ints(
+pub fn to_integers(
   integer_test_data integer_test_data: List(IntegerTestData),
 ) -> List(Result(String, PythonError)) {
   integer_test_data
+  |> list.map(fn(integer_data) { #(integer_data.input, integer_data.base) })
+  |> to_integers_from_list
+}
+
+pub fn to_integers_from_list(
+  integer_strings: List(#(String, Int)),
+) -> List(Result(String, PythonError)) {
+  integer_strings
   |> json.array(fn(integer_data) {
     json.object([
-      #("input", json.string(integer_data.input)),
-      #("base", json.int(integer_data.base)),
+      #("input", json.string(integer_data.0)),
+      #("base", json.int(integer_data.1)),
     ])
   })
   |> json.to_string
