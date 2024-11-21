@@ -32,8 +32,8 @@ fn do_tokenize_float(
     [] -> acc |> list.reverse
     [first, ..rest] -> {
       let token = case first {
-        "." -> DecimalPoint(#(index, index + 1))
-        "e" | "E" -> ExponentSymbol(#(index, index + 1), first)
+        "." -> DecimalPoint(index)
+        "e" | "E" -> ExponentSymbol(index, first)
         _ ->
           common_token(
             character: first,
@@ -104,21 +104,20 @@ fn common_token(
   ),
 ) -> Token {
   case character {
-    "-" -> Sign(#(index, index + 1), "-", False)
-    "+" -> Sign(#(index, index + 1), "+", True)
-    "_" -> Underscore(#(index, index + 1))
+    "-" -> Sign(index, "-", False)
+    "+" -> Sign(index, "+", True)
+    "_" -> Underscore(index)
     _ -> {
       case whitespace_character_dict |> dict.get(character) {
-        Ok(whitespace_data) ->
-          Whitespace(#(index, index + 1), data: whitespace_data)
+        Ok(whitespace_data) -> Whitespace(index, data: whitespace_data)
         Error(_) -> {
           case character_to_value(character) {
             Some(value) ->
               case tokenize_character_as_digit(value) {
-                True -> Digit(#(index, index + 1), character, value)
-                False -> Unknown(#(index, index + 1), character)
+                True -> Digit(index, character, value)
+                False -> Unknown(index, character)
               }
-            None -> Unknown(#(index, index + 1), character)
+            None -> Unknown(index, character)
           }
         }
       }

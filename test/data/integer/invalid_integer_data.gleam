@@ -3,7 +3,9 @@ import gleam/int
 import gleam/list
 import gleam/string
 import helpers
-import lenient_parse/internal/base_constants.{base_0, base_10, base_2, base_8}
+import lenient_parse/internal/base_constants.{
+  base_0, base_10, base_16, base_2, base_8,
+}
 import lenient_parse/internal/whitespace
 import parse_error.{
   type ParseError, BasePrefixOnly, EmptyString, InvalidBaseValue,
@@ -248,6 +250,12 @@ fn unknown_characters() -> List(IntegerTestData) {
       expected_program_output: Error(UnknownCharacter(0, "#")),
       python_error_function: invalid_literal_for_int_error,
     ),
+    integer_test_data(
+      input: "  0b  ",
+      base: base_0,
+      expected_program_output: Error(UnknownCharacter(4, " ")),
+      python_error_function: invalid_literal_for_int_error,
+    ),
   ]
 }
 
@@ -329,6 +337,24 @@ fn out_of_base_range() -> List(IntegerTestData) {
       input: "DEAD_BEEF",
       base: base_10,
       expected_program_output: Error(OutOfBaseRange(0, "D", 13, base_10)),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "0b100b",
+      base: base_0,
+      expected_program_output: Error(OutOfBaseRange(5, "b", 11, base_2)),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "0b1001",
+      base: base_8,
+      expected_program_output: Error(OutOfBaseRange(1, "b", 11, base_8)),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "0XABCD",
+      base: base_2,
+      expected_program_output: Error(OutOfBaseRange(1, "X", 33, base_2)),
       python_error_function: invalid_literal_for_int_error,
     ),
   ]
@@ -587,27 +613,15 @@ fn base_prefix_only() -> List(IntegerTestData) {
       python_error_function: invalid_literal_for_int_error,
     ),
     integer_test_data(
-      input: "  0b  ",
+      input: "  0o",
       base: base_0,
-      expected_program_output: Error(UnknownCharacter(4, " ")),
+      expected_program_output: Error(BasePrefixOnly(#(2, 4), "0o")),
       python_error_function: invalid_literal_for_int_error,
     ),
     integer_test_data(
-      input: "0b100b",
+      input: "  0x",
       base: base_0,
-      expected_program_output: Error(OutOfBaseRange(5, "b", 11, base_2)),
-      python_error_function: invalid_literal_for_int_error,
-    ),
-    integer_test_data(
-      input: "0b1001",
-      base: base_8,
-      expected_program_output: Error(OutOfBaseRange(1, "b", 11, base_8)),
-      python_error_function: invalid_literal_for_int_error,
-    ),
-    integer_test_data(
-      input: "0XABCD",
-      base: base_2,
-      expected_program_output: Error(OutOfBaseRange(1, "X", 33, base_2)),
+      expected_program_output: Error(BasePrefixOnly(#(2, 4), "0x")),
       python_error_function: invalid_literal_for_int_error,
     ),
   ]
@@ -673,6 +687,12 @@ fn invalid_mixed() -> List(IntegerTestData) {
       input: "  1_1__1  ",
       base: base_2,
       expected_program_output: Error(InvalidUnderscorePosition(6)),
+      python_error_function: invalid_literal_for_int_error,
+    ),
+    integer_test_data(
+      input: "0xAB.C",
+      base: base_16,
+      expected_program_output: Error(UnknownCharacter(4, ".")),
       python_error_function: invalid_literal_for_int_error,
     ),
     // Base 0, has no prefix, default to decimal, but error because of UnknownCharacter

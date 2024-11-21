@@ -196,12 +196,11 @@ fn do_parse_whitespace(
   acc acc: String,
 ) -> Result(ParseData(Option(String)), ParseError) {
   case tokens {
-    [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(start_index, character))
-    [Whitespace(#(_, end_index), data), ..rest] -> {
+    [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
+    [Whitespace(index, data), ..rest] -> {
       do_parse_whitespace(
         tokens: rest,
-        index: end_index,
+        index: index + 1,
         acc: acc <> data.character,
       )
     }
@@ -221,10 +220,9 @@ fn parse_sign(
   index index: Int,
 ) -> Result(ParseData(Bool), ParseError) {
   case tokens {
-    [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(start_index, character))
-    [Sign(#(_, end_index), _, is_positive), ..rest] ->
-      Ok(ParseData(data: is_positive, next_index: end_index, tokens: rest))
+    [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
+    [Sign(index, _, is_positive), ..rest] ->
+      Ok(ParseData(data: is_positive, next_index: index + 1, tokens: rest))
     _ -> {
       Ok(ParseData(data: True, next_index: index, tokens: tokens))
     }
@@ -237,9 +235,8 @@ fn parse_base_prefix(
   base base: Int,
 ) -> Result(ParseData(Option(#(#(Int, Int), String, Int))), ParseError) {
   case tokens {
-    [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(start_index, character))
-    [Digit(index_range, "0", _), ..rest] -> {
+    [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
+    [Digit(index, "0", _), ..rest] -> {
       let lookahead = rest |> list.first
 
       case lookahead {
@@ -247,34 +244,34 @@ fn parse_base_prefix(
           if { base == base_0 || base == base_2 }
           && { specifier == "b" || specifier == "B" }
         ->
-          form_base_prefix(
+          Ok(base_prefix_data(
             tokens: rest,
-            index_range: index_range,
+            index: index,
             specifier: specifier,
             base: base_2,
-          )
+          ))
         Ok(Digit(_, specifier, _))
           if { base == base_0 || base == base_8 }
           && { specifier == "o" || specifier == "O" }
         ->
-          form_base_prefix(
+          Ok(base_prefix_data(
             tokens: rest,
-            index_range: index_range,
+            index: index,
             specifier: specifier,
             base: base_8,
-          )
+          ))
         Ok(Digit(_, specifier, _))
           if { base == base_0 || base == base_16 }
           && { specifier == "x" || specifier == "X" }
         ->
-          form_base_prefix(
+          Ok(base_prefix_data(
             tokens: rest,
-            index_range: index_range,
+            index: index,
             specifier: specifier,
             base: base_16,
-          )
-        Ok(Digit(#(start_index, _), character, _)) if base == base_0 -> {
-          Error(UnknownCharacter(start_index, character))
+          ))
+        Ok(Digit(index, character, _)) if base == base_0 -> {
+          Error(UnknownCharacter(index, character))
         }
         _ -> Ok(ParseData(data: None, next_index: index, tokens: tokens))
       }
@@ -283,23 +280,17 @@ fn parse_base_prefix(
   }
 }
 
-fn form_base_prefix(
+fn base_prefix_data(
   tokens tokens: List(Token),
-  index_range index_range: #(Int, Int),
+  index index: Int,
   specifier specifier: String,
   base base: Int,
-) -> Result(ParseData(Option(#(#(Int, Int), String, Int))), ParseError) {
-  let #(start_index, end_index) = index_range
-  let rest = case tokens {
-    [] -> []
-    [_, ..tokens] -> tokens
-  }
-
-  Ok(ParseData(
-    data: Some(#(#(start_index, end_index + 1), "0" <> specifier, base)),
-    next_index: end_index + 2,
-    tokens: rest,
-  ))
+) -> ParseData(Option(#(#(Int, Int), String, Int))) {
+  ParseData(
+    data: Some(#(#(index, index + 2), "0" <> specifier, base)),
+    next_index: index + 2,
+    tokens: tokens |> list.drop(1),
+  )
 }
 
 fn parse_decimal_point(
@@ -307,10 +298,9 @@ fn parse_decimal_point(
   index index: Int,
 ) -> Result(ParseData(Bool), ParseError) {
   case tokens {
-    [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(start_index, character))
-    [DecimalPoint(#(_, end_index)), ..rest] ->
-      Ok(ParseData(data: True, next_index: end_index, tokens: rest))
+    [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
+    [DecimalPoint(index), ..rest] ->
+      Ok(ParseData(data: True, next_index: index + 1, tokens: rest))
     _ -> Ok(ParseData(data: False, next_index: index, tokens: tokens))
   }
 }
@@ -320,12 +310,11 @@ fn parse_exponent_symbol(
   index index: Int,
 ) -> Result(ParseData(Option(String)), ParseError) {
   case tokens {
-    [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(start_index, character))
-    [ExponentSymbol(#(_, end_index), exponent_symbol), ..rest] ->
+    [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
+    [ExponentSymbol(index, exponent_symbol), ..rest] ->
       Ok(ParseData(
         data: Some(exponent_symbol),
-        next_index: end_index,
+        next_index: index + 1,
         tokens: rest,
       ))
     _ -> Ok(ParseData(data: None, next_index: index, tokens: tokens))
@@ -357,11 +346,10 @@ fn do_parse_digits(
   has_base_prefix has_base_prefix: Bool,
 ) -> Result(ParseData(Queue(Int)), ParseError) {
   case tokens {
-    [Unknown(#(start_index, _), character), ..] ->
-      Error(UnknownCharacter(start_index, character))
-    [Whitespace(#(start_index, _), data), ..] if at_beginning ->
-      Error(UnknownCharacter(start_index, data.character))
-    [Underscore(#(start_index, end_index)), ..rest] -> {
+    [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
+    [Whitespace(index, data), ..] if at_beginning ->
+      Error(UnknownCharacter(index, data.character))
+    [Underscore(index), ..rest] -> {
       let lookahead = rest |> list.first
       let at_end = case lookahead {
         Ok(Digit(_, _, _)) -> False
@@ -374,38 +362,38 @@ fn do_parse_digits(
 
       use <- bool.guard(
         next_is_underscore,
-        Error(InvalidUnderscorePosition(start_index + 1)),
+        Error(InvalidUnderscorePosition(index + 1)),
       )
 
       use <- bool.guard(
         { at_beginning && !has_base_prefix } || at_end,
-        Error(InvalidUnderscorePosition(start_index)),
+        Error(InvalidUnderscorePosition(index)),
       )
 
       do_parse_digits(
         tokens: rest,
-        index: end_index,
+        index: index + 1,
         base: base,
         acc: acc,
         at_beginning: False,
         has_base_prefix: has_base_prefix,
       )
     }
-    [Digit(#(start_index, _), character, _), ..] if base == base_0 -> {
-      Error(UnknownCharacter(start_index, character))
+    [Digit(index, character, _), ..] if base == base_0 -> {
+      Error(UnknownCharacter(index, character))
     }
-    [Digit(#(_, end_index), _, value), ..rest] if value < base -> {
+    [Digit(index, _, value), ..rest] if value < base -> {
       do_parse_digits(
         tokens: rest,
-        index: end_index,
+        index: index,
         base: base,
         acc: acc |> queue.push_back(value),
         at_beginning: False,
         has_base_prefix: has_base_prefix,
       )
     }
-    [Digit(#(start_index, _), character, value), ..] ->
-      Error(OutOfBaseRange(start_index, character, value, base))
+    [Digit(index, character, value), ..] ->
+      Error(OutOfBaseRange(index, character, value, base))
     _ -> Ok(ParseData(data: acc, next_index: index, tokens: tokens))
   }
 }
