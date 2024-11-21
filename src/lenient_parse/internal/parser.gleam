@@ -1,7 +1,7 @@
 import gleam/bool
+import gleam/deque.{type Deque}
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/queue.{type Queue}
 import gleam/result
 import lenient_parse/internal/base_constants.{
   base_0, base_10, base_16, base_2, base_8,
@@ -41,12 +41,12 @@ pub fn parse_float_tokens(
 
   let parse_data = case decimal_specified {
     True -> parse_digits(tokens, next_index, base_10, False)
-    False -> Ok(ParseData(queue.new(), next_index, tokens))
+    False -> Ok(ParseData(deque.new(), next_index, tokens))
   }
   use ParseData(fractional_digits, next_index, tokens) <- result.try(parse_data)
 
   let missing_digit_parts =
-    queue.is_empty(whole_digits) && queue.is_empty(fractional_digits)
+    deque.is_empty(whole_digits) && deque.is_empty(fractional_digits)
   use <- bool.guard(
     missing_digit_parts && decimal_specified,
     Error(InvalidDecimalPosition(next_index - 1)),
@@ -70,7 +70,7 @@ pub fn parse_float_tokens(
         parse_data,
       )
 
-      let parse_data = case exponent_digits |> queue.is_empty {
+      let parse_data = case exponent_digits |> deque.is_empty {
         True ->
           Error(InvalidExponentSymbolPosition(next_index - 1, exponent_symbol))
         False -> Ok(ParseData(exponent_digits, next_index, tokens))
@@ -167,7 +167,7 @@ pub fn parse_int_tokens(
   }
   use _ <- result.try(remaining_token_result)
 
-  case leading_whitespace, prefix_data, digits |> queue.is_empty {
+  case leading_whitespace, prefix_data, digits |> deque.is_empty {
     None, None, True -> Error(EmptyString)
     _, Some(#(index_range, prefix)), True ->
       Error(BasePrefixOnly(index_range, prefix))
@@ -326,12 +326,12 @@ fn parse_digits(
   index index: Int,
   base base: Int,
   has_base_prefix has_base_prefix: Bool,
-) -> Result(ParseData(Queue(Int)), ParseError) {
+) -> Result(ParseData(Deque(Int)), ParseError) {
   do_parse_digits(
     tokens: tokens,
     index: index,
     base: base,
-    acc: queue.new(),
+    acc: deque.new(),
     at_beginning: True,
     has_base_prefix: has_base_prefix,
   )
@@ -341,10 +341,10 @@ fn do_parse_digits(
   tokens tokens: List(Token),
   index index: Int,
   base base: Int,
-  acc acc: Queue(Int),
+  acc acc: Deque(Int),
   at_beginning at_beginning: Bool,
   has_base_prefix has_base_prefix: Bool,
-) -> Result(ParseData(Queue(Int)), ParseError) {
+) -> Result(ParseData(Deque(Int)), ParseError) {
   case tokens {
     [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
     [Whitespace(index, data), ..] if at_beginning ->
@@ -387,7 +387,7 @@ fn do_parse_digits(
         tokens: rest,
         index: index,
         base: base,
-        acc: acc |> queue.push_back(value),
+        acc: acc |> deque.push_back(value),
         at_beginning: False,
         has_base_prefix: has_base_prefix,
       )
