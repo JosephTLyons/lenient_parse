@@ -3,7 +3,6 @@ import gleam/float
 import gleam/int
 import gleam/list
 import helpers
-import parse_error
 import startest.{describe, it}
 import startest/expect
 
@@ -45,7 +44,7 @@ pub fn check_against_python_tests() {
             Error(output), Ok(python_output) -> {
               panic as form_panic_message(
                 input_printable_text,
-                output |> parse_error.to_string,
+                output |> helpers.error_to_string,
                 python_output,
               )
             }
@@ -103,7 +102,7 @@ pub fn check_against_python_tests() {
             Error(output), Ok(python_output) -> {
               panic as form_panic_message(
                 input_printable_text,
-                output |> parse_error.to_string,
+                output |> helpers.error_to_string,
                 python_output,
               )
             }

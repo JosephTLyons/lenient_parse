@@ -1,5 +1,3 @@
-import gleam/int
-
 pub type ParseError {
   /// Represents an error when the input string is empty.
   EmptyString
@@ -70,50 +68,4 @@ pub type ParseError {
   /// - `base`: The invalid base as an `Int`. The base must be between 2 and 36
   /// inclusive.
   InvalidBaseValue(base: Int)
-}
-
-@internal
-pub fn to_string(error: ParseError) -> String {
-  case error {
-    EmptyString -> "empty string"
-    WhitespaceOnlyString -> "whitespace only string"
-    InvalidUnderscorePosition(index) ->
-      "underscore at invalid position: " <> index |> int.to_string
-    InvalidDecimalPosition(index) ->
-      "decimal at invalid position: " <> index |> int.to_string
-    InvalidSignPosition(index, sign) ->
-      "sign \"" <> sign <> "\" at invalid position: " <> index |> int.to_string
-    InvalidDigitPosition(index, digit) ->
-      "digit \""
-      <> digit
-      <> "\" at invalid position: "
-      <> index |> int.to_string
-    BasePrefixOnly(#(start_index, end_index), prefix) ->
-      "inferred base prefix only: "
-      <> prefix
-      <> " at index range: "
-      <> start_index |> int.to_string
-      <> ".."
-      <> end_index |> int.to_string
-    OutOfBaseRange(index, character, value, base) ->
-      "digit character \""
-      <> character
-      <> "\" ("
-      <> value |> int.to_string
-      <> ") at position "
-      <> index |> int.to_string
-      <> " is out of range for base: "
-      <> base |> int.to_string
-    InvalidExponentSymbolPosition(index, exponent_symbol) ->
-      "exponent symbol \""
-      <> exponent_symbol
-      <> "\" at invalid position: "
-      <> index |> int.to_string
-    UnknownCharacter(index, character) ->
-      "unknown character \""
-      <> character
-      <> "\" at index: "
-      <> index |> int.to_string
-    InvalidBaseValue(base) -> "invalid base value: " <> base |> int.to_string
-  }
 }

@@ -3,7 +3,6 @@ import gleam/int
 import gleam/list
 import helpers
 import lenient_parse
-import parse_error
 import startest.{describe, it}
 import startest/expect
 
@@ -32,7 +31,7 @@ pub fn to_int_tests() {
             <> output |> int.to_string
           }
           Error(error) -> {
-            let error_string = error |> parse_error.to_string
+            let error_string = error |> helpers.error_to_string
             "should_not_parse: \""
             <> input_printable_text
             <> "\" -> "

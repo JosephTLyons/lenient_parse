@@ -1,6 +1,13 @@
 import gleam/dict.{type Dict}
+import gleam/int
 import gleam/string
 import lenient_parse/internal/whitespace.{type WhitespaceData}
+import parse_error.{
+  type ParseError, BasePrefixOnly, EmptyString, InvalidBaseValue,
+  InvalidDecimalPosition, InvalidDigitPosition, InvalidExponentSymbolPosition,
+  InvalidSignPosition, InvalidUnderscorePosition, OutOfBaseRange,
+  UnknownCharacter, WhitespaceOnlyString,
+}
 
 pub fn to_printable_text(text: String) -> String {
   do_to_printable_text(
@@ -32,5 +39,50 @@ fn do_to_printable_text(
         acc: acc <> printable,
       )
     }
+  }
+}
+
+pub fn error_to_string(error: ParseError) -> String {
+  case error {
+    EmptyString -> "empty string"
+    WhitespaceOnlyString -> "whitespace only string"
+    InvalidUnderscorePosition(index) ->
+      "underscore at invalid position: " <> index |> int.to_string
+    InvalidDecimalPosition(index) ->
+      "decimal at invalid position: " <> index |> int.to_string
+    InvalidSignPosition(index, sign) ->
+      "sign \"" <> sign <> "\" at invalid position: " <> index |> int.to_string
+    InvalidDigitPosition(index, digit) ->
+      "digit \""
+      <> digit
+      <> "\" at invalid position: "
+      <> index |> int.to_string
+    BasePrefixOnly(#(start_index, end_index), prefix) ->
+      "inferred base prefix only: "
+      <> prefix
+      <> " at index range: "
+      <> start_index |> int.to_string
+      <> ".."
+      <> end_index |> int.to_string
+    OutOfBaseRange(index, character, value, base) ->
+      "digit character \""
+      <> character
+      <> "\" ("
+      <> value |> int.to_string
+      <> ") at position "
+      <> index |> int.to_string
+      <> " is out of range for base: "
+      <> base |> int.to_string
+    InvalidExponentSymbolPosition(index, exponent_symbol) ->
+      "exponent symbol \""
+      <> exponent_symbol
+      <> "\" at invalid position: "
+      <> index |> int.to_string
+    UnknownCharacter(index, character) ->
+      "unknown character \""
+      <> character
+      <> "\" at index: "
+      <> index |> int.to_string
+    InvalidBaseValue(base) -> "invalid base value: " <> base |> int.to_string
   }
 }
