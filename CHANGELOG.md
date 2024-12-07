@@ -1,9 +1,13 @@
 # Changelog
 
-## v1.3.6 - 2024-12-XX
+## v2.0.0 - 2024-12-07
 
-- Handle values too large for JavaScript runtime
-    - TODO: New error(s) introduced
+- Handled values that exceed either the `Number.MIN_SAFE_INTEGER` and `Number.MAX_SAFE_INTEGER` limits on the JavaScript target.
+- Handled values that cannot fit within the float type, on both Erlang and JavaScript targets.
+
+This is a breaking change, as we introduced new errors to `ParseError`, which will affect users who are matching on the `ParseError` type.
+    - `OutOfIntRange`
+    - `OutOfFloatRange`
 
 ## v1.3.5 - 2024-11-20
 
