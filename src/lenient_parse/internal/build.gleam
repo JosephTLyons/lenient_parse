@@ -63,8 +63,9 @@ pub fn float_value(
         }
       }
     }
-    // Fallback to logic that can result in slight rounding issues
-    // Should be unreachable
+    // Should be unreachable.
+    // If we hit this case, it is an error and we will see rounding issues in
+    // some cases.
     Error(_) -> {
       let float_value =
         digits
@@ -108,9 +109,9 @@ pub fn integer_value(
           Error(OutOfIntRange(integer_string))
         }
       }
-    // Fallback to logic that can result in incorrect integer values for
-    // JavaScript.
-    // Should be unreachable
+    // Should be unreachable.
+    // If we hit this case, we will see potentially invalid integer values on
+    // JavaScript target, when exceeding the min or max safe integer values.
     Error(_) -> {
       let value = digits |> convert.digits_to_int_with_base(base)
       let value = case is_positive {
