@@ -1,18 +1,14 @@
+import javascript_constants.{
+  max_safe_integer, max_safe_integer_plus_one, min_safe_integer,
+  min_safe_integer_minus_one,
+}
 import lenient_parse
 @target(javascript)
 import parse_error.{NotASafeInteger}
 import startest/expect
 
-const min_safe_integer = "-9007199254740991"
-
-const min_safe_integer_minus_one = "-9007199254740992"
-
-const max_safe_integer = "9007199254740991"
-
-const max_safe_integer_plus_one = "9007199254740992"
-
 @target(erlang)
-pub fn erlang_min_safe_integer_test() {
+pub fn erlang_javascript_min_safe_integer_test() {
   min_safe_integer
   |> lenient_parse.to_int
   |> expect.to_equal(Ok(-9_007_199_254_740_991))
@@ -23,7 +19,7 @@ pub fn erlang_min_safe_integer_test() {
 }
 
 @target(erlang)
-pub fn erlang_max_safe_integer_test() {
+pub fn erlang_javascript_max_safe_integer_test() {
   max_safe_integer
   |> lenient_parse.to_int
   |> expect.to_equal(Ok(9_007_199_254_740_991))
@@ -34,7 +30,7 @@ pub fn erlang_max_safe_integer_test() {
 }
 
 @target(javascript)
-pub fn javascript_min_safe_integer_test() {
+pub fn javascript_javascript_min_safe_integer_test() {
   min_safe_integer
   |> lenient_parse.to_int
   |> expect.to_equal(Ok(-9_007_199_254_740_991))
@@ -45,7 +41,7 @@ pub fn javascript_min_safe_integer_test() {
 }
 
 @target(javascript)
-pub fn javascript_max_safe_integer_test() {
+pub fn javascript_javascript_max_safe_integer_test() {
   max_safe_integer
   |> lenient_parse.to_int
   |> expect.to_equal(Ok(9_007_199_254_740_991))

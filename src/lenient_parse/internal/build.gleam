@@ -123,3 +123,5 @@ pub fn integer_value(
 // TODO: For float, test limits and raise error
 // TODO: Test erlang before and after negative safe integer check
 // TODO: Test javascript before and after invalid base value check
+
+// TODO: Unify the code between build_int and build_float
