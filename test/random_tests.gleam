@@ -3,7 +3,6 @@ import gleam/int
 import gleam/list
 import helpers
 import lenient_parse
-import parse_error
 import startest.{describe, it}
 import startest/expect
 
@@ -78,7 +77,7 @@ pub fn random_value_tests() {
               <> "\" (base: "
               <> base |> int.to_string
               <> ") failed to parse in program (error: \""
-              <> program_error |> parse_error.to_string
+              <> program_error |> helpers.error_to_string
               <> "\") but parsed in python (\""
               <> python_output
               <> "\")"
