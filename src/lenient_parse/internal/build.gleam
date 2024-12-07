@@ -49,6 +49,7 @@ pub fn float_value(
         )
 
       case decimal |> pilkku.to_float {
+        // `pilkku.to_float` returns 0.0 for both 0.0 and -0.0
         Ok(float_value) if float_value == 0.0 && !is_positive -> Ok(-0.0)
         Ok(float_value) -> Ok(float_value)
         Error(_) -> {
@@ -153,4 +154,3 @@ fn integer_string(
     False -> "-" <> integer_string
   }
 }
-// TODO: Unify the code between build_int and build_float
