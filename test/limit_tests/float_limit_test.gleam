@@ -38,6 +38,4 @@ pub fn small_negative_float_limit_test() {
   |> lenient_parse.to_float
   |> expect.to_equal(Error(OutOfFloatRange(expected)))
 }
-// TODO: For float, test limits and raise error
-// TODO: Test erlang before and after negative safe integer check
-// TODO: Test javascript before and after invalid base value check
+// TODO: Tests that are right before the limits that should pass in both targets?

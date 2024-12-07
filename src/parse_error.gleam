@@ -72,9 +72,14 @@ pub type ParseError {
   /// Represents an error when the parsed number is outside the safe integer
   /// range when ran on the JavaScript target.
   ///
-  /// For more information on safe integers and their range, see:
   /// - [MDN: Number.MAX_SAFE_INTEGER](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER)
   /// - [MDN: Number.MIN_SAFE_INTEGER](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER)
+  ///
+  /// This also implies that numbers that parse to `Infinity` and `-Infinity`,
+  /// on the JavaScript target, will emit this error.
+  ///
+  /// Note that Erlang's max and min integer limits are not handled and the
+  /// program will crash.
   OutOfIntRange(integer_string: String)
 
   /// Represents an error when the parsed number cannot be represented as a
@@ -82,3 +87,4 @@ pub type ParseError {
   OutOfFloatRange(float_string: String)
 }
 // TODO: Make sure error names are good and make sure docs are good
+// TODO: In docs, for both targets, when float can't be held, it will emit an OutOfFloatRange error.
