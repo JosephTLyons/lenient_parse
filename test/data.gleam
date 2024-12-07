@@ -2,8 +2,8 @@ import data/float/invalid_float_data
 import data/float/valid_float_data
 import data/integer/invalid_integer_data
 import data/integer/valid_integer_data
-import gleam/iterator
 import gleam/list
+import gleam/yielder
 import python/python_error.{type PythonError}
 import python/python_parse
 import random_string.{random_integer_string}
@@ -63,9 +63,9 @@ pub fn python_processed_random_integer_data() -> List(
   #(String, Result(String, PythonError)),
 ) {
   let random_integer_strings =
-    iterator.range(1, number_of_random_values)
-    |> iterator.map(fn(_) { random_integer_string() })
-    |> iterator.to_list
+    yielder.range(1, number_of_random_values)
+    |> yielder.map(fn(_) { random_integer_string() })
+    |> yielder.to_list
 
   let random_integer_strings_with_base_0 =
     random_integer_strings
