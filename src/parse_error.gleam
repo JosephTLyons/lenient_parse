@@ -75,7 +75,7 @@ pub type ParseError {
   /// For more information on safe integers and their range, see:
   /// - [MDN: Number.MAX_SAFE_INTEGER](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER)
   /// - [MDN: Number.MIN_SAFE_INTEGER](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER)
-  NotASafeInteger(value: String)
+  NotASafeInteger(integer_string: String)
 }
 // TODO: An error for when the float is too big and cannot be represented on (JavaScript? Both targets?)
 //    Or should the error be more generalized to not specify the target?

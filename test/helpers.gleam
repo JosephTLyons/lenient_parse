@@ -84,9 +84,9 @@ pub fn error_to_string(error: ParseError) -> String {
       <> "\" at index: "
       <> index |> int.to_string
     InvalidBaseValue(base) -> "invalid base value: " <> base |> int.to_string
-    NotASafeInteger(value) ->
+    NotASafeInteger(integer_string) ->
       "integer value \""
-      <> value
+      <> integer_string
       <> "\" cannot safely be represented on the JavaScript target"
   }
 }
