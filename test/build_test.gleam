@@ -41,3 +41,4 @@ pub fn build_float_explicit_0_whole_test() {
   )
   |> expect.to_equal(0.1)
 }
+// TODO: Built int tests

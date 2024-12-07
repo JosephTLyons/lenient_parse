@@ -28,5 +28,5 @@ pub fn to_int_with_base(
 
   text
   |> tokenizer.tokenize_int
-  |> parser.parse_int_tokens(base:)
+  |> parser.parse_int_tokens(base)
 }

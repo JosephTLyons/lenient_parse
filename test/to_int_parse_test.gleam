@@ -43,7 +43,7 @@ pub fn to_int_tests() {
         use <- it(message)
 
         input
-        |> lenient_parse.to_int_with_base(base:)
+        |> lenient_parse.to_int_with_base(base)
         |> expect.to_equal(expected_program_output)
       }),
   )

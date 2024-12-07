@@ -7,7 +7,7 @@ import lenient_parse/internal/base_constants.{
   base_0, base_10, base_16, base_2, base_8,
 }
 import lenient_parse/internal/build
-import lenient_parse/internal/convert.{digits_to_int, digits_to_int_with_base}
+import lenient_parse/internal/convert.{digits_to_int}
 import lenient_parse/internal/token.{
   type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
   Whitespace,
@@ -173,12 +173,7 @@ pub fn parse_int_tokens(
       Error(BasePrefixOnly(index_range, prefix))
     Some(_), _, True -> Error(WhitespaceOnlyString)
     _, _, _ -> {
-      let value = digits |> digits_to_int_with_base(base:)
-      let value = case is_positive {
-        True -> value
-        False -> -value
-      }
-      Ok(value)
+      build.integer_value(digits:, base:, is_positive:)
     }
   }
 }

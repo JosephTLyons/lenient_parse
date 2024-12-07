@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.6 - 2024-12-XX
+
+- Handle values too large for JavaScript runtime
+    - TODO: New error(s) introduced
+
 ## v1.3.5 - 2024-11-20
 
 - Fixed a bug where base prefix substrings would be recognized as such later in the string.

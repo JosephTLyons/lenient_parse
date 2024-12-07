@@ -2,10 +2,13 @@ import bigi
 import gleam/bool
 import gleam/deque.{type Deque}
 import gleam/int
+import gleam/list
+import gleam/string
 import lenient_parse/internal/base_constants.{base_10}
 import lenient_parse/internal/convert
 import lenient_parse/internal/pilkku/pilkku
 import lenient_parse/internal/scale
+import parse_error.{type ParseError, NotASafeInteger}
 
 pub fn float_value(
   is_positive is_positive: Bool,
@@ -19,14 +22,17 @@ pub fn float_value(
   let #(digits, _) = scale.deques(whole_digits, fractional_digits, exponent)
 
   // `bigi.undigits` documentation says it can fail if:
-  // - the base is less than 2: We are hardcoding base 10, so this doesn't apply
+  // - the base is less than 2: We are hardcoding base 10, so this doesn't
+  //   apply.
   // - if the digits are out of range for the given base: For float parsing, the
   //   tokenizer has already marked these digits as `Unknown` tokens and the
   //   parser has already raised an error. Therefore, the error case here should
   //   be unreachable. We do not want to `let assert Ok()`, just in case there
   //   is some bug in the prior code. Using the fallback will result in some
-  //   precision loss, but it is better than crashing.
-  let float_value = case digits |> deque.to_list |> bigi.undigits(base_10) {
+  //   precision loss, but it is better than crashing. We may want to raise an
+  //   actual error in the future.
+  let digits_list = digits |> deque.to_list
+  let float_value = case digits_list |> bigi.undigits(base_10) {
     Ok(coefficient) -> {
       let sign =
         case is_positive {
@@ -46,6 +52,7 @@ pub fn float_value(
         Ok(float_value) if float_value == 0.0 && !is_positive -> Ok(-0.0)
         Ok(float_value) -> Ok(float_value)
         // TODO: Add tests and return an error for this case
+        // TODO: Add error
         Error(_) -> Error(Nil)
       }
     }
@@ -66,3 +73,53 @@ pub fn float_value(
     }
   }
 }
+
+pub fn integer_value(
+  digits digits: Deque(Int),
+  base base: Int,
+  is_positive is_positive: Bool,
+) -> Result(Int, ParseError) {
+  // `bigi.undigits` documentation says it can fail if:
+  // - the base is less than 2: We've already ensured that the user has picked
+  //    a base >= 2 and <= 36, so this doesn't apply.
+  // - if the digits are out of range for the given base: For integer parsing,
+  //   the tokenizer has already marked these digits as `Unknown` tokens and the
+  //   parser has already raised an error. Therefore, the error case here should
+  //   be unreachable. We do not want to `let assert Ok()`, just in case there
+  //   is some bug in the prior code. If the fallback is hit, issues may arise
+  //   on JavaScript. We may want to raise an actual error in the future.
+  let digits_list = digits |> deque.to_list
+  case digits_list |> bigi.undigits(base) {
+    Ok(big_int) ->
+      case big_int |> bigi.to_int {
+        Ok(value) -> {
+          let value = case is_positive {
+            True -> value
+            False -> -value
+          }
+          Ok(value)
+        }
+        Error(_) -> {
+          let value_string =
+            digits_list |> list.map(int.to_string) |> string.join("")
+
+          let value_string = case is_positive {
+            True -> value_string
+            False -> "-" <> value_string
+          }
+          Error(NotASafeInteger(value_string))
+        }
+      }
+    Error(_) -> {
+      let value = digits |> convert.digits_to_int_with_base(base)
+      let value = case is_positive {
+        True -> value
+        False -> -value
+      }
+      Ok(value)
+    }
+  }
+}
+// TODO: For float, test limits and raise error
+// TODO: Test erlang before and after negative safe integer check
+// TODO: Test javascript before and after invalid base value check

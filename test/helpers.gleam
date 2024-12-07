@@ -5,8 +5,8 @@ import lenient_parse/internal/whitespace.{type WhitespaceData}
 import parse_error.{
   type ParseError, BasePrefixOnly, EmptyString, InvalidBaseValue,
   InvalidDecimalPosition, InvalidDigitPosition, InvalidExponentSymbolPosition,
-  InvalidSignPosition, InvalidUnderscorePosition, OutOfBaseRange,
-  UnknownCharacter, WhitespaceOnlyString,
+  InvalidSignPosition, InvalidUnderscorePosition, NotASafeInteger,
+  OutOfBaseRange, UnknownCharacter, WhitespaceOnlyString,
 }
 
 pub fn to_printable_text(text: String) -> String {
@@ -84,5 +84,9 @@ pub fn error_to_string(error: ParseError) -> String {
       <> "\" at index: "
       <> index |> int.to_string
     InvalidBaseValue(base) -> "invalid base value: " <> base |> int.to_string
+    NotASafeInteger(value) ->
+      "integer value \""
+      <> value
+      <> "\" cannot safely be represented on the JavaScript target"
   }
 }
