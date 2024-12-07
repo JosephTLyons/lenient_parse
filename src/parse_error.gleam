@@ -78,8 +78,7 @@ pub type ParseError {
   /// This also implies that numbers that parse to `Infinity` and `-Infinity`,
   /// on the JavaScript target, will emit this error.
   ///
-  /// Note that Erlang's max and min integer limits are not handled and the
-  /// program will crash.
+  /// Note that Erlang's max and min integer limits are not handled.
   OutOfIntRange(integer_string: String)
 
   /// Represents an error when the parsed number cannot be fit within the float
