@@ -84,4 +84,3 @@ pub fn build_int_test() {
   )
   |> expect.to_equal(Ok(123))
 }
-// TODO - error tests for float and int
