@@ -103,12 +103,12 @@ pub fn parse_float_tokens(
     None, True -> Error(EmptyString)
     Some(_), True -> Error(WhitespaceOnlyString)
     _, _ ->
-      Ok(build.float_value(
+      build.float_value(
         is_positive:,
         whole_digits:,
         fractional_digits:,
         scale_factor: exponent,
-      ))
+      )
   }
 }
 

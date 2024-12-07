@@ -11,7 +11,7 @@ pub fn build_float_empty_test() {
     fractional_digits: deque.from_list([]),
     scale_factor: 0,
   )
-  |> expect.to_equal(0.0)
+  |> expect.to_equal(Ok(0.0))
 }
 
 pub fn build_float_explicit_0_both_test() {
@@ -21,7 +21,7 @@ pub fn build_float_explicit_0_both_test() {
     fractional_digits: deque.from_list([0]),
     scale_factor: 0,
   )
-  |> expect.to_equal(0.0)
+  |> expect.to_equal(Ok(0.0))
 }
 
 pub fn build_float_empty_fractional_test() {
@@ -31,7 +31,7 @@ pub fn build_float_empty_fractional_test() {
     fractional_digits: deque.from_list([]),
     scale_factor: 0,
   )
-  |> expect.to_equal(1.0)
+  |> expect.to_equal(Ok(1.0))
 }
 
 pub fn build_float_explicit_0_fractional_test() {
@@ -41,7 +41,7 @@ pub fn build_float_explicit_0_fractional_test() {
     fractional_digits: deque.from_list([0]),
     scale_factor: 0,
   )
-  |> expect.to_equal(1.0)
+  |> expect.to_equal(Ok(1.0))
 }
 
 pub fn build_float_empty_whole_test() {
@@ -51,7 +51,7 @@ pub fn build_float_empty_whole_test() {
     fractional_digits: deque.from_list([1]),
     scale_factor: 0,
   )
-  |> expect.to_equal(0.1)
+  |> expect.to_equal(Ok(0.1))
 }
 
 pub fn build_float_explicit_0_whole_test() {
@@ -61,7 +61,7 @@ pub fn build_float_explicit_0_whole_test() {
     fractional_digits: deque.from_list([1]),
     scale_factor: 0,
   )
-  |> expect.to_equal(0.1)
+  |> expect.to_equal(Ok(0.1))
 }
 
 // ------------------ int
@@ -84,3 +84,4 @@ pub fn build_int_test() {
   )
   |> expect.to_equal(Ok(123))
 }
+// TODO - error tests for float and int
