@@ -82,9 +82,7 @@ pub type ParseError {
   /// program will crash.
   OutOfIntRange(integer_string: String)
 
-  /// Represents an error when the parsed number cannot be represented as a
-  /// float.
+  /// Represents an error when the parsed number cannot be fit within the float
+  /// type.
   OutOfFloatRange(float_string: String)
 }
-// TODO: Make sure error names are good and make sure docs are good
-// TODO: In docs, for both targets, when float can't be held, it will emit an OutOfFloatRange error.
