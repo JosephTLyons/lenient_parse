@@ -26,8 +26,10 @@ fn random_integer_generator() -> random.Generator(String) {
   use poison_3 <- random.then(maybe_poison_generator())
   use poison_4 <- random.then(maybe_poison_generator())
   use poison_5 <- random.then(maybe_poison_generator())
+  use poison_6 <- random.then(maybe_poison_generator())
 
-  use integer <- random.then(maybe_integer_string_generator())
+  use integer_1 <- random.then(maybe_integer_string_generator())
+  use integer_2 <- random.then(maybe_integer_string_generator())
   use sign <- random.then(maybe_sign_generator())
 
   random.constant(
@@ -37,11 +39,13 @@ fn random_integer_generator() -> random.Generator(String) {
     <> sign
     <> poison_3
     <> underscore_1
-    <> integer
-    <> underscore_2
+    <> integer_1
     <> poison_4
+    <> integer_2
+    <> underscore_2
+    <> poison_5
     <> trailing_whitespace
-    <> poison_5,
+    <> poison_6,
   )
 }
 

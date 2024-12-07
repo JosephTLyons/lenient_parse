@@ -10,6 +10,7 @@ import random_string.{random_integer_string}
 import test_data.{type FloatTestData, type IntegerTestData}
 
 // TODO: Only output tests when they fail? Too much noise
+// TODO: Only report batch and percentage of pass / fail for randomized testing
 
 pub fn float_test_data() -> List(FloatTestData) {
   [valid_float_data.data(), invalid_float_data.data()]
