@@ -1,7 +1,7 @@
 import bigi
 import gleam/bool
+import gleam/deque.{type Deque}
 import gleam/int
-import gleam/queue.{type Queue}
 import lenient_parse/internal/base_constants.{base_10}
 import lenient_parse/internal/convert
 import lenient_parse/internal/pilkku/pilkku
@@ -9,14 +9,14 @@ import lenient_parse/internal/scale
 
 pub fn float_value(
   is_positive is_positive: Bool,
-  whole_digits whole_digits: Queue(Int),
-  fractional_digits fractional_digits: Queue(Int),
+  whole_digits whole_digits: Deque(Int),
+  fractional_digits fractional_digits: Deque(Int),
   scale_factor scale_factor: Int,
 ) -> Float {
   let #(whole_digits, fractional_digits) =
-    scale.queues(whole_digits, fractional_digits, scale_factor)
-  let exponent = fractional_digits |> queue.length
-  let #(digits, _) = scale.queues(whole_digits, fractional_digits, exponent)
+    scale.deques(whole_digits, fractional_digits, scale_factor)
+  let exponent = fractional_digits |> deque.length
+  let #(digits, _) = scale.deques(whole_digits, fractional_digits, exponent)
 
   // `bigi.undigits` documentation says it can fail if:
   // - the base is less than 2: We are hardcoding base 10, so this doesn't apply
@@ -26,7 +26,7 @@ pub fn float_value(
   //   be unreachable. We do not want to `let assert Ok()`, just in case there
   //   is some bug in the prior code. Using the fallback will result in some
   //   precision loss, but it is better than crashing.
-  let float_value = case digits |> queue.to_list |> bigi.undigits(base_10) {
+  let float_value = case digits |> deque.to_list |> bigi.undigits(base_10) {
     Ok(coefficient) -> {
       let sign =
         case is_positive {
