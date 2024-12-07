@@ -1,8 +1,14 @@
 import gleam/bool
+import gleam/io
 import lenient_parse/internal/base_constants.{base_0, base_10}
 import lenient_parse/internal/parser
 import lenient_parse/internal/tokenizer
 import parse_error.{type ParseError, InvalidBaseValue}
+
+// TODO: Remove
+pub fn main() {
+  to_float("1.7976931348623157e309") |> io.debug
+}
 
 /// Converts a string to a float.
 pub fn to_float(text text: String) -> Result(Float, ParseError) {

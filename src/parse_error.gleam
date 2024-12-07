@@ -81,5 +81,4 @@ pub type ParseError {
   /// float.
   OutOfFloatRange(float_string: String)
 }
-// TODO: An error for when the float is too big and cannot be represented on (JavaScript? Both targets?)
-//    Or should the error be more generalized to not specify the target?
+// TODO: Make sure error names are good and make sure docs are good

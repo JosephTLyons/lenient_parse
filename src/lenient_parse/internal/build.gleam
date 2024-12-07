@@ -51,10 +51,9 @@ pub fn float_value(
       case decimal |> pilkku.to_float {
         Ok(float_value) if float_value == 0.0 && !is_positive -> Ok(-0.0)
         Ok(float_value) -> Ok(float_value)
-        // TODO: Add tests that hit this case? Might be hard
         Error(_) -> {
           let float_string =
-            build_float_string_representation(
+            float_string(
               whole_digits: whole_digits |> deque.to_list,
               fractional_digits: fractional_digits |> deque.to_list,
               is_positive: is_positive,
@@ -104,8 +103,7 @@ pub fn integer_value(
           Ok(value)
         }
         Error(_) -> {
-          let integer_string =
-            digits_list |> build_int_string_representation(is_positive)
+          let integer_string = digits_list |> integer_string(is_positive)
           Error(OutOfIntRange(integer_string))
         }
       }
@@ -123,14 +121,20 @@ pub fn integer_value(
   }
 }
 
-fn build_float_string_representation(
+fn float_string(
   whole_digits whole_digits: List(Int),
   fractional_digits fractional_digits: List(Int),
   is_positive is_positive: Bool,
 ) {
-  let whole_string = whole_digits |> list.map(int.to_string) |> string.join("")
-  let fractional_string =
-    fractional_digits |> list.map(int.to_string) |> string.join("")
+  let whole_string = case whole_digits {
+    [] -> "0"
+    _ -> whole_digits |> list.map(int.to_string) |> string.join("")
+  }
+
+  let fractional_string = case fractional_digits {
+    [] -> "0"
+    _ -> fractional_digits |> list.map(int.to_string) |> string.join("")
+  }
 
   case is_positive {
     True -> whole_string <> "." <> fractional_string
@@ -138,7 +142,7 @@ fn build_float_string_representation(
   }
 }
 
-fn build_int_string_representation(
+fn integer_string(
   digits_list digits_list: List(Int),
   is_positive is_positive: Bool,
 ) {
@@ -149,8 +153,4 @@ fn build_int_string_representation(
     False -> "-" <> integer_string
   }
 }
-// TODO: For float, test limits and raise error
-// TODO: Test erlang before and after negative safe integer check
-// TODO: Test javascript before and after invalid base value check
-
 // TODO: Unify the code between build_int and build_float
