@@ -241,7 +241,7 @@ fn valid_exponent_symbol_position() -> List(FloatTestData) {
   ]
 }
 
-fn precision() -> List(FloatTestData) {
+fn valid_precision() -> List(FloatTestData) {
   [
     // Would produce a floating point error in v1.3.1: 2.7119999999999997
     FloatTestData(
@@ -296,7 +296,7 @@ pub fn data() -> List(FloatTestData) {
     valid_underscore(),
     valid_whitespace(),
     valid_exponent_symbol_position(),
-    precision(),
+    valid_precision(),
     valid_mixed(),
   ]
   |> list.flatten
