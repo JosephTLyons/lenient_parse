@@ -1,11 +1,9 @@
 import bigi
-import gleam/bool
 import gleam/deque.{type Deque}
 import gleam/int
 import gleam/list
 import gleam/string
 import lenient_parse/internal/base_constants.{base_10}
-import lenient_parse/internal/convert
 import lenient_parse/internal/pilkku/pilkku
 import lenient_parse/internal/scale
 import parse_error.{type ParseError, OutOfFloatRange, OutOfIntRange}
@@ -26,13 +24,12 @@ pub fn float_value(
   //   apply.
   // - if the digits are out of range for the given base: For float parsing, the
   //   tokenizer has already marked these digits as `Unknown` tokens and the
-  //   parser has already raised an error. Therefore, the error case here should
-  //   be unreachable. We do not want to `let assert Ok()`, just in case there
-  //   is some bug in the prior code. Using the fallback will result in some
-  //   precision loss, but it is better than crashing. We may want to raise an
-  //   actual error in the future.
+  //   parser has already raised an error.
+  //   Therefore, the error case here should be unreachable. If not, there is a bug
+  //   in the prior code.
   let digits_list = digits |> deque.to_list
   case digits_list |> bigi.undigits(base_10) {
+    Error(_) -> panic as "unreachable"
     Ok(coefficient) -> {
       let sign =
         case is_positive {
@@ -63,18 +60,6 @@ pub fn float_value(
         }
       }
     }
-    // Should be unreachable.
-    // If we hit this case, it is an error and we will see rounding issues in
-    // some cases.
-    Error(_) -> {
-      let float_value =
-        digits
-        |> convert.digits_to_int
-        |> int.to_float
-        |> scale.float(-exponent)
-      use <- bool.guard(is_positive, Ok(float_value))
-      Ok(float_value *. -1.0)
-    }
   }
 }
 
@@ -88,12 +73,12 @@ pub fn integer_value(
   //    a base >= 2 and <= 36, so this doesn't apply.
   // - if the digits are out of range for the given base: For integer parsing,
   //   the tokenizer has already marked these digits as `Unknown` tokens and the
-  //   parser has already raised an error. Therefore, the error case here should
-  //   be unreachable. We do not want to `let assert Ok()`, just in case there
-  //   is some bug in the prior code. If the fallback is hit, issues may arise
-  //   on JavaScript. We may want to raise an actual error in the future.
+  //   parser has already raised an error.
+  //   Therefore, the error case here should be unreachable. If not, there is a bug
+  //   in the prior code.
   let digits_list = digits |> deque.to_list
   case digits_list |> bigi.undigits(base) {
+    Error(_) -> panic as "unreachable"
     Ok(big_int) ->
       case big_int |> bigi.to_int {
         Ok(value) -> {
@@ -108,17 +93,6 @@ pub fn integer_value(
           Error(OutOfIntRange(integer_string))
         }
       }
-    // Should be unreachable.
-    // If we hit this case, we will see potentially invalid integer values on
-    // JavaScript target, when exceeding the min or max safe integer values.
-    Error(_) -> {
-      let value = digits |> convert.digits_to_int_with_base(base)
-      let value = case is_positive {
-        True -> value
-        False -> -value
-      }
-      Ok(value)
-    }
   }
 }
 

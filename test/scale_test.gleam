@@ -41,19 +41,3 @@ pub fn scale_deques_test() {
   a |> deque.to_list |> expect.to_equal([])
   b |> deque.to_list |> expect.to_equal([0, 0, 0, 1, 2, 3, 4, 5, 6, 0])
 }
-
-pub fn scale_float_test() {
-  10.0 |> scale.float(0) |> expect.to_equal(10.0)
-
-  10.0
-  |> scale.float(1)
-  |> expect.to_equal(100.0)
-
-  10.0
-  |> scale.float(2)
-  |> expect.to_equal(1000.0)
-
-  100.0
-  |> scale.float(-2)
-  |> expect.to_equal(1.0)
-}
