@@ -25,8 +25,8 @@ pub fn float_value(
   // - if the digits are out of range for the given base: For float parsing, the
   //   tokenizer has already marked these digits as `Unknown` tokens and the
   //   parser has already raised an error.
-  //   Therefore, the error case here should be unreachable. If not, there is a bug
-  //   in the prior code.
+  // Therefore, the error case here should be unreachable. If not, there is a
+  // bug in the prior code.
   let digits_list = digits |> deque.to_list
   case digits_list |> bigi.undigits(base_10) {
     Error(_) -> panic as "unreachable"
@@ -74,8 +74,8 @@ pub fn integer_value(
   // - if the digits are out of range for the given base: For integer parsing,
   //   the tokenizer has already marked these digits as `Unknown` tokens and the
   //   parser has already raised an error.
-  //   Therefore, the error case here should be unreachable. If not, there is a bug
-  //   in the prior code.
+  // Therefore, the error case here should be unreachable. If not, there is a
+  // bug in the prior code.
   let digits_list = digits |> deque.to_list
   case digits_list |> bigi.undigits(base) {
     Error(_) -> panic as "unreachable"
