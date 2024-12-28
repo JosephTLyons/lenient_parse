@@ -1,11 +1,9 @@
 import bigi
-import gleam/bool
 import gleam/deque.{type Deque}
 import gleam/int
 import gleam/list
 import gleam/string
 import lenient_parse/internal/base_constants.{base_10}
-import lenient_parse/internal/convert
 import lenient_parse/internal/pilkku/pilkku
 import lenient_parse/internal/scale
 import parse_error.{type ParseError, OutOfFloatRange, OutOfIntRange}
@@ -63,18 +61,7 @@ pub fn float_value(
         }
       }
     }
-    // Should be unreachable.
-    // If we hit this case, it is an error and we will see rounding issues in
-    // some cases.
-    Error(_) -> {
-      let float_value =
-        digits
-        |> convert.digits_to_int
-        |> int.to_float
-        |> scale.float(-exponent)
-      use <- bool.guard(is_positive, Ok(float_value))
-      Ok(float_value *. -1.0)
-    }
+    Error(_) -> panic as "unreachable"
   }
 }
 
@@ -108,17 +95,7 @@ pub fn integer_value(
           Error(OutOfIntRange(integer_string))
         }
       }
-    // Should be unreachable.
-    // If we hit this case, we will see potentially invalid integer values on
-    // JavaScript target, when exceeding the min or max safe integer values.
-    Error(_) -> {
-      let value = digits |> convert.digits_to_int_with_base(base)
-      let value = case is_positive {
-        True -> value
-        False -> -value
-      }
-      Ok(value)
-    }
+    Error(_) -> panic as "unreachable"
   }
 }
 
