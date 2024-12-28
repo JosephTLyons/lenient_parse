@@ -24,13 +24,12 @@ pub fn float_value(
   //   apply.
   // - if the digits are out of range for the given base: For float parsing, the
   //   tokenizer has already marked these digits as `Unknown` tokens and the
-  //   parser has already raised an error. Therefore, the error case here should
-  //   be unreachable. We do not want to `let assert Ok()`, just in case there
-  //   is some bug in the prior code. Using the fallback will result in some
-  //   precision loss, but it is better than crashing. We may want to raise an
-  //   actual error in the future.
+  //   parser has already raised an error.
+  //   Therefore, the error case here should be unreachable. If not, there is a bug
+  //   in the prior code.
   let digits_list = digits |> deque.to_list
   case digits_list |> bigi.undigits(base_10) {
+    Error(_) -> panic as "unreachable"
     Ok(coefficient) -> {
       let sign =
         case is_positive {
@@ -61,7 +60,6 @@ pub fn float_value(
         }
       }
     }
-    Error(_) -> panic as "unreachable"
   }
 }
 
@@ -75,12 +73,12 @@ pub fn integer_value(
   //    a base >= 2 and <= 36, so this doesn't apply.
   // - if the digits are out of range for the given base: For integer parsing,
   //   the tokenizer has already marked these digits as `Unknown` tokens and the
-  //   parser has already raised an error. Therefore, the error case here should
-  //   be unreachable. We do not want to `let assert Ok()`, just in case there
-  //   is some bug in the prior code. If the fallback is hit, issues may arise
-  //   on JavaScript. We may want to raise an actual error in the future.
+  //   parser has already raised an error.
+  //   Therefore, the error case here should be unreachable. If not, there is a bug
+  //   in the prior code.
   let digits_list = digits |> deque.to_list
   case digits_list |> bigi.undigits(base) {
+    Error(_) -> panic as "unreachable"
     Ok(big_int) ->
       case big_int |> bigi.to_int {
         Ok(value) -> {
@@ -95,7 +93,6 @@ pub fn integer_value(
           Error(OutOfIntRange(integer_string))
         }
       }
-    Error(_) -> panic as "unreachable"
   }
 }
 
