@@ -1,4 +1,4 @@
-import parse_error.{type ParseError}
+import lenient_parse/parse_error.{type ParseError}
 import python/python_error.{type PythonError}
 
 pub type FloatTestData {

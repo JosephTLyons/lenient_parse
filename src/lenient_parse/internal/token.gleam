@@ -1,5 +1,5 @@
 import lenient_parse/internal/whitespace.{type WhitespaceData}
-import parse_error.{
+import lenient_parse/parse_error.{
   type ParseError, InvalidDecimalPosition, InvalidDigitPosition,
   InvalidExponentSymbolPosition, InvalidSignPosition, InvalidUnderscorePosition,
   OutOfBaseRange, UnknownCharacter,

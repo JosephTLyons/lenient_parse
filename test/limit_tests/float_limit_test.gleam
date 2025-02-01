@@ -1,6 +1,6 @@
 import gleam/string
 import lenient_parse
-import parse_error.{OutOfFloatRange}
+import lenient_parse/parse_error.{OutOfFloatRange}
 import startest/expect
 
 // In the future, we should try to test closer to the actual limit. I had a hard

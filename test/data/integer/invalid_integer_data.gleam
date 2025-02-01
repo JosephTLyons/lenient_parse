@@ -7,7 +7,7 @@ import lenient_parse/internal/base_constants.{
   base_0, base_10, base_16, base_2, base_8,
 }
 import lenient_parse/internal/whitespace
-import parse_error.{
+import lenient_parse/parse_error.{
   type ParseError, BasePrefixOnly, EmptyString, InvalidBaseValue,
   InvalidDigitPosition, InvalidSignPosition, InvalidUnderscorePosition,
   OutOfBaseRange, UnknownCharacter, WhitespaceOnlyString,

@@ -3,7 +3,7 @@ import gleam/list
 import gleam/string
 import helpers
 import lenient_parse/internal/whitespace
-import parse_error.{
+import lenient_parse/parse_error.{
   type ParseError, EmptyString, InvalidDecimalPosition, InvalidDigitPosition,
   InvalidExponentSymbolPosition, InvalidUnderscorePosition, UnknownCharacter,
   WhitespaceOnlyString,

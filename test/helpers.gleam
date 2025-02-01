@@ -2,7 +2,7 @@ import gleam/dict.{type Dict}
 import gleam/int
 import gleam/string
 import lenient_parse/internal/whitespace.{type WhitespaceData}
-import parse_error.{
+import lenient_parse/parse_error.{
   type ParseError, BasePrefixOnly, EmptyString, InvalidBaseValue,
   InvalidDecimalPosition, InvalidDigitPosition, InvalidExponentSymbolPosition,
   InvalidSignPosition, InvalidUnderscorePosition, OutOfBaseRange,
