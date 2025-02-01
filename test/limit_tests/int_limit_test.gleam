@@ -11,7 +11,7 @@ import javascript_constants.{
 }
 import lenient_parse
 @target(javascript)
-import parse_error.{OutOfIntRange}
+import lenient_parse/parse_error.{OutOfIntRange}
 import startest/expect
 
 @target(erlang)
