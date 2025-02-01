@@ -12,7 +12,7 @@ import lenient_parse/internal/token.{
   type Token, DecimalPoint, Digit, ExponentSymbol, Sign, Underscore, Unknown,
   Whitespace,
 }
-import parse_error.{
+import lenient_parse/parse_error.{
   type ParseError, BasePrefixOnly, EmptyString, InvalidDecimalPosition,
   InvalidExponentSymbolPosition, InvalidUnderscorePosition, OutOfBaseRange,
   UnknownCharacter, WhitespaceOnlyString,

@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.0 - 2025-02-01
+
+- Moved `parse_error` into package namespace. This is a breaking change.
+
 ## v2.0.0 - 2024-12-07
 
 - Handled values that breach either the `Number.MIN_SAFE_INTEGER` or `Number.MAX_SAFE_INTEGER` limit on the JavaScript target.

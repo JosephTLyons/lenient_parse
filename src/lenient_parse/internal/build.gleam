@@ -6,7 +6,9 @@ import gleam/string
 import lenient_parse/internal/base_constants.{base_10}
 import lenient_parse/internal/pilkku/pilkku
 import lenient_parse/internal/scale
-import parse_error.{type ParseError, OutOfFloatRange, OutOfIntRange}
+import lenient_parse/parse_error.{
+  type ParseError, OutOfFloatRange, OutOfIntRange,
+}
 
 pub fn float_value(
   is_positive is_positive: Bool,

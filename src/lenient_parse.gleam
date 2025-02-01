@@ -2,7 +2,7 @@ import gleam/bool
 import lenient_parse/internal/base_constants.{base_0, base_10}
 import lenient_parse/internal/parser
 import lenient_parse/internal/tokenizer
-import parse_error.{type ParseError, InvalidBaseValue}
+import lenient_parse/parse_error.{type ParseError, InvalidBaseValue}
 
 /// Converts a string to a float.
 pub fn to_float(text text: String) -> Result(Float, ParseError) {
