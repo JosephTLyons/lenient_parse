@@ -2,7 +2,9 @@
 
 ## v3.0.0 - 2025-02-01
 
-- Moved `parse_error` into package namespace. This is a breaking change.
+- Moved `parse_error` into package `lenient_parse` namespace. This is a breaking change. You'll need to update any `parse_error` imports:
+
+`import parse_error` -> `import lenient_parse/parse_error`
 
 ## v2.0.0 - 2024-12-07
 
