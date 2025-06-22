@@ -171,23 +171,27 @@ fn decimal_to_float(sign: BigInt, num: BigInt, den: BigInt, exp: BigInt) {
 
   let sign = bigi.bitwise_shift_left(sign, 63)
 
-  use exp <- result.try(case
-    bigi.compare(exp, bigi.from_int(-1022)),
-    bigi.compare(exp, bigi.from_int(1023))
-  {
-    order.Lt, _ | _, order.Gt -> Error(OutOfRange)
-    _, _ -> Ok(exp)
-  })
+  use exp <- result.try(
+    case
+      bigi.compare(exp, bigi.from_int(-1022)),
+      bigi.compare(exp, bigi.from_int(1023))
+    {
+      order.Lt, _ | _, order.Gt -> Error(OutOfRange)
+      _, _ -> Ok(exp)
+    },
+  )
 
   let exp = bigi.add(exp, bigi.from_int(1023)) |> bigi.bitwise_shift_left(52)
 
-  use coef <- result.try(case
-    bigi.compare(tmp, bigi.zero()),
-    bigi.compare(tmp, bigi.subtract(bigi.from_int(power_of_2_to_52), one))
-  {
-    order.Lt, _ | _, order.Gt -> Error(OutOfRange)
-    _, _ -> Ok(tmp)
-  })
+  use coef <- result.try(
+    case
+      bigi.compare(tmp, bigi.zero()),
+      bigi.compare(tmp, bigi.subtract(bigi.from_int(power_of_2_to_52), one))
+    {
+      order.Lt, _ | _, order.Gt -> Error(OutOfRange)
+      _, _ -> Ok(tmp)
+    },
+  )
 
   let combined = sign |> bigi.bitwise_or(exp) |> bigi.bitwise_or(coef)
   let assert Ok(<<num:float>>) =
