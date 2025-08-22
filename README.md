@@ -4,8 +4,9 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/lenient_parse/)
 
 A Gleam library that replicates the functionality of Python's built-in `float()`
-and `int()` functions for parsing strings into float and integer values. This
-package offers more flexible parsing than the standard Gleam functions.
+and `int()` functions for parsing strings into float and integer values. Use
+`lenient_parse` when `int.parse` and `float.parse` from the Gleam
+[stdlib](https://github.com/gleam-lang/stdlib) are too strict.
 
 - `float("3.14")` -> `"3.14" |> lenient_parse.to_float`
 - `int("42")` -> `"42" |> lenient_parse.to_int`
