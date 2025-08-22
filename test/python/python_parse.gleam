@@ -65,10 +65,10 @@ fn parse(
     shellout.command(run: "uv", with: arguments, in: ".", opt: [])
   {
     Error(error) -> {
-      io.print_error("Error code: " <> int.to_string(error.0))
-      io.print_error("Error message: " <> error.1)
-      io.print_error("With input_json_string...")
-      io.print_error(input_json_string)
+      io.println_error("Error code: " <> int.to_string(error.0))
+      io.println_error("Error message: " <> error.1)
+      io.println_error("With input_json_string...")
+      io.println_error(input_json_string)
       panic as "Shellout received bad data"
     }
     Ok(output_json_string) -> output_json_string
@@ -78,8 +78,8 @@ fn parse(
     json.parse(output_json_string, decode.list(of: decode.string))
   {
     Error(_) -> {
-      io.print_error("With json string...")
-      io.print_error(output_json_string)
+      io.println_error("With json string...")
+      io.println_error(output_json_string)
       panic as "output_json_string failed to decode"
     }
     Ok(parsed_strings) -> parsed_strings

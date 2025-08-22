@@ -18,7 +18,7 @@ pub fn integer_test_data() -> List(IntegerTestData) {
 
 // To prevent error code 7 (argument list too long) when passing large datasets
 // to the Python programs, we divide the data into smaller lists.
-const test_data_chunk_size = 200
+const test_data_chunk_size = 100
 
 pub fn python_processed_float_data() {
   let float_test_data = float_test_data()
