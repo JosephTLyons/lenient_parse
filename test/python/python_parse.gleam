@@ -61,25 +61,35 @@ fn parse(
     Ok(_) -> Nil
   }
 
-  case shellout.command(run: "uv", with: arguments, in: ".", opt: []) {
+  let output_json_string = case
+    shellout.command(run: "uv", with: arguments, in: ".", opt: [])
+  {
     Error(error) -> {
       io.print_error("Error code: " <> int.to_string(error.0))
       io.print_error("Error message: " <> error.1)
-      io.print_error("With data...")
+      io.print_error("With input_json_string...")
       io.print_error(input_json_string)
       panic as "Shellout received bad data"
     }
-    Ok(output_json_string) -> {
-      let assert Ok(parsed_strings) =
-        json.parse(output_json_string, decode.list(of: decode.string))
-
-      parsed_strings
-      |> list.map(fn(value) {
-        case value {
-          "ValueError: " <> error_message -> Error(ValueError(error_message))
-          _ -> Ok(value)
-        }
-      })
-    }
+    Ok(output_json_string) -> output_json_string
   }
+
+  let parsed_strings = case
+    json.parse(output_json_string, decode.list(of: decode.string))
+  {
+    Error(_) -> {
+      io.print_error("With json string...")
+      io.print_error(output_json_string)
+      panic as "output_json_string failed to decode"
+    }
+    Ok(parsed_strings) -> parsed_strings
+  }
+
+  parsed_strings
+  |> list.map(fn(value) {
+    case value {
+      "ValueError: " <> error_message -> Error(ValueError(error_message))
+      _ -> Ok(value)
+    }
+  })
 }
