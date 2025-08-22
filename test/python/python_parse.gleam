@@ -52,9 +52,8 @@ fn parse(
     Error(error) -> {
       io.println_error("Error code: " <> int.to_string(error.0))
       io.println_error("Error message: " <> error.1)
-      io.println_error("With input_json_string...")
       io.println_error(input_json_string)
-      panic as "Shellout received bad data"
+      panic as "Shellout received bad data from `input_json_string`"
     }
     Ok(output_json_string) -> output_json_string
   }
@@ -63,9 +62,8 @@ fn parse(
     json.parse(output_json_string, decode.list(of: decode.string))
   {
     Error(_) -> {
-      io.println_error("With json string...")
       io.println_error(output_json_string)
-      panic as "output_json_string failed to decode"
+      panic as "`output_json_string` failed to decode"
     }
     Ok(parsed_strings) -> parsed_strings
   }
