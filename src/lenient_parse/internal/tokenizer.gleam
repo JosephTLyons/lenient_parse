@@ -12,14 +12,14 @@ import lenient_parse/internal/whitespace.{type WhitespaceData}
 pub fn tokenize_float(text text: String) -> List(Token) {
   text
   |> string.to_graphemes
-  |> do_tokenize_float(
+  |> tokenize_float_loop(
     index: 0,
     whitespace_character_dict: whitespace.character_dict(),
     acc: [],
   )
 }
 
-fn do_tokenize_float(
+fn tokenize_float_loop(
   characters characters: List(String),
   index index: Int,
   whitespace_character_dict whitespace_character_dict: Dict(
@@ -44,7 +44,7 @@ fn do_tokenize_float(
             },
           )
       }
-      do_tokenize_float(
+      tokenize_float_loop(
         characters: rest,
         index: index + 1,
         whitespace_character_dict:,
@@ -57,14 +57,14 @@ fn do_tokenize_float(
 pub fn tokenize_int(text text: String) -> List(Token) {
   text
   |> string.to_graphemes
-  |> do_tokenize_int(
+  |> tokenize_int_loop(
     index: 0,
     whitespace_character_dict: whitespace.character_dict(),
     acc: [],
   )
 }
 
-fn do_tokenize_int(
+fn tokenize_int_loop(
   characters characters: List(String),
   index index: Int,
   whitespace_character_dict whitespace_character_dict: Dict(
@@ -84,7 +84,7 @@ fn do_tokenize_int(
           whitespace_character_dict:,
         )
 
-      do_tokenize_int(
+      tokenize_int_loop(
         characters: rest,
         index: index + 1,
         whitespace_character_dict:,

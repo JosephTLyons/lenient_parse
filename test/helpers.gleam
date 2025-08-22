@@ -10,14 +10,14 @@ import lenient_parse/parse_error.{
 }
 
 pub fn to_printable_text(text: String) -> String {
-  do_to_printable_text(
+  to_printable_text_loop(
     characters: text |> string.to_graphemes,
     whitespace_character_dict: whitespace.character_dict(),
     acc: "",
   )
 }
 
-fn do_to_printable_text(
+fn to_printable_text_loop(
   characters characters: List(String),
   whitespace_character_dict whitespace_character_dict: Dict(
     String,
@@ -33,7 +33,7 @@ fn do_to_printable_text(
         Error(_) -> first
       }
 
-      do_to_printable_text(
+      to_printable_text_loop(
         characters: rest,
         whitespace_character_dict:,
         acc: acc <> printable,

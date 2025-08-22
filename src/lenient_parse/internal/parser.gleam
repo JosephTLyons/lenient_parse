@@ -182,10 +182,10 @@ fn parse_whitespace(
   tokens tokens: List(Token),
   index index: Int,
 ) -> Result(ParseData(Option(String)), ParseError) {
-  do_parse_whitespace(tokens:, index:, acc: "")
+  parse_whitespace_loop(tokens:, index:, acc: "")
 }
 
-fn do_parse_whitespace(
+fn parse_whitespace_loop(
   tokens tokens: List(Token),
   index index: Int,
   acc acc: String,
@@ -193,7 +193,7 @@ fn do_parse_whitespace(
   case tokens {
     [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
     [Whitespace(index, data), ..rest] -> {
-      do_parse_whitespace(
+      parse_whitespace_loop(
         tokens: rest,
         index: index + 1,
         acc: acc <> data.character,
@@ -304,7 +304,7 @@ fn parse_digits(
   base base: Int,
   has_base_prefix has_base_prefix: Bool,
 ) -> Result(ParseData(Deque(Int)), ParseError) {
-  do_parse_digits(
+  parse_digits_loop(
     tokens:,
     index:,
     base:,
@@ -314,7 +314,7 @@ fn parse_digits(
   )
 }
 
-fn do_parse_digits(
+fn parse_digits_loop(
   tokens tokens: List(Token),
   index index: Int,
   base base: Int,
@@ -347,7 +347,7 @@ fn do_parse_digits(
         Error(InvalidUnderscorePosition(index)),
       )
 
-      do_parse_digits(
+      parse_digits_loop(
         tokens: rest,
         index: index + 1,
         base:,
@@ -360,7 +360,7 @@ fn do_parse_digits(
       Error(UnknownCharacter(index, character))
     }
     [Digit(index, _, value), ..rest] if value < base -> {
-      do_parse_digits(
+      parse_digits_loop(
         tokens: rest,
         index:,
         base:,
