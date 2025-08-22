@@ -45,6 +45,22 @@ fn parse(
     input_json_string,
   ]
 
+  case shellout.which("uv") {
+    Error(error) -> {
+      io.print_error(error)
+      panic as "uv was not found"
+    }
+    Ok(_) -> Nil
+  }
+
+  case shellout.which("python") {
+    Error(error) -> {
+      io.print_error(error)
+      panic as "python was not found"
+    }
+    Ok(_) -> Nil
+  }
+
   case shellout.command(run: "uv", with: arguments, in: ".", opt: []) {
     Error(error) -> {
       io.print_error("Error code: " <> int.to_string(error.0))
