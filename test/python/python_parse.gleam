@@ -38,6 +38,7 @@ fn parse(
 ) -> List(Result(String, PythonError)) {
   let arguments = [
     "run",
+    "--quiet",
     "-p",
     "3.13",
     "python",
