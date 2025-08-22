@@ -35,4 +35,4 @@ gleam_json = { version = ">= 2.3.0 and < 4.0.0" }
 gleam_stdlib = { version = ">= 0.52.0 and < 2.0.0" }
 shellout = { version = ">= 1.6.0 and < 2.0.0" }
 simplifile = { version = ">= 2.2.0 and < 3.0.0" }
-startest = { version = ">= 0.7.0 and < 1.0.0" }
+startest = { version = ">= 0.6.0 and < 1.0.0" }
