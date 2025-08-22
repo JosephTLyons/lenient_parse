@@ -1,4 +1,6 @@
 import gleam/dynamic/decode
+import gleam/int
+import gleam/io
 import gleam/json
 import gleam/list
 import python/python_error.{type PythonError, ValueError}
@@ -43,17 +45,25 @@ fn parse(
     input_json_string,
   ]
 
-  let assert Ok(output_json_string) =
-    shellout.command(run: "uv", with: arguments, in: ".", opt: [])
-
-  let assert Ok(parsed_strings) =
-    json.parse(output_json_string, decode.list(of: decode.string))
-
-  parsed_strings
-  |> list.map(fn(value) {
-    case value {
-      "ValueError: " <> error_message -> Error(ValueError(error_message))
-      _ -> Ok(value)
+  case shellout.command(run: "uv", with: arguments, in: ".", opt: []) {
+    Error(error) -> {
+      io.print_error("Error code: " <> int.to_string(error.0))
+      io.print_error("Error message: " <> error.1)
+      io.print_error("With data...")
+      io.print_error(input_json_string)
+      panic as "Shellout received bad data"
     }
-  })
+    Ok(output_json_string) -> {
+      let assert Ok(parsed_strings) =
+        json.parse(output_json_string, decode.list(of: decode.string))
+
+      parsed_strings
+      |> list.map(fn(value) {
+        case value {
+          "ValueError: " <> error_message -> Error(ValueError(error_message))
+          _ -> Ok(value)
+        }
+      })
+    }
+  }
 }
