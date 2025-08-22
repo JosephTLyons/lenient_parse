@@ -20,7 +20,7 @@ jobs:
             - name: Install uv
               uses: astral-sh/setup-uv@v6
               with:
-                  version: "latest"
+                  version: "0.8.13"
                   python-version: "3.13"
             - run: gleam deps download
             - name: Run JavaScript tests
