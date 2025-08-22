@@ -1,4 +1,4 @@
-import gleam/dynamic
+import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import python/python_error.{type PythonError, ValueError}
@@ -47,7 +47,7 @@ fn parse(
     shellout.command(run: "uv", with: arguments, in: ".", opt: [])
 
   let assert Ok(parsed_strings) =
-    json.decode(output_json_string, dynamic.list(of: dynamic.string))
+    json.parse(output_json_string, decode.list(of: decode.string))
 
   parsed_strings
   |> list.map(fn(value) {

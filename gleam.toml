@@ -6,12 +6,12 @@ licences = ["Apache-2.0"]
 repository = { type = "github", user = "JosephTLyons", repo = "lenient_parse" }
 
 [dependencies]
-bigi = ">= 3.2.0 and < 4.0.0"
+bigi = ">= 3.2.0 and < 5.0.0"
 gleam_deque = ">= 1.0.0 and < 2.0.0"
-gleam_stdlib = ">= 0.52.0 and < 1.0.0"
+gleam_stdlib = ">= 0.52.0 and < 2.0.0"
 
 [dev-dependencies]
-gleam_json = ">= 2.3.0 and < 3.0.0"
+gleam_json = ">= 2.3.0 and < 4.0.0"
 shellout = ">= 1.6.0 and < 2.0.0"
 simplifile = ">= 2.2.0 and < 3.0.0"
-startest = ">= 0.6.0 and < 1.0.0"
+startest = ">= 0.7.0 and < 1.0.0"

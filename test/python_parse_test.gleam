@@ -36,17 +36,17 @@ pub fn check_against_python_tests() {
             }
             Ok(output), Error(python_error) -> {
               panic as form_panic_message(
-                input_printable_text,
-                output |> float.to_string,
-                python_error.message,
-              )
+                  input_printable_text,
+                  output |> float.to_string,
+                  python_error.message,
+                )
             }
             Error(output), Ok(python_output) -> {
               panic as form_panic_message(
-                input_printable_text,
-                output |> helpers.error_to_string,
-                python_output,
-              )
+                  input_printable_text,
+                  output |> helpers.error_to_string,
+                  python_output,
+                )
             }
           }
 
@@ -94,17 +94,17 @@ pub fn check_against_python_tests() {
             }
             Ok(output), Error(python_error) -> {
               panic as form_panic_message(
-                input_printable_text,
-                output |> int.to_string,
-                python_error.message,
-              )
+                  input_printable_text,
+                  output |> int.to_string,
+                  python_error.message,
+                )
             }
             Error(output), Ok(python_output) -> {
               panic as form_panic_message(
-                input_printable_text,
-                output |> helpers.error_to_string,
-                python_output,
-              )
+                  input_printable_text,
+                  output |> helpers.error_to_string,
+                  python_output,
+                )
             }
           }
 
