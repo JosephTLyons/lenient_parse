@@ -117,7 +117,7 @@ pub fn tokenize_int_test() {
 }
 
 pub fn tokenize_int_with_all_whitespace_characters_test() {
-  let whitespace_character_strings = whitespace.character_dict() |> dict.to_list
+  let whitespace_character_strings = dict.to_list(whitespace.character_dict())
 
   let expected_tokens =
     whitespace_character_strings
@@ -125,7 +125,7 @@ pub fn tokenize_int_with_all_whitespace_characters_test() {
       Whitespace(index, data: whitespace_data.1)
     })
 
-  let whitespace_character_strings = whitespace.character_dict() |> dict.keys()
+  let whitespace_character_strings = dict.keys(whitespace.character_dict())
 
   whitespace_character_strings
   |> string.join("")

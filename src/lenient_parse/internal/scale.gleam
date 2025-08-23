@@ -12,7 +12,8 @@ pub fn deques(
     order.Eq -> #(whole_digits, fractional_digits)
     order.Gt -> {
       let #(digit, fractional_digits) =
-        deque.pop_front(fractional_digits)
+        fractional_digits
+        |> deque.pop_front
         |> result.unwrap(#(0, fractional_digits))
       deques(
         deque.push_back(whole_digits, digit),
@@ -22,7 +23,8 @@ pub fn deques(
     }
     order.Lt -> {
       let #(digit, whole_digits) =
-        deque.pop_back(whole_digits)
+        whole_digits
+        |> deque.pop_back
         |> result.unwrap(#(0, whole_digits))
       deques(
         whole_digits,

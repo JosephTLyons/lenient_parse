@@ -181,7 +181,7 @@ fn decimal_to_float(sign: BigInt, num: BigInt, den: BigInt, exp: BigInt) {
     },
   )
 
-  let exp = bigi.add(exp, bigi.from_int(1023)) |> bigi.bitwise_shift_left(52)
+  let exp = exp |> bigi.add(bigi.from_int(1023)) |> bigi.bitwise_shift_left(52)
 
   use coef <- result.try(
     case

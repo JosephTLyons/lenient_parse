@@ -17,7 +17,7 @@ pub fn check_against_python_tests() {
           let expected_python_output = { data.0 }.expected_python_output
           let actual_python_output = data.1
 
-          let input_printable_text = input |> helpers.to_printable_text
+          let input_printable_text = helpers.to_printable_text(input)
 
           let message = case expected_program_output, expected_python_output {
             Ok(_), Ok(python_output) -> {
@@ -37,14 +37,14 @@ pub fn check_against_python_tests() {
             Ok(output), Error(python_error) -> {
               panic as form_panic_message(
                   input_printable_text,
-                  output |> float.to_string,
+                  float.to_string(output),
                   python_error.message,
                 )
             }
             Error(output), Ok(python_output) -> {
               panic as form_panic_message(
                   input_printable_text,
-                  output |> helpers.error_to_string,
+                  helpers.error_to_string(output),
                   python_output,
                 )
             }
@@ -52,8 +52,7 @@ pub fn check_against_python_tests() {
 
           use <- it(message)
 
-          expected_python_output
-          |> expect.to_equal(actual_python_output)
+          expect.to_equal(expected_python_output, actual_python_output)
         }),
     ),
     describe(
@@ -66,11 +65,11 @@ pub fn check_against_python_tests() {
           let expected_python_output = { data.0 }.expected_python_output
           let actual_python_output = data.1
 
-          let input_printable_text = input |> helpers.to_printable_text
+          let input_printable_text = helpers.to_printable_text(input)
 
           let base_text = case base {
             10 -> ""
-            _ -> "(base: " <> base |> int.to_string <> ") "
+            _ -> "(base: " <> int.to_string(base) <> ") "
           }
 
           let message = case expected_program_output, expected_python_output {
@@ -95,14 +94,14 @@ pub fn check_against_python_tests() {
             Ok(output), Error(python_error) -> {
               panic as form_panic_message(
                   input_printable_text,
-                  output |> int.to_string,
+                  int.to_string(output),
                   python_error.message,
                 )
             }
             Error(output), Ok(python_output) -> {
               panic as form_panic_message(
                   input_printable_text,
-                  output |> helpers.error_to_string,
+                  helpers.error_to_string(output),
                   python_output,
                 )
             }
@@ -110,8 +109,7 @@ pub fn check_against_python_tests() {
 
           use <- it(message)
 
-          expected_python_output
-          |> expect.to_equal(actual_python_output)
+          expect.to_equal(expected_python_output, actual_python_output)
         }),
     ),
   ])

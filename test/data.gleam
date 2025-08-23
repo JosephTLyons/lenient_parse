@@ -7,12 +7,18 @@ import python/python_parse
 import test_data.{type FloatTestData, type IntegerTestData}
 
 pub fn float_test_data() -> List(FloatTestData) {
-  [valid_float_data.data(), invalid_float_data.data()]
+  [
+    valid_float_data.data(),
+    invalid_float_data.data(),
+  ]
   |> list.flatten
 }
 
 pub fn integer_test_data() -> List(IntegerTestData) {
-  [valid_integer_data.data(), invalid_integer_data.data()]
+  [
+    valid_integer_data.data(),
+    invalid_integer_data.data(),
+  ]
   |> list.flatten
 }
 
@@ -29,7 +35,7 @@ pub fn python_processed_float_data() {
     |> list.map(python_parse.to_floats)
     |> list.flatten
 
-  float_test_data |> list.zip(processed_values)
+  list.zip(float_test_data, processed_values)
 }
 
 pub fn python_processed_integer_data() {
@@ -41,5 +47,5 @@ pub fn python_processed_integer_data() {
     |> list.map(python_parse.to_ints)
     |> list.flatten
 
-  integer_test_data |> list.zip(processed_values)
+  list.zip(integer_test_data, processed_values)
 }

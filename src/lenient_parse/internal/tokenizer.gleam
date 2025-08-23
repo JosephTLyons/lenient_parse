@@ -29,7 +29,7 @@ fn tokenize_float_loop(
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
-    [] -> acc |> list.reverse
+    [] -> list.reverse(acc)
     [first, ..rest] -> {
       let token = case first {
         "." -> DecimalPoint(index)
@@ -74,7 +74,7 @@ fn tokenize_int_loop(
   acc acc: List(Token),
 ) -> List(Token) {
   case characters {
-    [] -> acc |> list.reverse
+    [] -> list.reverse(acc)
     [first, ..rest] -> {
       let token =
         common_token(
@@ -108,7 +108,7 @@ fn common_token(
     "+" -> Sign(index, "+", True)
     "_" -> Underscore(index)
     _ -> {
-      case whitespace_character_dict |> dict.get(character) {
+      case dict.get(whitespace_character_dict, character) {
         Ok(whitespace_data) -> Whitespace(index, data: whitespace_data)
         Error(_) -> {
           case character_to_value(character) {
