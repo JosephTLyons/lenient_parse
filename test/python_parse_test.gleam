@@ -4,7 +4,6 @@ import gleam/int
 import gleam/list
 import helpers
 import startest.{describe, it}
-import startest/expect
 
 pub fn check_against_python_tests() {
   describe("check_against_python_tests", [
@@ -51,8 +50,7 @@ pub fn check_against_python_tests() {
           }
 
           use <- it(message)
-
-          expect.to_equal(expected_python_output, actual_python_output)
+          assert expected_python_output == actual_python_output
         }),
     ),
     describe(
@@ -108,8 +106,7 @@ pub fn check_against_python_tests() {
           }
 
           use <- it(message)
-
-          expect.to_equal(expected_python_output, actual_python_output)
+          assert expected_python_output == actual_python_output
         }),
     ),
   ])
