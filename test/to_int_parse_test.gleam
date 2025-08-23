@@ -4,7 +4,6 @@ import gleam/list
 import helpers
 import lenient_parse
 import startest.{describe, it}
-import startest/expect
 
 pub fn to_int_tests() {
   describe(
@@ -42,9 +41,8 @@ pub fn to_int_tests() {
 
         use <- it(message)
 
-        input
-        |> lenient_parse.to_int_with_base(base)
-        |> expect.to_equal(expected_program_output)
+        assert lenient_parse.to_int_with_base(input, base)
+          == expected_program_output
       }),
   )
 }

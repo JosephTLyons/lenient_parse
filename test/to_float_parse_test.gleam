@@ -4,7 +4,6 @@ import gleam/list
 import helpers
 import lenient_parse
 import startest.{describe, it}
-import startest/expect
 
 pub fn to_float_tests() {
   describe(
@@ -34,9 +33,7 @@ pub fn to_float_tests() {
 
         use <- it(message)
 
-        input
-        |> lenient_parse.to_float
-        |> expect.to_equal(expected_program_output)
+        assert lenient_parse.to_float(input) == expected_program_output
       }),
   )
 }
