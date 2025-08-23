@@ -8,9 +8,9 @@ and `int()` functions for parsing strings into float and integer values. Use
 `lenient_parse` when `int.parse` and `float.parse` from the Gleam
 [stdlib](https://github.com/gleam-lang/stdlib) are too strict.
 
-- `float("3.14")` -> `"3.14" |> lenient_parse.to_float`
-- `int("42")` -> `"42" |> lenient_parse.to_int`
-- `int("1010", base=2)` -> `"1010" |> lenient_parse.to_int_with_base(2)`
+- `float("3.14")` -> `lenient_parse.to_float("3.14")`
+- `int("42")` -> `lenient_parse.to_int("42")`
+- `int("1010", base=2)` -> `lenient_parse.to_int_with_base("1010", 2)`
 
 ## Installation
 
@@ -23,72 +23,92 @@ gleam add lenient_parse
 ```gleam
 import gleam/float
 import gleam/int
-import gleam/io
 import gleam/list
 import lenient_parse
 
 pub fn main() {
   // Parse a string containing an integer value into a float
 
-  "1" |> lenient_parse.to_float |> io.debug // Ok(1.0)
-  "1" |> float.parse |> io.debug // Error(Nil)
+  let _ = echo lenient_parse.to_float("1")
+  // Ok(1.0)
+  let _ = echo float.parse("1")
+  // Error(Nil)
 
   // Parse a string containing a negative float
 
-  "-5.001" |> lenient_parse.to_float |> io.debug // Ok(-5.001)
-  "-5.001" |> float.parse |> io.debug // Ok(-5.001)
+  let _ = echo lenient_parse.to_float("-5.001")
+  // Ok(-5.001)
+  let _ = echo float.parse("-5.001")
+  // Ok(-5.001)
 
   // Parse a string containing a complex float with scientific notation
 
-  "-1_234.567_8e-2" |> lenient_parse.to_float |> io.debug // Ok(-12.345678)
-  "-1_234.567_8e-2" |> float.parse |> io.debug // Error(Nil)
+  let _ = echo lenient_parse.to_float("-1_234.567_8e-2")
+  // Ok(-12.345678)
+  let _ = echo float.parse("-1_234.567_8e-2")
+  // Error(Nil)
 
   // Parse a string containing an integer
 
-  "123" |> lenient_parse.to_int |> io.debug // Ok(123)
-  "123" |> int.parse |> io.debug // Ok(123)
+  let _ = echo lenient_parse.to_int("123")
+  // Ok(123)
+  let _ = echo int.parse("123")
+  // Ok(123)
 
   // Parse a string containing a negative integer with surrounding whitespace
 
-  "  -123  " |> lenient_parse.to_int |> io.debug // Ok(-123)
-  "  -123  " |> int.parse |> io.debug // Error(Nil)
+  let _ = echo lenient_parse.to_int("  -123  ")
+  // Ok(-123)
+  let _ = echo int.parse("  -123  ")
+  // Error(Nil)
 
   // Parse a string containing an integer with underscores
 
-  "1_000_000" |> lenient_parse.to_int |> io.debug // Ok(1000000)
-  "1_000_000" |> int.parse |> io.debug // Error(Nil)
+  let _ = echo lenient_parse.to_int("1_000_000")
+  // Ok(1000000)
+  let _ = echo int.parse("1_000_000")
+  // Error(Nil)
 
   // Parse a string containing a binary number with underscores
 
-  "1000_0000" |> lenient_parse.to_int_with_base(2) |> io.debug // Ok(128)
-  "1000_0000" |> int.base_parse(2) |> io.debug // Error(Nil)
+  let _ = echo lenient_parse.to_int_with_base("1000_0000", 2)
+  // Ok(128)
+  let _ = echo int.base_parse("1000_0000", 2)
+  // Error(Nil)
 
   // Parse a string containing a hexadecimal number with underscores
 
-  "DEAD_BEEF" |> lenient_parse.to_int_with_base(16) |> io.debug // Ok(3735928559)
-  "DEAD_BEEF" |> int.base_parse(16) |> io.debug // Error(Nil)
+  let _ = echo lenient_parse.to_int_with_base("DEAD_BEEF", 16)
+  // Ok(3735928559)
+  let _ = echo int.base_parse("DEAD_BEEF", 16)
+  // Error(Nil)
 
   // Use base 0 to automatically detect the base when parsing strings with prefix indicators
 
   let dates = [
-    "0b11011110000", "0o3625", "1865", "0x7bc", "0B11110110001", "1929",
-    "0O3507", "0X7a9", "0b11011111011",
+    "0b11011110000",
+    "0o3625",
+    "1865",
+    "0x7bc",
+    "0B11110110001",
+    "1929",
+    "0O3507",
+    "0X7a9",
+    "0b11011111011",
   ]
 
-  dates
-  |> list.map(lenient_parse.to_int_with_base(_, 0))
-  |> io.debug()
+  let _ = echo list.map(dates, lenient_parse.to_int_with_base(_, 0))
   // [Ok(1776), Ok(1941), Ok(1865), Ok(1980), Ok(1969), Ok(1929), Ok(1863), Ok(1961), Ok(1787)]
 
-  dates
-  |> list.map(int.base_parse(_, 0))
-  |> io.debug()
+  let _ = echo list.map(dates, int.base_parse(_, 0))
   // [Error(Nil), Error(Nil), Error(Nil), Error(Nil), Error(Nil), Error(Nil), Error(Nil), Error(Nil), Error(Nil)]
 
   // Nice errors
 
-  "12.3e_3" |> lenient_parse.to_float |> io.debug // Error(InvalidUnderscorePosition(5))
-  "12.3e_3" |> float.parse |> io.debug // Error(Nil)
+  let _ = echo lenient_parse.to_float("12.3e_3")
+  // Error(InvalidUnderscorePosition(5))
+  let _ = echo float.parse("12.3e_3")
+  // Error(Nil)
 }
 ```
 
