@@ -67,7 +67,7 @@ pub fn error_to_string(error: ParseError) -> String {
       <> "\" ("
       <> int.to_string(value)
       <> ") at position "
-      <> int.to_string(value)
+      <> int.to_string(index)
       <> " is out of range for base: "
       <> int.to_string(base)
     InvalidExponentSymbolPosition(index, exponent_symbol) ->
