@@ -12,48 +12,39 @@ import javascript_constants.{
 import lenient_parse
 @target(javascript)
 import lenient_parse/parse_error.{OutOfIntRange}
-import startest/expect
 
 @target(erlang)
 pub fn erlang_javascript_min_safe_integer_test() {
-  min_safe_integer_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Ok(min_safe_integer()))
+  assert lenient_parse.to_int(min_safe_integer_string())
+    == Ok(min_safe_integer())
 
-  min_safe_integer_minus_1_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Ok(min_safe_integer_minus_1()))
+  assert lenient_parse.to_int(min_safe_integer_minus_1_string())
+    == Ok(min_safe_integer_minus_1())
 }
 
 @target(erlang)
 pub fn erlang_javascript_max_safe_integer_test() {
-  max_safe_integer_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Ok(max_safe_integer()))
+  assert lenient_parse.to_int(max_safe_integer_string())
+    == Ok(max_safe_integer())
 
-  max_safe_integer_plus_1_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Ok(max_safe_integer_plus_1()))
+  assert lenient_parse.to_int(max_safe_integer_plus_1_string())
+    == Ok(max_safe_integer_plus_1())
 }
 
 @target(javascript)
 pub fn javascript_javascript_min_safe_integer_test() {
-  min_safe_integer_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Ok(min_safe_integer()))
+  assert lenient_parse.to_int(min_safe_integer_string())
+    == Ok(min_safe_integer())
 
-  min_safe_integer_minus_1_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Error(OutOfIntRange(min_safe_integer_minus_1_string())))
+  assert lenient_parse.to_int(min_safe_integer_minus_1_string())
+    == Error(OutOfIntRange(min_safe_integer_minus_1_string()))
 }
 
 @target(javascript)
 pub fn javascript_javascript_max_safe_integer_test() {
-  max_safe_integer_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Ok(max_safe_integer()))
+  assert lenient_parse.to_int(max_safe_integer_string())
+    == Ok(max_safe_integer())
 
-  max_safe_integer_plus_1_string()
-  |> lenient_parse.to_int
-  |> expect.to_equal(Error(OutOfIntRange(max_safe_integer_plus_1_string())))
+  assert lenient_parse.to_int(max_safe_integer_plus_1_string())
+    == Error(OutOfIntRange(max_safe_integer_plus_1_string()))
 }

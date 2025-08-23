@@ -3,7 +3,6 @@ import gleam/list
 import helpers
 import lenient_parse/internal/whitespace
 import startest.{describe, it}
-import startest/expect
 
 pub fn to_printable_text_tests() {
   let whitespace_tuples =
@@ -26,7 +25,7 @@ pub fn to_printable_text_tests() {
       |> list.map(fn(tuple) {
         let #(input, output) = tuple
         use <- it("\"" <> output <> "\"")
-        input |> helpers.to_printable_text |> expect.to_equal(output)
+        assert helpers.to_printable_text(input) == output
       }),
   )
 }
