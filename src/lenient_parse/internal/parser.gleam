@@ -70,7 +70,7 @@ pub fn parse_float_tokens(
         parse_data,
       )
 
-      let parse_data = case exponent_digits |> deque.is_empty {
+      let parse_data = case deque.is_empty(exponent_digits) {
         True ->
           Error(InvalidExponentSymbolPosition(next_index - 1, exponent_symbol))
         False -> Ok(ParseData(exponent_digits, next_index, tokens))
@@ -79,7 +79,7 @@ pub fn parse_float_tokens(
         parse_data,
       )
 
-      let exponent_digit = exponent_digits |> digits_to_int
+      let exponent_digit = digits_to_int(exponent_digits)
       let exponent = case exponent_digit_is_positive {
         True -> exponent_digit
         False -> -exponent_digit
@@ -155,7 +155,7 @@ pub fn parse_int_tokens(
   )
 
   let parse_data =
-    parse_digits(tokens, next_index, base, prefix_data |> option.is_some)
+    parse_digits(tokens, next_index, base, option.is_some(prefix_data))
   use ParseData(digits, next_index, tokens) <- result.try(parse_data)
 
   let parse_data = parse_whitespace(tokens, next_index)
@@ -167,7 +167,7 @@ pub fn parse_int_tokens(
   }
   use _ <- result.try(remaining_token_result)
 
-  case leading_whitespace, prefix_data, digits |> deque.is_empty {
+  case leading_whitespace, prefix_data, deque.is_empty(digits) {
     None, None, True -> Error(EmptyString)
     _, Some(#(index_range, prefix)), True ->
       Error(BasePrefixOnly(index_range, prefix))
@@ -232,7 +232,7 @@ fn parse_base_prefix(
   case tokens {
     [Unknown(index, character), ..] -> Error(UnknownCharacter(index, character))
     [Digit(index, "0", _), ..rest] -> {
-      let lookahead = rest |> list.first
+      let lookahead = list.first(rest)
 
       case lookahead {
         Ok(Digit(_, specifier, _))
@@ -266,7 +266,7 @@ fn base_prefix_data(
   ParseData(
     data: Some(#(#(index, index + 2), "0" <> specifier, base)),
     next_index: index + 2,
-    tokens: tokens |> list.drop(1),
+    tokens: list.drop(tokens, 1),
   )
 }
 
@@ -327,7 +327,7 @@ fn parse_digits_loop(
     [Whitespace(index, data), ..] if at_beginning ->
       Error(UnknownCharacter(index, data.character))
     [Underscore(index), ..rest] -> {
-      let lookahead = rest |> list.first
+      let lookahead = list.first(rest)
       let at_end = case lookahead {
         Ok(Digit(_, _, _)) -> False
         _ -> True
@@ -364,7 +364,7 @@ fn parse_digits_loop(
         tokens: rest,
         index:,
         base:,
-        acc: acc |> deque.push_back(value),
+        acc: deque.push_back(acc, value),
         at_beginning: False,
         has_base_prefix:,
       )

@@ -18,7 +18,7 @@ import test_data.{type IntegerTestData, IntegerTestData}
 fn invalid_literal_for_int_error(input: String, base: Int) -> PythonError {
   let message =
     "invalid literal for int() with base "
-    <> base |> int.to_string
+    <> int.to_string(base)
     <> ": '"
     <> input
     <> "'"
@@ -36,7 +36,7 @@ fn integer_test_data(
   expected_program_output expected_program_output: Result(Int, ParseError),
   python_error_function python_error_function: fn(String, Int) -> PythonError,
 ) -> IntegerTestData {
-  let printable_text = input |> helpers.to_printable_text
+  let printable_text = helpers.to_printable_text(input)
 
   IntegerTestData(
     input:,

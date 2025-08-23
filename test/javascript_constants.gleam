@@ -7,7 +7,7 @@ pub fn min_safe_integer() -> Int {
 }
 
 pub fn min_safe_integer_string() -> String {
-  min_safe_integer() |> int.to_string
+  int.to_string(min_safe_integer())
 }
 
 pub fn min_safe_integer_minus_1() -> Int {
@@ -15,7 +15,7 @@ pub fn min_safe_integer_minus_1() -> Int {
 }
 
 pub fn min_safe_integer_minus_1_string() -> String {
-  min_safe_integer_minus_1() |> int.to_string
+  int.to_string(min_safe_integer_minus_1())
 }
 
 pub fn max_safe_integer() -> Int {
@@ -23,7 +23,7 @@ pub fn max_safe_integer() -> Int {
 }
 
 pub fn max_safe_integer_string() -> String {
-  max_safe_integer() |> int.to_string
+  int.to_string(max_safe_integer())
 }
 
 pub fn max_safe_integer_plus_1() -> Int {
@@ -31,5 +31,5 @@ pub fn max_safe_integer_plus_1() -> Int {
 }
 
 pub fn max_safe_integer_plus_1_string() -> String {
-  max_safe_integer_plus_1() |> int.to_string
+  int.to_string(max_safe_integer_plus_1())
 }

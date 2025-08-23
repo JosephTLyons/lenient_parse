@@ -18,7 +18,7 @@ pub fn float_value(
 ) -> Result(Float, ParseError) {
   let #(whole_digits, fractional_digits) =
     scale.deques(whole_digits, fractional_digits, scale_factor)
-  let exponent = fractional_digits |> deque.length
+  let exponent = deque.length(fractional_digits)
   let #(digits, _) = scale.deques(whole_digits, fractional_digits, exponent)
 
   // `bigi.undigits` documentation says it can fail if:
@@ -29,8 +29,8 @@ pub fn float_value(
   //   parser has already raised an error.
   // Therefore, the error case here should be unreachable. If not, there is a
   // bug in the prior code.
-  let digits_list = digits |> deque.to_list
-  case digits_list |> bigi.undigits(base_10) {
+  let digits_list = deque.to_list(digits)
+  case bigi.undigits(digits_list, base_10) {
     Error(_) -> panic as "unreachable"
     Ok(coefficient) -> {
       let sign =
@@ -47,15 +47,15 @@ pub fn float_value(
           exponent: bigi.from_int(-exponent),
         )
 
-      case decimal |> pilkku.to_float {
+      case pilkku.to_float(decimal) {
         // `pilkku.to_float` returns 0.0 for both 0.0 and -0.0
         Ok(float_value) if float_value == 0.0 && !is_positive -> Ok(-0.0)
         Ok(float_value) -> Ok(float_value)
         Error(_) -> {
           let float_string =
             float_string(
-              whole_digits: whole_digits |> deque.to_list,
-              fractional_digits: fractional_digits |> deque.to_list,
+              whole_digits: deque.to_list(whole_digits),
+              fractional_digits: deque.to_list(fractional_digits),
               is_positive: is_positive,
             )
           Error(OutOfFloatRange(float_string))
@@ -78,11 +78,11 @@ pub fn integer_value(
   //   parser has already raised an error.
   // Therefore, the error case here should be unreachable. If not, there is a
   // bug in the prior code.
-  let digits_list = digits |> deque.to_list
-  case digits_list |> bigi.undigits(base) {
+  let digits_list = deque.to_list(digits)
+  case bigi.undigits(digits_list, base) {
     Error(_) -> panic as "unreachable"
     Ok(big_int) ->
-      case big_int |> bigi.to_int {
+      case bigi.to_int(big_int) {
         Ok(value) -> {
           let value = case is_positive {
             True -> value
@@ -91,7 +91,7 @@ pub fn integer_value(
           Ok(value)
         }
         Error(_) -> {
-          let integer_string = digits_list |> integer_string(is_positive)
+          let integer_string = integer_string(digits_list, is_positive)
           Error(OutOfIntRange(integer_string))
         }
       }

@@ -21,7 +21,7 @@ fn float_test_data(
   expected_program_output expected_program_output: Result(Float, ParseError),
   python_error_function python_error_function: fn(String) -> PythonError,
 ) -> FloatTestData {
-  let printable_text = input |> helpers.to_printable_text
+  let printable_text = helpers.to_printable_text(input)
 
   FloatTestData(
     input:,

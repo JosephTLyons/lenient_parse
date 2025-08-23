@@ -12,7 +12,7 @@ pub fn to_float_tests() {
     data.float_test_data()
       |> list.map(fn(data) {
         let input = data.input
-        let input_printable_text = input |> helpers.to_printable_text
+        let input_printable_text = helpers.to_printable_text(input)
         let expected_program_output = data.expected_program_output
 
         let message = case expected_program_output {
@@ -20,10 +20,10 @@ pub fn to_float_tests() {
             "should_parse: \""
             <> input_printable_text
             <> "\" -> "
-            <> output |> float.to_string
+            <> float.to_string(output)
           }
           Error(error) -> {
-            let error_string = error |> helpers.error_to_string
+            let error_string = helpers.error_to_string(error)
             "should_not_parse: \""
             <> input_printable_text
             <> "\" -> \""

@@ -67,12 +67,16 @@ pub fn build_float_explicit_0_whole_test() {
 // ------------------ int
 
 pub fn build_int_empty_test() {
-  build.integer_value(digits: deque.from_list([]), base: 10, is_positive: True)
+  []
+  |> deque.from_list
+  |> build.integer_value(base: 10, is_positive: True)
   |> expect.to_equal(Ok(0))
 }
 
 pub fn build_int_explicit_0_test() {
-  build.integer_value(digits: deque.from_list([0]), base: 10, is_positive: True)
+  [0]
+  |> deque.from_list()
+  |> build.integer_value(base: 10, is_positive: True)
   |> expect.to_equal(Ok(0))
 }
 

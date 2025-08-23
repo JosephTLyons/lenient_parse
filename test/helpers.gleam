@@ -11,7 +11,7 @@ import lenient_parse/parse_error.{
 
 pub fn to_printable_text(text: String) -> String {
   to_printable_text_loop(
-    characters: text |> string.to_graphemes,
+    characters: string.to_graphemes(text),
     whitespace_character_dict: whitespace.character_dict(),
     acc: "",
   )
@@ -28,7 +28,7 @@ fn to_printable_text_loop(
   case characters {
     [] -> acc
     [first, ..rest] -> {
-      let printable = case whitespace_character_dict |> dict.get(first) {
+      let printable = case dict.get(whitespace_character_dict, first) {
         Ok(whitespace_data) -> whitespace_data.printable
         Error(_) -> first
       }
@@ -47,43 +47,40 @@ pub fn error_to_string(error: ParseError) -> String {
     EmptyString -> "empty string"
     WhitespaceOnlyString -> "whitespace only string"
     InvalidUnderscorePosition(index) ->
-      "underscore at invalid position: " <> index |> int.to_string
+      "underscore at invalid position: " <> int.to_string(index)
     InvalidDecimalPosition(index) ->
-      "decimal at invalid position: " <> index |> int.to_string
+      "decimal at invalid position: " <> int.to_string(index)
     InvalidSignPosition(index, sign) ->
-      "sign \"" <> sign <> "\" at invalid position: " <> index |> int.to_string
+      "sign \"" <> sign <> "\" at invalid position: " <> int.to_string(index)
     InvalidDigitPosition(index, digit) ->
-      "digit \""
-      <> digit
-      <> "\" at invalid position: "
-      <> index |> int.to_string
+      "digit \"" <> digit <> "\" at invalid position: " <> int.to_string(index)
     BasePrefixOnly(#(start_index, end_index), prefix) ->
       "inferred base prefix only: "
       <> prefix
       <> " at index range: "
-      <> start_index |> int.to_string
+      <> int.to_string(start_index)
       <> ".."
-      <> end_index |> int.to_string
+      <> int.to_string(end_index)
     OutOfBaseRange(index, character, value, base) ->
       "digit character \""
       <> character
       <> "\" ("
-      <> value |> int.to_string
+      <> int.to_string(value)
       <> ") at position "
-      <> index |> int.to_string
+      <> int.to_string(value)
       <> " is out of range for base: "
-      <> base |> int.to_string
+      <> int.to_string(base)
     InvalidExponentSymbolPosition(index, exponent_symbol) ->
       "exponent symbol \""
       <> exponent_symbol
       <> "\" at invalid position: "
-      <> index |> int.to_string
+      <> int.to_string(index)
     UnknownCharacter(index, character) ->
       "unknown character \""
       <> character
       <> "\" at index: "
-      <> index |> int.to_string
-    InvalidBaseValue(base) -> "invalid base value: " <> base |> int.to_string
+      <> int.to_string(index)
+    InvalidBaseValue(base) -> "invalid base value: " <> int.to_string(base)
     OutOfIntRange(integer_string) ->
       "integer value \""
       <> integer_string

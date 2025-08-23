@@ -12,13 +12,13 @@ pub fn to_int_tests() {
     data.integer_test_data()
       |> list.map(fn(data) {
         let input = data.input
-        let input_printable_text = input |> helpers.to_printable_text
+        let input_printable_text = helpers.to_printable_text(input)
         let expected_program_output = data.expected_program_output
         let base = data.base
 
         let base_text = case base {
           10 -> ""
-          _ -> "(base: " <> base |> int.to_string <> ") "
+          _ -> "(base: " <> int.to_string(base) <> ") "
         }
 
         let message = case expected_program_output {
@@ -28,10 +28,10 @@ pub fn to_int_tests() {
             <> "\" "
             <> base_text
             <> "-> "
-            <> output |> int.to_string
+            <> int.to_string(output)
           }
           Error(error) -> {
-            let error_string = error |> helpers.error_to_string
+            let error_string = helpers.error_to_string(error)
             "should_not_parse: \""
             <> input_printable_text
             <> "\" -> "
