@@ -32,7 +32,6 @@ pub fn to_float_tests() {
         }
 
         use <- it(message)
-
         assert lenient_parse.to_float(input) == expected_program_output
       }),
   )

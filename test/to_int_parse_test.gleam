@@ -40,7 +40,6 @@ pub fn to_int_tests() {
         }
 
         use <- it(message)
-
         assert lenient_parse.to_int_with_base(input, base)
           == expected_program_output
       }),
